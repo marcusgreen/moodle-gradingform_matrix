@@ -44,14 +44,12 @@ require_once("HTML/QuickForm/input.php");
 class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     /** @var string help message */
     public $_helpbutton = '';
-    /** @var string|bool stores the result of the last validation: null - undefined, false - no errors, string - error(s) text */
-    protected $validationerrors = null;
     /** @var bool if element has already been validated **/
     protected $wasvalidated = false;
-    /** @var bool If non-submit (JS) button was pressed: null - unknown, true/false - button was/wasn't pressed */
-    protected $nonjsbuttonpressed = false;
     /** @var bool Message to display in front of the editor (that there exist grades on this rubric being edited) */
     protected $regradeconfirmation = false;
+    /** @var \gradingform_matrix\editor\data_processor|null Lazy-loaded data processing helper. */
+    private ?\gradingform_matrix\editor\data_processor $processor = null;
 
     /**
      * Constructor for rubric editor
@@ -94,6 +92,18 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     }
 
     /**
+     * Returns the data processing helper, creating it on first use.
+     *
+     * @return \gradingform_matrix\editor\data_processor
+     */
+    private function get_processor(): \gradingform_matrix\editor\data_processor {
+        if ($this->processor === null) {
+            $this->processor = new \gradingform_matrix\editor\data_processor();
+        }
+        return $this->processor;
+    }
+
+    /**
      * Returns html string to display this element
      *
      * @return string
@@ -102,7 +112,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
         global $PAGE;
         $html = $this->_getTabs();
         $renderer = $PAGE->get_renderer('gradingform_matrix');
-        $data = $this->prepare_data(null, $this->wasvalidated);
+        $data = $this->get_processor()->prepare($this->getValue(), $this->wasvalidated);
         if (!$this->_flagFrozen) {
             $mode = gradingform_matrix_controller::DISPLAY_EDIT_FULL;
             $module = array('name'=>'gradingform_matrixeditor', 'fullpath'=>'/grade/grading/form/matrix/js/matrixeditor.js',
@@ -130,256 +140,58 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             }
             $html .= $renderer->display_regrade_confirmation($this->getName(), $this->regradeconfirmation, $data['regrade']);
         }
-        if ($this->validationerrors) {
-            $html .= html_writer::div($renderer->notification($this->validationerrors));
+        if ($this->get_processor()->validationerrors) {
+            $html .= html_writer::div($renderer->notification($this->get_processor()->validationerrors));
         }
         $html .= $renderer->display_matrix($data['criteria'], $data['options'], $mode, $this->getName());
         return $html;
     }
 
     /**
-     * Prepares the data passed in $_POST:
-     * - processes the pressed buttons 'addlevel', 'addcriterion', 'moveup', 'movedown', 'delete' (when JavaScript is disabled)
-     *   sets $this->nonjsbuttonpressed to true/false if such button was pressed
-     * - if options not passed (i.e. we create a new rubric) fills the options array with the default values
-     * - if options are passed completes the options array with unchecked checkboxes
-     * - if $withvalidation is set, adds 'error_xxx' attributes to elements that contain errors and creates an error string
-     *   and stores it in $this->validationerrors
-     *
-     * @param array $value
-     * @param boolean $withvalidation whether to enable data validation
-     * @return array
-     */
-    protected function prepare_data($value = null, $withvalidation = false) {
-        if (null === $value) {
-            $value = $this->getValue();
-        }
-        if ($this->nonjsbuttonpressed === null) {
-            $this->nonjsbuttonpressed = false;
-        }
-        $totalscore = 0;
-        $errors = array();
-        $return = array('criteria' => array(), 'options' => gradingform_matrix_controller::get_default_options());
-        if (!isset($value['criteria'])) {
-            $value['criteria'] = array();
-            $errors['err_nocriteria'] = 1;
-        }
-        // If options are present in $value, replace default values with submitted values
-        if (!empty($value['options'])) {
-            foreach (array_keys($return['options']) as $option) {
-                // special treatment for checkboxes
-                if (!empty($value['options'][$option])) {
-                    $return['options'][$option] = $value['options'][$option];
-                } else {
-                    $return['options'][$option] = null;
-                }
-            }
-        }
-        if (is_array($value)) {
-            // for other array keys of $value no special treatmeant neeeded, copy them to return value as is
-            foreach (array_keys($value) as $key) {
-                if ($key != 'options' && $key != 'criteria') {
-                    $return[$key] = $value[$key];
-                }
-            }
-        }
-
-        // iterate through criteria
-        $lastaction = null;
-        $lastid = null;
-        $overallminscore = $overallmaxscore = 0;
-        foreach ($value['criteria'] as $id => $criterion) {
-            if ($id == 'addcriterion') {
-                $id = $this->get_next_id(array_keys($value['criteria']));
-                $criterion = array('description' => '', 'levels' => array());
-                $i = 0;
-                // when adding new criterion copy the number of levels and their scores from the last criterion
-                if (!empty($value['criteria'][$lastid]['levels'])) {
-                    foreach ($value['criteria'][$lastid]['levels'] as $lastlevel) {
-                        $criterion['levels']['NEWID'.($i++)]['score'] = $lastlevel['score'];
-                    }
-                } else {
-                    $criterion['levels']['NEWID'.($i++)]['score'] = 0;
-                }
-                // add more levels so there are at least 3 in the new criterion. Increment by 1 the score for each next one
-                for ($i=$i; $i<3; $i++) {
-                    $criterion['levels']['NEWID'.$i]['score'] = $criterion['levels']['NEWID'.($i-1)]['score'] + 1;
-                }
-                // set other necessary fields (definition) for the levels in the new criterion
-                foreach (array_keys($criterion['levels']) as $i) {
-                    $criterion['levels'][$i]['definition'] = '';
-                }
-                $this->nonjsbuttonpressed = true;
-            }
-            $levels = array();
-            $minscore = $maxscore = null;
-            if (array_key_exists('levels', $criterion)) {
-                foreach ($criterion['levels'] as $levelid => $level) {
-                    if ($levelid == 'addlevel') {
-                        $levelid = $this->get_next_id(array_keys($criterion['levels']));
-                        $level = array(
-                            'definition' => '',
-                            'score' => 0,
-                        );
-                        foreach ($criterion['levels'] as $lastlevel) {
-                            if (isset($lastlevel['score'])) {
-                                $level['score'] = max($level['score'], ceil(unformat_float($lastlevel['score'])) + 1);
-                            }
-                        }
-                        $this->nonjsbuttonpressed = true;
-                    }
-                    if (!array_key_exists('delete', $level)) {
-                        $score = unformat_float($level['score'], true);
-                        if ($withvalidation) {
-                            if (!strlen(trim($level['definition']))) {
-                                $errors['err_nodefinition'] = 1;
-                                $level['error_definition'] = true;
-                            }
-                            if ($score === null || $score === false) {
-                                $errors['err_scoreformat'] = 1;
-                                $level['error_score'] = true;
-                            }
-                        }
-                        $levels[$levelid] = $level;
-                        if ($minscore === null || $score < $minscore) {
-                            $minscore = $score;
-                        }
-                        if ($maxscore === null || $score > $maxscore) {
-                            $maxscore = $score;
-                        }
-                    } else {
-                        $this->nonjsbuttonpressed = true;
-                    }
-                }
-            }
-            $totalscore += (float)$maxscore;
-            $criterion['levels'] = $levels;
-            if ($withvalidation && !array_key_exists('delete', $criterion)) {
-                if (count($levels)<2) {
-                    $errors['err_mintwolevels'] = 1;
-                    $criterion['error_levels'] = true;
-                }
-                if (!strlen(trim($criterion['description']))) {
-                    $errors['err_nodescription'] = 1;
-                    $criterion['error_description'] = true;
-                }
-                $overallmaxscore += $maxscore;
-                $overallminscore += $minscore;
-            }
-            if (array_key_exists('moveup', $criterion) || $lastaction == 'movedown') {
-                unset($criterion['moveup']);
-                if ($lastid !== null) {
-                    $lastcriterion = $return['criteria'][$lastid];
-                    unset($return['criteria'][$lastid]);
-                    $return['criteria'][$id] = $criterion;
-                    $return['criteria'][$lastid] = $lastcriterion;
-                } else {
-                    $return['criteria'][$id] = $criterion;
-                }
-                $lastaction = null;
-                $lastid = $id;
-                $this->nonjsbuttonpressed = true;
-            } else if (array_key_exists('delete', $criterion)) {
-                $this->nonjsbuttonpressed = true;
-            } else {
-                if (array_key_exists('movedown', $criterion)) {
-                    unset($criterion['movedown']);
-                    $lastaction = 'movedown';
-                    $this->nonjsbuttonpressed = true;
-                }
-                $return['criteria'][$id] = $criterion;
-                $lastid = $id;
-            }
-        }
-
-        if ($totalscore <= 0) {
-            $errors['err_totalscore'] = 1;
-        }
-
-        // add sort order field to criteria
-        $csortorder = 1;
-        foreach (array_keys($return['criteria']) as $id) {
-            $return['criteria'][$id]['sortorder'] = $csortorder++;
-        }
-
-        // create validation error string (if needed)
-        if ($withvalidation) {
-            if (!$return['options']['lockzeropoints']) {
-                if ($overallminscore == $overallmaxscore) {
-                    $errors['err_novariations'] = 1;
-                }
-            }
-            if (count($errors)) {
-                $rv = array();
-                foreach ($errors as $error => $v) {
-                    $rv[] = get_string($error, 'gradingform_matrix');
-                }
-                $this->validationerrors = join('<br/ >', $rv);
-            } else {
-                $this->validationerrors = false;
-            }
-            $this->wasvalidated = true;
-        }
-        return $return;
-    }
-
-    /**
-     * Scans array $ids to find the biggest element ! NEWID*, increments it by 1 and returns
-     *
-     * @param array $ids
-     * @return string
-     */
-    protected function get_next_id($ids) {
-        $maxid = 0;
-        foreach ($ids as $id) {
-            if (preg_match('/^NEWID(\d+)$/', $id, $matches) && ((int)$matches[1]) > $maxid) {
-                $maxid = (int)$matches[1];
-            }
-        }
-        return 'NEWID'.($maxid+1);
-    }
-
-    /**
      * Checks if a submit button was pressed which is supposed to be processed on client side by JS
      * but user seem to have disabled JS in the browser.
      * (buttons 'add criteria', 'add level', 'move up', 'move down', etc.)
-     * In this case the form containing this element is prevented from being submitted
+     * In this case the form containing this element is prevented from being submitted.
+     *
+     * Delegates to {@see \gradingform_matrix\editor\data_processor}.
      *
      * @param array $value
      * @return boolean true if non-submit button was pressed and not processed by JS
      */
     public function non_js_button_pressed($value) {
-        if ($this->nonjsbuttonpressed === null) {
-            $this->prepare_data($value);
-        }
-        return $this->nonjsbuttonpressed;
+        $this->get_processor()->prepare($value);
+        return $this->get_processor()->nonjsbuttonpressed;
     }
 
     /**
      * Validates that rubric has at least one criterion, at least two levels within one criterion,
      * each level has a valid score, all levels have filled definitions and all criteria
-     * have filled descriptions
+     * have filled descriptions.
+     *
+     * Delegates to {@see \gradingform_matrix\editor\data_processor}.
      *
      * @param array $value
      * @return string|false error text or false if no errors found
      */
     public function validate($value) {
         if (!$this->wasvalidated) {
-            $this->prepare_data($value, true);
+            $this->get_processor()->prepare($value, true);
+            $this->wasvalidated = true;
         }
-        return $this->validationerrors;
+        return $this->get_processor()->validationerrors;
     }
 
     /**
-     * Prepares the data for saving
+     * Prepares the data for saving.
      *
-     * @see prepare_data()
+     * Delegates to {@see \gradingform_matrix\editor\data_processor}.
+     *
      * @param array $submitValues
      * @param boolean $assoc
      * @return array
      */
     public function exportValue(&$submitValues, $assoc = false) {
-        $value =  $this->prepare_data($this->_findValue($submitValues));
+        $value = $this->get_processor()->prepare($this->_findValue($submitValues));
         return $this->_prepareValue($value, $assoc);
     }
 }

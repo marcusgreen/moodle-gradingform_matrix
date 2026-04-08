@@ -45,6 +45,10 @@
 
 */
 
+/* ============================================================
+   SECTION: Edit form page chrome (edit mode only)
+   ============================================================ */
+
 .gradingform_matrix_editform .status {
     font-weight: normal;
     text-transform: uppercase;
@@ -62,6 +66,10 @@
     background-color: #f3f2aa;
     border-color: #ee2;
 }
+
+/* ============================================================
+   SECTION: Shared structural styles (all modes)
+   ============================================================ */
 
 .gradingform_matrix {
     padding-bottom: 1.5em;
@@ -139,6 +147,10 @@
     color: #555;
 }
 
+/* ============================================================
+   SECTION: Edit mode only (.gradingform_matrix.editor)
+   ============================================================ */
+
 /* Make invisible the buttons 'Move up' for the first criterion and
    'Move down' for the last, because those buttons will make no change */
 .gradingform_matrix.editor .criterion.first .controls .moveup input,
@@ -146,7 +158,7 @@
     display: none;
 }
 
-/* replace buttons with images */
+/* Replace buttons with images */
 .gradingform_matrix.editor .delete input,
 .gradingform_matrix.editor .duplicate input,
 .gradingform_matrix.editor .moveup input,
@@ -203,6 +215,7 @@
     text-decoration: none;
 }
 
+/* Options panel (shown only in edit/preview modes) */
 .gradingform_matrix .options .optionsheading {
     font-weight: bold;
     font-size: 1.1em;
@@ -222,6 +235,7 @@
     font-weight: bold;
 }
 
+/* Validation error highlighting (set during editor data processing) */
 .gradingform_matrix .criterion .levels.error {
     border: 1px solid red;
 }
@@ -232,6 +246,7 @@
     background: #fdd;
 }
 
+/* Regrade / restored notification boxes */
 .gradingform_matrix-regrade {
     padding: 10px;
     background: #fdd;
@@ -251,7 +266,7 @@
     font-weight: bold;
 }
 
-/* special classes for elements created by matrixeditor.js */
+/* Special classes for elements created and managed by matrixeditor.js */
 .gradingform_matrix.editor .hiddenelement {
     display: none;
 }
@@ -267,6 +282,10 @@
     position: relative;
     float: right;
 }
+
+/* ============================================================
+   SECTION: Eval / view / review mode only
+   ============================================================ */
 
 .gradingpanel-gradingform_matrix [aria-checked="true"] {
     border: 1px solid black;
