@@ -416,7 +416,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         ];
         $caption = html_writer::tag('caption', get_string('rubric', 'gradingform_matrix'), ['class' => 'visually-hidden']);
         $rubrictable = html_writer::tag('table', $caption . $criteriastr, $rubrictableparams);
-        $rubrictemplate .= $rubrictable;
+        $rubrictemplate .= html_writer::tag('div', $rubrictable, ['class' => 'criteria-wrapper']);
         if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FULL) {
             $value = get_string('addcriterion', 'gradingform_matrix');
             $criteriainputparams = [

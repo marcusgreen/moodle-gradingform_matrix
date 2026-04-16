@@ -84,11 +84,13 @@
     padding: 3px;
 }
 
-.gradingform_matrix .criteria {
-    height: 100%;
-    display: flex;
+.gradingform_matrix .criteria-wrapper {
+    overflow-x: auto;
     width: 100%;
-    overflow: auto;
+}
+
+.gradingform_matrix .criteria {
+    min-width: 100%;
 }
 
 .gradingform_matrix .criterion {
@@ -123,7 +125,7 @@
 
 .gradingform_matrix .criterion .levels .level {
     border-left: 1px solid #ddd;
-    max-width: 150px;
+    min-width: 100px;
 }
 
 .gradingform_matrix .criterion .levels .level .level-wrapper {
