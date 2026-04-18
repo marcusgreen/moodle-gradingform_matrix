@@ -26,7 +26,7 @@ Feature: Reuse my rubrics in other activities
     And I set the following fields to these values:
       | Name | Assignment 1 rubric |
       | Description | Assignment 1 description |
-    And I define the following rubric:
+    And I define the following matrix:
       | Criterion 1 | Level 11 | 11 | Level 12 | 12 | Level 3 | 13 |
       | Criterion 2 | Level 21 | 21 | Level 22 | 22 | Level 3 | 23 |
       | Criterion 3 | Level 31 | 31 | Level 32 | 32 |         |    |

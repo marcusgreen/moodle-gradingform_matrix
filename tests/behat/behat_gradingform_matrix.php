@@ -61,7 +61,7 @@ class behat_gradingform_matrix extends behat_base {
      *
      * Works with both JS and non-JS.
      *
-     * @When /^I define the following rubric:$/
+     * @When /^I define the following matrix:$/
      * @throws ExpectationException
      * @param TableNode $rubric
      */
@@ -225,7 +225,7 @@ class behat_gradingform_matrix extends behat_base {
     /**
      * Replaces a value from the specified criterion. You can use it when editing rubrics, to set both name or points.
      *
-     * @When /^I replace "(?P<current_value_string>(?:[^"]|\\")*)" rubric level with "(?P<value_string>(?:[^"]|\\")*)" in "(?P<criterion_string>(?:[^"]|\\")*)" criterion$/
+     * @When /^I replace "(?P<current_value_string>(?:[^"]|\\")*)" matrix level with "(?P<value_string>(?:[^"]|\\")*)" in "(?P<criterion_string>(?:[^"]|\\")*)" criterion$/
      * @throws ElementNotFoundException
      * @param string $currentvalue
      * @param string $value
@@ -278,7 +278,7 @@ class behat_gradingform_matrix extends behat_base {
     /**
      * Grades filling the current page rubric. Set one line per criterion and for each criterion set "| Criterion name | Points | Remark |".
      *
-     * @When /^I grade by filling the rubric with:$/
+     * @When /^I grade by filling the matrix with:$/
      *
      * @throws ExpectationException
      * @param TableNode $rubric
@@ -349,7 +349,7 @@ class behat_gradingform_matrix extends behat_base {
     /**
      * Checks that the level was previously selected and the user changed to another level.
      *
-     * @Then /^the level with "(?P<points_number>\d+)" points was previously selected for the rubric criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
+     * @Then /^the level with "(?P<points_number>\d+)" points was previously selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
      * @param string $criterionname
      * @param int $points
@@ -377,7 +377,7 @@ class behat_gradingform_matrix extends behat_base {
     /**
      * Checks that the level is currently selected. Works both when grading rubrics and viewing graded rubrics.
      *
-     * @Then /^the level with "(?P<points_number>\d+)" points is selected for the rubric criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
+     * @Then /^the level with "(?P<points_number>\d+)" points is selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
      * @param string $criterionname
      * @param int $points
@@ -407,7 +407,7 @@ class behat_gradingform_matrix extends behat_base {
     /**
      * Checks that the level is not currently selected. Works both when grading rubrics and viewing graded rubrics.
      *
-     * @Then /^the level with "(?P<points_number>\d+)" points is not selected for the rubric criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
+     * @Then /^the level with "(?P<points_number>\d+)" points is not selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
      * @param string $criterionname
      * @param int $points

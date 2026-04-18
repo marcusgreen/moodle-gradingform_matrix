@@ -33,7 +33,7 @@ Feature: Rubrics can have levels with negative scores
     And I set the following fields to these values:
       | Name | Assignment 1 rubric |
       | Description | Rubric test description |
-    And I define the following rubric:
+    And I define the following matrix:
       | Criterion 1 | Did not try | -11 | Level 12 | 25 | Level 13 | 40 | Level 14  | 50  |
       | Criterion 2 | Very bad    | -20 | Level 22 | 25 | Level 23 | 30 |           |     |
       | Criterion 3 | Level 31    | 10  | Level 32 | 20 |          |    |           |     |
@@ -41,21 +41,21 @@ Feature: Rubrics can have levels with negative scores
     # Grading a student.
     And I navigate to "Assignment" in current page administration
     And I go to "Student 1" "Test assignment 1" activity advanced grading page
-    And I grade by filling the rubric with:
+    And I grade by filling the matrix with:
       | Criterion 1 | 25 |  |
       | Criterion 2 | 30 |  |
       | Criterion 3 | 10 |  |
     And I save the advanced grading form
     And I am on the "Test assignment 1" "assign activity" page
     And I go to "Student 2" "Test assignment 1" activity advanced grading page
-    And I grade by filling the rubric with:
+    And I grade by filling the matrix with:
       | Criterion 1 | 25 |  |
       | Criterion 2 | -20 |  |
       | Criterion 3 | 10 |  |
     And I save the advanced grading form
     And I am on the "Test assignment 1" "assign activity" page
     And I go to "Student 3" "Test assignment 1" activity advanced grading page
-    And I grade by filling the rubric with:
+    And I grade by filling the matrix with:
       | Criterion 1 | -11 |  |
       | Criterion 2 | -20 |  |
       | Criterion 3 | 10 |  |

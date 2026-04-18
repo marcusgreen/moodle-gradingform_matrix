@@ -32,7 +32,7 @@ Feature: Converting rubric score to grades
       | Name | Assignment 1 rubric |
       | Description | Rubric test description |
       | Calculate grade having a minimum score of the minimum achievable grade for the rubric | <lockzeropoints> |
-    And I define the following rubric:
+    And I define the following matrix:
       | Criterion 1 | Level 11 | 20 | Level 12 | 25 | Level 13 | 40 | Level 14  | 50  |
       | Criterion 2 | Level 21 | 20 | Level 22 | 25 | Level 23 | 30 |           |     |
       | Criterion 3 | Level 31 | 10 | Level 32 | 20 |          |    |           |     |
@@ -40,7 +40,7 @@ Feature: Converting rubric score to grades
     And I navigate to "Assignment" in current page administration
     # Grading a student.
     And I go to "Student 1" "Test assignment 1" activity advanced grading page
-    And I grade by filling the rubric with:
+    And I grade by filling the matrix with:
       | Criterion 1 | 25 |  |
       | Criterion 2 | 20 |  |
       | Criterion 3 | 10 |  |
@@ -75,7 +75,7 @@ Feature: Converting rubric score to grades
     And I set the following fields to these values:
       | Name        | Forum 1 rubric          |
       | Description | Rubric test description |
-    And I define the following rubric:
+    And I define the following matrix:
       | Criterion 1 | Level 11 | 1  | Level 12 | 20 | Level 13 | 40 | Level 14  | 50  |
       | Criterion 2 | Level 21 | 10 | Level 22 | 20 | Level 23 | 30 |           |     |
       | Criterion 3 | Level 31 | 5  | Level 32 | 20 |          |    |           |     |

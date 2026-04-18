@@ -28,7 +28,7 @@ Feature: Publish rubrics as templates
     And I set the following fields to these values:
       | Name | Assignment 1 rubric |
       | Description | Assignment 1 description |
-    And I define the following rubric:
+    And I define the following matrix:
       | Criterion 1 | Level 11 | 11 | Level 12 | 12 |
       | Criterion 2 | Level 21 | 21 | Level 22 | 22 |
     And I press "Save rubric and make it ready"
