@@ -943,8 +943,7 @@ class gradingform_matrix_instance extends gradingform_instance {
     public function render_grading_element($page, $gradingformelement) {
         global $USER;
         if (!$gradingformelement->_flagFrozen) {
-            $module = array('name'=>'gradingform_matrix', 'fullpath'=>'/grade/grading/form/matrix/js/matrix.js');
-            $page->requires->js_init_call('M.gradingform_matrix.init', array(array('name' => $gradingformelement->getName())), true, $module);
+            $page->requires->js_call_amd('gradingform_matrix/matrix', 'init', [$gradingformelement->getName()]);
             $mode = gradingform_matrix_controller::DISPLAY_EVAL;
         } else {
             if ($gradingformelement->_persistantFreeze) {

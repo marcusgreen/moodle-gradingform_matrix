@@ -273,3 +273,109 @@
 .gradingpanel-gradingform_matrix [aria-checked="true"] {
     border: 1px solid black;
 }
+
+/* Highlight selected / hovered level in evaluate mode (mirrors gradingform_rubric). */
+.gradingform_matrix.evaluate .criterion .levels .level:hover {
+    background: #dff0d8;
+    cursor: pointer;
+}
+
+.gradingform_matrix.evaluate .criterion .levels .level.checked,
+.gradingform_matrix .criterion .levels .level.checked {
+    background: #d0ffd0;
+    border: 1px solid #555;
+}
+
+.gradingform_matrix .criterion .levels .level.currentchecked {
+    background: #fff0f0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Popout overlay (popout.md §9.2 + §9.6).
+ * Self-contained: keyed on .fitem.popout containing a matrix so styles work
+ * regardless of which mod hosts the grader. Adds resize handle + sane sizing.
+ * Flex reflow (§9.3) is scoped inside .fitem.popout only, so normal in-panel
+ * grading keeps its original table layout (and proven click behaviour).
+ * ------------------------------------------------------------------------- */
+.fitem.popout:has(.gradingform_matrix) {
+    resize: both;
+    overflow: hidden;
+    min-width: 320px;
+    min-height: 240px;
+    width: 60vw;
+    height: 60vh;
+}
+
+.fitem.popout:has(.gradingform_matrix) > .felement {
+    height: calc(100% - 54px);
+    overflow: auto;
+}
+
+.fitem.popout .gradingform_matrix {
+    width: 100%;
+}
+
+.fitem.popout .gradingform_matrix .criteria-wrapper {
+    overflow: visible;
+}
+
+/* Flex reflow inside popout only. */
+.fitem.popout .gradingform_matrix .criteria,
+.fitem.popout .gradingform_matrix .criteria > tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
+.fitem.popout .gradingform_matrix .criterion {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.fitem.popout .gradingform_matrix .criterion > .description {
+    display: block;
+    flex: 0 0 150px;
+    min-width: 150px;
+}
+
+.fitem.popout .gradingform_matrix .criterion > .levels {
+    display: block;
+    flex: 1 1 300px;
+    min-width: 0;
+}
+
+.fitem.popout .gradingform_matrix .criterion > .levels > table,
+.fitem.popout .gradingform_matrix .criterion > .levels > table > tbody {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.fitem.popout .gradingform_matrix .criterion > .levels > table > tbody > tr {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    height: 100%;
+}
+
+.fitem.popout .gradingform_matrix .criterion .levels .level {
+    display: block;
+    flex: 1 1 100px;
+    width: auto !important; /* override inline width: N% set by renderer */
+    min-width: 100px;
+}
+
+.fitem.popout .gradingform_matrix .criterion > .remark {
+    display: block;
+    flex: 0 0 200px;
+    min-width: 150px;
+}
+
+.fitem.popout .gradingform_matrix .criterion > .remark textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 60px;
+}
