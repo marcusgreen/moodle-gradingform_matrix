@@ -57,7 +57,10 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * @return string
      */
     public function criterion_template($mode, $options, $elementname = '{NAME}', $criterion = null, $levelsstr = '{LEVELS}', $value = null) {
-        // TODO MDL-31235 description format, remark format
+        // TODO MDL-31235 description format, remark format.
+        // Until per-field formats are stored, criterion descriptions and level definitions are
+        // rendered as Markdown in display modes (see format_text() calls below). Edit textareas and
+        // round-trip hidden inputs keep the raw text, and aria-labels stay plain text.
         if ($criterion === null || !is_array($criterion) || !array_key_exists('id', $criterion)) {
             $criterion = array('id' => '{CRITERION-id}', 'description' => '{CRITERION-description}', 'sortorder' => '{CRITERION-sortorder}', 'class' => '{CRITERION-class}');
         } else {
@@ -95,7 +98,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 $criteriontemplate .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][sortorder]', 'value' => $criterion['sortorder']));
                 $criteriontemplate .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][description]', 'value' => $criterion['description']));
             }
-            $description = s($criterion['description']);
+            $description = format_text($criterion['description'], FORMAT_MARKDOWN);
         }
         $descriptionclass = 'description';
         if (isset($criterion['error_description'])) {
@@ -273,7 +276,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 $leveltemplate .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][levels][{LEVEL-id}][definition]', 'value' => $level['definition']));
                 $leveltemplate .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][levels][{LEVEL-id}][score]', 'value' => $level['score']));
             }
-            $definition = s($level['definition']);
+            $definition = format_text($level['definition'], FORMAT_MARKDOWN);
             $score = $level['score'];
         }
         if ($mode == gradingform_matrix_controller::DISPLAY_EVAL) {

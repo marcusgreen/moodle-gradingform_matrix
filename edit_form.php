@@ -67,6 +67,7 @@ class gradingform_matrix_editrubric extends moodleform {
 
         // rubric editor
         $form->addElement('matrixeditor', 'matrix', get_string('rubric', 'gradingform_matrix'));
+        $form->addHelpButton('matrix', 'rubric', 'gradingform_matrix');
         $form->setType('matrix', PARAM_RAW);
 
         $buttonarray = array();

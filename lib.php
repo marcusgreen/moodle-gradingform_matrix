@@ -750,8 +750,8 @@ class gradingform_matrix_controller extends gradingform_controller {
  */
 class gradingform_matrix_instance extends gradingform_instance {
 
-    /** @var array stores the rubric, has two keys: 'criteria' and 'options' */
-    protected $rubric;
+    /** @var array stores the matrix, has two keys: 'criteria' and 'options' */
+    protected $matrix;
 
     /**
      * Deletes this (INCOMPLETE) instance from database.
@@ -841,14 +841,14 @@ class gradingform_matrix_instance extends gradingform_instance {
      */
     public function get_matrix_filling($force = false) {
         global $DB;
-        if ($this->rubric === null || $force) {
+        if ($this->matrix === null || $force) {
             $records = $DB->get_records('gradingform_matrix_fillings', array('instanceid' => $this->get_id()));
-            $this->rubric = array('criteria' => array());
+            $this->matrix = array('criteria' => array());
             foreach ($records as $record) {
                 $this->matrix['criteria'][$record->criterionid] = (array)$record;
             }
         }
-        return $this->rubric;
+        return $this->matrix;
     }
 
     /**
