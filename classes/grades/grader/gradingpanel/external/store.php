@@ -147,7 +147,7 @@ class store extends external_api {
         // Require that this user can save grades.
         $gradeitem->require_user_can_grade($gradeduser, $USER);
 
-        if (RUBRIC !== $gradeitem->get_advanced_grading_method()) {
+        if (MATRIX !== $gradeitem->get_advanced_grading_method()) {
             throw new moodle_exception(
                 "The {$itemname} item in {$component}/{$contextid} is not configured for advanced grading with a rubric"
             );
