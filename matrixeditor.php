@@ -105,17 +105,16 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
         $data = $this->prepare_data(null, $this->wasvalidated);
         if (!$this->_flagFrozen) {
             $mode = gradingform_matrix_controller::DISPLAY_EDIT_FULL;
-            $module = array('name'=>'gradingform_matrixeditor', 'fullpath'=>'/grade/grading/form/matrix/js/matrixeditor.js',
-                'requires' => array('base', 'dom', 'event', 'event-touch', 'escape'),
-                'strings' => array(array('confirmdeletecriterion', 'gradingform_matrix'), array('confirmdeletelevel', 'gradingform_matrix'),
-                    array('criterionempty', 'gradingform_matrix'), array('levelempty', 'gradingform_matrix')
-                ));
-            $PAGE->requires->js_init_call('M.gradingform_matrixeditor.init', array(
-                array('name' => $this->getName(),
-                    'criteriontemplate' => $renderer->criterion_template($mode, $data['options'], $this->getName()),
-                    'leveltemplate' => $renderer->level_template($mode, $data['options'], $this->getName())
-                   )),
-                true, $module);
+            // The criterion/level templates are too long to pass as JS arguments, so they are
+            // rendered into hidden <script> holders and read from the DOM by the AMD module.
+            $name = $this->getName();
+            $html .= html_writer::tag('script',
+                $renderer->criterion_template($mode, $data['options'], $name),
+                array('type' => 'text/template', 'id' => 'matrix-'.$name.'-criterion-template'));
+            $html .= html_writer::tag('script',
+                $renderer->level_template($mode, $data['options'], $name),
+                array('type' => 'text/template', 'id' => 'matrix-'.$name.'-level-template'));
+            $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', array($name));
         } else {
             // Rubric is frozen, no javascript needed
             if ($this->_persistantFreeze) {
