@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Generator for the gradingforum_rubric plugin.
+ * Generator for the gradingform_matrix plugin.
  *
  * @package    gradingform_matrix
  * @category   test
@@ -25,14 +25,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/rubric.php');
+require_once(__DIR__ . '/matrix.php');
 require_once(__DIR__ . '/criterion.php');
 
-use tests\gradingform_matrix\generator\rubric;
+use tests\gradingform_matrix\generator\matrix;
 use tests\gradingform_matrix\generator\criterion;
 
 /**
- * Generator for the gradingforum_rubric plugintype.
+ * Generator for the gradingform_matrix plugintype.
  *
  * @package    gradingform_matrix
  * @category   test
@@ -42,14 +42,14 @@ use tests\gradingform_matrix\generator\criterion;
 class gradingform_matrix_generator extends component_generator_base {
 
     /**
-     * Create an instance of a rubric.
+     * Create an instance of a matrix.
      *
      * @param context $context
      * @param string $component
      * @param string $area
      * @param string $name
      * @param string $description
-     * @param array $criteria The list of criteria to add to the generated rubric
+     * @param array $criteria The list of criteria to add to the generated matrix
      * @return gradingform_matrix_controller
      */
     public function create_instance(
@@ -63,7 +63,7 @@ class gradingform_matrix_generator extends component_generator_base {
         global $USER;
 
         if ($USER->id === 0) {
-            throw new \coding_exception('Creation of a rubric must currently be run as a user.');
+            throw new \coding_exception('Creation of a matrix must currently be run as a user.');
         }
 
         // Fetch the controller for this context/component/area.
@@ -71,33 +71,33 @@ class gradingform_matrix_generator extends component_generator_base {
         $gradinggenerator = $generator->get_plugin_generator('core_grading');
         $controller = $gradinggenerator->create_instance($context, $component, $area, 'matrix');
 
-        // Generate a definition for the supplied rubric.
-        $rubric = $this->get_rubric($name, $description);
+        // Generate a definition for the supplied matrix.
+        $matrix = $this->get_matrix($name, $description);
         foreach ($criteria as $name => $criterion) {
-            $rubric->add_criteria($this->get_criterion($name, $criterion));
+            $matrix->add_criteria($this->get_criterion($name, $criterion));
         }
 
-        // Update the controller wih the rubric definition.
-        $controller->update_definition($rubric->get_definition());
+        // Update the controller wih the matrix definition.
+        $controller->update_definition($matrix->get_definition());
 
         return $controller;
     }
 
     /**
-     * Get a new rubric for use with the rubric controller.
+     * Get a new matrix for use with the matrix controller.
      *
      * Note: This is just a helper class used to build a new definition. It does not persist the data.
      *
      * @param string $name
      * @param string $description
-     * @return rubric
+     * @return matrix
      */
-    protected function get_rubric(string $name, string $description): rubric {
-        return new rubric($name, $description);
+    protected function get_matrix(string $name, string $description): matrix {
+        return new matrix($name, $description);
     }
 
     /**
-     * Get a new rubric for use with a gradingform_matrix_generator_rubric.
+     * Get a new matrix for use with a gradingform_matrix_generator_matrix.
      *
      * Note: This is just a helper class used to build a new definition. It does not persist the data.
      *
@@ -154,7 +154,7 @@ class gradingform_matrix_generator extends component_generator_base {
 
     /**
      * Get submitted form data for the supplied controller, itemid, and values.
-     * The returned data is in the format used by rubric when handling form submission.
+     * The returned data is in the format used by matrix when handling form submission.
      *
      * @param gradingform_matrix_controller $controller
      * @param int $itemid
@@ -181,14 +181,14 @@ class gradingform_matrix_generator extends component_generator_base {
     }
 
     /**
-     * Generate a rubric controller with sample data required for testing of this class.
+     * Generate a matrix controller with sample data required for testing of this class.
      *
      * @param context $context
      * @param string $component
      * @param string $area
      * @return gradingform_matrix_controller
      */
-    public function get_test_rubric(context $context, string $component, string $area): gradingform_matrix_controller {
+    public function get_test_matrix(context $context, string $component, string $area): gradingform_matrix_controller {
         $criteria = [
             'Spelling is important' => [
                 'Nothing but mistakes' => 0,
@@ -202,7 +202,7 @@ class gradingform_matrix_generator extends component_generator_base {
             ],
         ];
 
-        return $this->create_instance($context, $component, $area, 'testrubric', 'Description text', $criteria);
+        return $this->create_instance($context, $component, $area, 'testmatrix', 'Description text', $criteria);
     }
 
     /**
@@ -225,8 +225,8 @@ class gradingform_matrix_generator extends component_generator_base {
         string $pictureremark
     ): array {
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
-        return $rubricgenerator->get_submitted_form_data($controller, $itemid, [
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        return $matrixgenerator->get_submitted_form_data($controller, $itemid, [
             'Spelling is important' => [
                 'score' => $spellingscore,
                 'remark' => $spellingremark,

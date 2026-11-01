@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Restores the rubric specific data from grading.xml file
+ * Restores the matrix specific data from grading.xml file
  *
  * @package    gradingform_matrix
  * @copyright  2011 David Mudrak <david@moodle.com>
@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
 
     /**
-     * Declares the rubric XML paths attached to the form definition element
+     * Declares the matrix XML paths attached to the form definition element
      *
      * @return array of {@link restore_path_element}
      */
@@ -52,7 +52,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
     }
 
     /**
-     * Declares the rubric XML paths attached to the form instance element
+     * Declares the matrix XML paths attached to the form instance element
      *
      * @return array of {@link restore_path_element}
      */
@@ -60,7 +60,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
 
         $paths = array();
 
-        $paths[] = new restore_path_element('gradinform_rubric_filling',
+        $paths[] = new restore_path_element('gradingform_matrix_filling',
             $this->get_pathfor('/fillings/filling'));
 
         return $paths;
@@ -70,7 +70,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
      * Processes criterion element data
      *
      * Sets the mapping 'gradingform_matrix_criterion' to be used later by
-     * {@link self::process_gradinform_rubric_filling()}
+     * {@link self::process_gradingform_matrix_filling()}
      *
      * @param stdClass|array $data
      */
@@ -89,7 +89,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
      * Processes level element data
      *
      * Sets the mapping 'gradingform_matrix_level' to be used later by
-     * {@link self::process_gradinform_rubric_filling()}
+     * {@link self::process_gradingform_matrix_filling()}
      *
      * @param stdClass|array $data
      */
@@ -109,7 +109,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
      *
      * @param stdClass|array $data
      */
-    public function process_gradinform_rubric_filling($data) {
+    public function process_gradingform_matrix_filling($data) {
         global $DB;
 
         $data = (object)$data;

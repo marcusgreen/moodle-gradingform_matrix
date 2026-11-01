@@ -23,7 +23,7 @@
  */
 
 /**
- * Keeps track or rubric plugin upgrade path
+ * Keeps track or matrix plugin upgrade path
  *
  * @param int $oldversion the DB version of currently installed plugin
  * @return bool true

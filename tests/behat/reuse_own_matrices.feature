@@ -1,8 +1,8 @@
 @gradingform @gradingform_matrix
-Feature: Reuse my rubrics in other activities
+Feature: Reuse my matrices in other activities
   In order to save time creating duplicated grading forms
   As a teacher
-  I need to reuse rubrics that I created previously
+  I need to reuse matrices that I created previously
 
   Background:
     Given the following "users" exist:
@@ -24,18 +24,18 @@ Feature: Reuse my rubrics in other activities
     And I press "Save and return to course"
     And I go to "Test assignment 1 name" advanced grading definition page
     And I set the following fields to these values:
-      | Name | Assignment 1 rubric |
+      | Name | Assignment 1 matrix |
       | Description | Assignment 1 description |
     And I define the following matrix:
       | Criterion 1 | Level 11 | 11 | Level 12 | 12 | Level 3 | 13 |
       | Criterion 2 | Level 21 | 21 | Level 22 | 22 | Level 3 | 23 |
       | Criterion 3 | Level 31 | 31 | Level 32 | 32 |         |    |
-    And I press "Save rubric and make it ready"
+    And I press "Save grading form and make it ready"
     And I am on the "Test assignment 2 name" "assign activity editing" page
     And I set the following fields to these values:
       | Grading method | Matrix |
     And I press "Save and return to course"
-    And I set "Test assignment 2 name" activity to use "Assignment 1 rubric" grading form
+    And I set "Test assignment 2 name" activity to use "Assignment 1 matrix" grading form
     Then I should see "Ready for use"
     And I should see "Criterion 1"
     And I should see "Criterion 2"
@@ -47,6 +47,6 @@ Feature: Reuse my rubrics in other activities
     And I should see "Criterion 3"
 
   @javascript
-  Scenario: A teacher can reuse one of his/her previously created rubrics, with Javascript enabled
+  Scenario: A teacher can reuse one of his/her previously created matrices, with Javascript enabled
 
-  Scenario: A teacher can reuse one of his/her previously created rubrics, with Javascript disabled
+  Scenario: A teacher can reuse one of his/her previously created matrices, with Javascript disabled

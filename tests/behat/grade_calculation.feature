@@ -1,6 +1,6 @@
 @gradingform @gradingform_matrix @javascript
-Feature: Converting rubric score to grades
-  In order to use and refine rubrics to grade students
+Feature: Converting matrix score to grades
+  In order to use and refine matrices to grade students
   As a teacher
   I need to be able to use different grade settings
 
@@ -20,7 +20,7 @@ Feature: Converting rubric score to grades
       | name         | scale                                     |
       | Test scale 1 | Disappointing, Good, Very good, Excellent |
 
-  Scenario Outline: Convert assignment rubric scores to grades.
+  Scenario Outline: Convert assignment matrix scores to grades.
     Given the following "activities" exist:
     | activity   | name              | intro | course | idnumber    | grade   | advancedgradingmethod_submissions |
     | assign     | Test assignment 1 | Test  | C1     | assign1     | <grade> | matrix                            |
@@ -29,14 +29,14 @@ Feature: Converting rubric score to grades
     And I am on "Course 1" course homepage with editing mode on
     And I go to "Test assignment 1" advanced grading definition page
     And I set the following fields to these values:
-      | Name | Assignment 1 rubric |
-      | Description | Rubric test description |
-      | Calculate grade having a minimum score of the minimum achievable grade for the rubric | <lockzeropoints> |
+      | Name | Assignment 1 matrix |
+      | Description | Matrix test description |
+      | Calculate grade having a minimum score of the minimum achievable grade for the grading form | <lockzeropoints> |
     And I define the following matrix:
       | Criterion 1 | Level 11 | 20 | Level 12 | 25 | Level 13 | 40 | Level 14  | 50  |
       | Criterion 2 | Level 21 | 20 | Level 22 | 25 | Level 23 | 30 |           |     |
       | Criterion 3 | Level 31 | 10 | Level 32 | 20 |          |    |           |     |
-    And I press "Save rubric and make it ready"
+    And I press "Save grading form and make it ready"
     And I navigate to "Assignment" in current page administration
     # Grading a student.
     And I go to "Student 1" "Test assignment 1" activity advanced grading page
@@ -58,7 +58,7 @@ Feature: Converting rubric score to grades
       | 70           |                | 7.00           |
       | Test scale 1 |                | Disappointing  |
 
-  Scenario Outline: Convert forum rubric scores with a scale to grades.
+  Scenario Outline: Convert forum matrix scores with a scale to grades.
     Given the following "activities" exist:
       | activity | name         | intro | course | idnumber | grade | advancedgradingmethod_submissions |
       | forum    | Test forum 1 | Test  | C1     | forum1   | 100   | matrix                            |
@@ -71,15 +71,15 @@ Feature: Converting rubric score to grades
       | Grading method               | Matrix                    |
     And I press "Save and display"
     And I go to "Test forum 1" advanced grading definition page
-    # Defining a rubric.
+    # Defining a matrix.
     And I set the following fields to these values:
-      | Name        | Forum 1 rubric          |
-      | Description | Rubric test description |
+      | Name        | Forum 1 matrix          |
+      | Description | Matrix test description |
     And I define the following matrix:
       | Criterion 1 | Level 11 | 1  | Level 12 | 20 | Level 13 | 40 | Level 14  | 50  |
       | Criterion 2 | Level 21 | 10 | Level 22 | 20 | Level 23 | 30 |           |     |
       | Criterion 3 | Level 31 | 5  | Level 32 | 20 |          |    |           |     |
-    And I press "Save rubric and make it ready"
+    And I press "Save grading form and make it ready"
     When I am on the "Test forum 1" "forum activity" page logged in as teacher1
     And I press "Grade users"
     And I click on "<criterion1> points" "radio"

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Rubric external functions and service definitions.
+ * Matrix external functions and service definitions.
  *
  * @package    gradingform_matrix
  * @copyright  2019 Mathew May <mathew.solutions>

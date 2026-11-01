@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Steps definitions for rubrics.
+ * Steps definitions for matrices.
  *
  * @package   gradingform_matrix
  * @category  test
@@ -32,7 +32,7 @@ use Behat\Mink\Exception\ElementNotFoundException;
 use Behat\Mink\Exception\ExpectationException;
 
 /**
- * Steps definitions to help with rubrics.
+ * Steps definitions to help with matrices.
  *
  * @package   gradingform_matrix
  * @category  test
@@ -42,14 +42,14 @@ use Behat\Mink\Exception\ExpectationException;
 class behat_gradingform_matrix extends behat_base {
 
     /**
-     * @var The number of levels added by default when a rubric is created.
+     * @var The number of levels added by default when a matrix is created.
      */
-    const DEFAULT_RUBRIC_LEVELS = 3;
+    const DEFAULT_MATRIX_LEVELS = 3;
 
     /**
-     * Defines the rubric with the provided data, following rubric's definition grid cells.
+     * Defines the matrix with the provided data, following matrix's definition grid cells.
      *
-     * This method fills the rubric of the rubric definition
+     * This method fills the matrix of the matrix definition
      * form; the provided TableNode should contain one row for
      * each criterion and each cell of the row should contain:
      * # Criterion description
@@ -63,16 +63,16 @@ class behat_gradingform_matrix extends behat_base {
      *
      * @When /^I define the following matrix:$/
      * @throws ExpectationException
-     * @param TableNode $rubric
+     * @param TableNode $matrix
      */
-    public function i_define_the_following_rubric(TableNode $rubric) {
+    public function i_define_the_following_matrix(TableNode $matrix) {
         // Being a smart method is nothing good when we talk about step definitions, in
         // this case we didn't have any other options as there are no labels no elements
         // id we can point to without having to "calculate" them.
 
         $steptableinfo = '| criterion description | level1 name  | level1 points | level2 name | level2 points | ...';
 
-        $criteria = $rubric->getRows();
+        $criteria = $matrix->getRows();
 
         $addcriterionbutton = $this->find_button(get_string('addcriterion', 'gradingform_matrix'));
 
@@ -91,7 +91,7 @@ class behat_gradingform_matrix extends behat_base {
         $levelnumber = 1;
 
         // The next criterion is created with the same number of levels than the last criterion.
-        $defaultnumberoflevels = self::DEFAULT_RUBRIC_LEVELS;
+        $defaultnumberoflevels = self::DEFAULT_MATRIX_LEVELS;
 
         if ($criteria) {
             foreach ($criteria as $criterionit => $criterion) {
@@ -135,10 +135,10 @@ class behat_gradingform_matrix extends behat_base {
                     'NodeElement',
                 ]);
 
-                $criterionroot = 'rubric[criteria][NEWID' . ($criterionit + 1) . ']';
+                $criterionroot = 'matrix[criteria][NEWID' . ($criterionit + 1) . ']';
 
                 // Getting the criterion description, this one is visible by default.
-                $this->set_rubric_field_value($criterionroot . '[description]', array_shift($criterion), true);
+                $this->set_matrix_field_value($criterionroot . '[description]', array_shift($criterion), true);
 
                 // When JS is disabled each criterion's levels name numbers starts from 0.
                 if (!$this->running_javascript()) {
@@ -182,12 +182,12 @@ class behat_gradingform_matrix extends behat_base {
                 }
 
                 // Updating it.
-                if ($nlevels > self::DEFAULT_RUBRIC_LEVELS) {
+                if ($nlevels > self::DEFAULT_MATRIX_LEVELS) {
                     $defaultnumberoflevels = $nlevels;
                 } else {
                     // If it is less than the default value it sets it to
                     // the default value.
-                    $defaultnumberoflevels = self::DEFAULT_RUBRIC_LEVELS;
+                    $defaultnumberoflevels = self::DEFAULT_MATRIX_LEVELS;
                 }
 
                 foreach ($criterion as $i => $value) {
@@ -197,7 +197,7 @@ class behat_gradingform_matrix extends behat_base {
                     if ($i % 2 === 0) {
                         // Pairs are the definitions.
                         $fieldname = $levelroot . '[definition]';
-                        $this->set_rubric_field_value($fieldname, $value);
+                        $this->set_matrix_field_value($fieldname, $value);
 
                     } else {
                         // Odds are the points.
@@ -211,7 +211,7 @@ class behat_gradingform_matrix extends behat_base {
                         }
 
                         $fieldname = $levelroot . '[score]';
-                        $this->set_rubric_field_value($fieldname, $value, true);
+                        $this->set_matrix_field_value($fieldname, $value, true);
 
                         // Increase the level by one every 2 cells.
                         $levelnumber++;
@@ -223,7 +223,7 @@ class behat_gradingform_matrix extends behat_base {
     }
 
     /**
-     * Replaces a value from the specified criterion. You can use it when editing rubrics, to set both name or points.
+     * Replaces a value from the specified criterion. You can use it when editing matrices, to set both name or points.
      *
      * @When /^I replace "(?P<current_value_string>(?:[^"]|\\")*)" matrix level with "(?P<value_string>(?:[^"]|\\")*)" in "(?P<criterion_string>(?:[^"]|\\")*)" criterion$/
      * @throws ElementNotFoundException
@@ -231,11 +231,11 @@ class behat_gradingform_matrix extends behat_base {
      * @param string $value
      * @param string $criterionname
      */
-    public function i_replace_rubric_level_with($currentvalue, $value, $criterionname) {
+    public function i_replace_matrix_level_with($currentvalue, $value, $criterionname) {
         $currentvalueliteral = behat_context_helper::escape($currentvalue);
         $criterionliteral = behat_context_helper::escape($criterionname);
 
-        $criterionxpath = "//div[@id='rubric-rubric']" .
+        $criterionxpath = "//div[@id='matrix-matrix']" .
             "/descendant::td[contains(concat(' ', normalize-space(@class), ' '), ' description ')]";
         // It differs between JS on/off.
         if ($this->running_javascript()) {
@@ -271,22 +271,22 @@ class behat_gradingform_matrix extends behat_base {
             );
         } else {
             $fieldnode = $this->find('xpath', $inputxpath . '|' . $textareaxpath);
-            $this->set_rubric_field_value($fieldnode->getAttribute('name'), $value);
+            $this->set_matrix_field_value($fieldnode->getAttribute('name'), $value);
         }
     }
 
     /**
-     * Grades filling the current page rubric. Set one line per criterion and for each criterion set "| Criterion name | Points | Remark |".
+     * Grades filling the current page matrix. Set one line per criterion and for each criterion set "| Criterion name | Points | Remark |".
      *
      * @When /^I grade by filling the matrix with:$/
      *
      * @throws ExpectationException
-     * @param TableNode $rubric
+     * @param TableNode $matrix
      */
-    public function i_grade_by_filling_the_rubric_with(TableNode $rubric) {
-        $criteria = $rubric->getRowsHash();
+    public function i_grade_by_filling_the_matrix_with(TableNode $matrix) {
+        $criteria = $matrix->getRowsHash();
 
-        $stepusage = '"I grade by filling the rubric with:" step needs you to provide a table where each row is a criterion' .
+        $stepusage = '"I grade by filling the matrix with:" step needs you to provide a table where each row is a criterion' .
             ' and each criterion has 3 different values: | Criterion name | Number of points | Remark text |';
 
         // If running Javascript, ensure we zoom in before filling the grades.
@@ -340,7 +340,7 @@ class behat_gradingform_matrix extends behat_base {
             $this->execute('behat_forms::i_set_the_field_to', array($textarea->getAttribute('name'), $criterion[1]));
         }
 
-        // If running Javascript, then ensure to close zoomed rubric.
+        // If running Javascript, then ensure to close zoomed matrix.
         if ($this->running_javascript()) {
             $this->execute('behat_general::click_link', get_string('togglezoom', 'mod_assign'));
         }
@@ -355,14 +355,14 @@ class behat_gradingform_matrix extends behat_base {
      * @param int $points
      * @return void
      */
-    public function the_level_with_points_was_previously_selected_for_the_rubric_criterion($points, $criterionname) {
+    public function the_level_with_points_was_previously_selected_for_the_matrix_criterion($points, $criterionname) {
         $levelxpath = $this->get_criterion_xpath($criterionname) .
             $this->get_level_xpath($points) .
             "[contains(concat(' ', normalize-space(@class), ' '), ' currentchecked ')]";
 
         // Works both for JS and non-JS.
         // - JS: Class -> checked is there when is marked as green.
-        // - Non-JS: When editing a rubric definition, there are radio inputs and when viewing a
+        // - Non-JS: When editing a matrix definition, there are radio inputs and when viewing a
         //   grade @class contains checked.
         $levelxpath .= "[not(contains(concat(' ', normalize-space(@class), ' '), ' checked '))]" .
             "[not(/descendant::input[@type='radio'][@checked!='checked'])]";
@@ -375,7 +375,7 @@ class behat_gradingform_matrix extends behat_base {
     }
 
     /**
-     * Checks that the level is currently selected. Works both when grading rubrics and viewing graded rubrics.
+     * Checks that the level is currently selected. Works both when grading matrices and viewing graded matrices.
      *
      * @Then /^the level with "(?P<points_number>\d+)" points is selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
@@ -383,13 +383,13 @@ class behat_gradingform_matrix extends behat_base {
      * @param int $points
      * @return void
      */
-    public function the_level_with_points_is_selected_for_the_rubric_criterion($points, $criterionname) {
+    public function the_level_with_points_is_selected_for_the_matrix_criterion($points, $criterionname) {
         $levelxpath = $this->get_criterion_xpath($criterionname) .
             $this->get_level_xpath($points);
 
         // Works both for JS and non-JS.
         // - JS: Class -> checked is there when is marked as green.
-        // - Non-JS: When editing a rubric definition, there are radio inputs and when viewing a
+        // - Non-JS: When editing a matrix definition, there are radio inputs and when viewing a
         //   grade @class contains checked.
         $levelxpath .= "[" .
             "contains(concat(' ', normalize-space(@class), ' '), ' checked ')" .
@@ -405,7 +405,7 @@ class behat_gradingform_matrix extends behat_base {
     }
 
     /**
-     * Checks that the level is not currently selected. Works both when grading rubrics and viewing graded rubrics.
+     * Checks that the level is not currently selected. Works both when grading matrices and viewing graded matrices.
      *
      * @Then /^the level with "(?P<points_number>\d+)" points is not selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
@@ -413,13 +413,13 @@ class behat_gradingform_matrix extends behat_base {
      * @param int $points
      * @return void
      */
-    public function the_level_with_points_is_not_selected_for_the_rubric_criterion($points, $criterionname) {
+    public function the_level_with_points_is_not_selected_for_the_matrix_criterion($points, $criterionname) {
         $levelxpath = $this->get_criterion_xpath($criterionname) .
             $this->get_level_xpath($points);
 
         // Works both for JS and non-JS.
         // - JS: Class -> checked is there when is marked as green.
-        // - Non-JS: When editing a rubric definition, there are radio inputs and when viewing a
+        // - Non-JS: When editing a matrix definition, there are radio inputs and when viewing a
         //   grade @class contains checked.
         $levelxpath .= "[not(contains(concat(' ', normalize-space(@class), ' '), ' checked '))]" .
             "[./descendant::input[@type='radio'][@checked!='checked'] or not(./descendant::input[@type='radio'])]";
@@ -433,14 +433,14 @@ class behat_gradingform_matrix extends behat_base {
 
 
     /**
-     * Makes a hidden rubric field visible (if necessary) and sets a value on it.
+     * Makes a hidden matrix field visible (if necessary) and sets a value on it.
      *
      * @param string $name The name of the field
      * @param string $value The value to set
      * @param bool $visible
      * @return void
      */
-    protected function set_rubric_field_value($name, $value, $visible = false) {
+    protected function set_matrix_field_value($name, $value, $visible = false) {
         // Fields are hidden by default.
         if ($this->running_javascript() == true && $visible === false) {
             $xpath = "//*[@name='$name']/following-sibling::*[contains(concat(' ', normalize-space(@class), ' '), ' plainvalue ')]";
@@ -489,8 +489,8 @@ class behat_gradingform_matrix extends behat_base {
      *
      * It is not including the path to the criterion.
      *
-     * It is the xpath when grading a rubric or viewing a rubric,
-     * it is not the same xpath when editing a rubric.
+     * It is the xpath when grading a matrix or viewing a matrix,
+     * it is not the same xpath when editing a matrix.
      *
      * @param int $points
      * @return string
@@ -503,8 +503,8 @@ class behat_gradingform_matrix extends behat_base {
     /**
      * Returns the xpath representing the selected criterion.
      *
-     * It is the xpath when grading a rubric or viewing a rubric,
-     * it is not the same xpath when editing a rubric.
+     * It is the xpath when grading a matrix or viewing a matrix,
+     * it is not the same xpath when editing a matrix.
      *
      * @param string $criterionname Literal including the criterion name.
      * @return string

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Generator for the gradingforum_rubric plugin.
+ * Generator for the gradingform_matrix plugin.
  *
  * @package    gradingform_matrix
  * @category   test
@@ -29,29 +29,29 @@ use gradingform_controller;
 use stdClass;
 
 /**
- * Test rubric.
+ * Test matrix.
  *
  * @package    gradingform_matrix
  * @category   test
  * @copyright  2018 Adrian Greeve <adriangreeve.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class rubric {
+class matrix {
 
-    /** @var array $criteria The criteria for this rubric. */
+    /** @var array $criteria The criteria for this matrix. */
     protected $criteria = [];
 
-    /** @var string The name of this rubric. */
+    /** @var string The name of this matrix. */
     protected $name;
 
-    /** @var string A description for this rubric. */
+    /** @var string A description for this matrix. */
     protected $description;
 
-    /** @var array The rubric options. */
+    /** @var array The matrix options. */
     protected $options = [];
 
     /**
-     * Create a new gradingform_matrix_generator_rubric.
+     * Create a new gradingform_matrix_generator_matrix.
      *
      * @param string $name
      * @param string $description
@@ -71,7 +71,7 @@ class rubric {
     }
 
     /**
-     * Creates the rubric using the appropriate APIs.
+     * Creates the matrix using the appropriate APIs.
      */
     public function get_definition(): stdClass {
         return (object) [
@@ -85,13 +85,13 @@ class rubric {
                 'criteria' => $this->get_all_criterion_values(),
                 'options' => $this->options,
             ],
-            'saverubric' => 'Save rubric and make it ready',
+            'saveform' => 'Save grading form and make it ready',
             'status' => gradingform_controller::DEFINITION_STATUS_READY,
         ];
     }
 
     /**
-     * Set an option for the rubric.
+     * Set an option for the matrix.
      *
      * @param string $key
      * @param mixed $value
@@ -103,7 +103,7 @@ class rubric {
     }
 
     /**
-     * Adds a criterion to the rubric.
+     * Adds a criterion to the matrix.
      *
      * @param criterion $criterion The criterion object (class below).
      * @return self

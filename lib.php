@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grading method controller for the Rubric plugin
+ * Grading method controller for the Matrix plugin
  *
  * @package    gradingform_matrix
  * @copyright  2011 David Mudrak <david@moodle.com>
@@ -32,47 +32,47 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/grade/grading/form/lib.php');
 require_once($CFG->dirroot.'/lib/filelib.php');
 
-/** rubric: Used to compare our gradeitem_type against. */
+/** matrix: Used to compare our gradeitem_type against. */
 const MATRIX = 'matrix';
 
 /**
- * This controller encapsulates the rubric grading logic
+ * This controller encapsulates the matrix grading logic
  *
  * @package    gradingform_matrix
  * @copyright  2011 David Mudrak <david@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class gradingform_matrix_controller extends gradingform_controller {
-    // Modes of displaying the rubric (used in gradingform_matrix_renderer)
-    /** Rubric display mode: For editing (moderator or teacher creates a rubric) */
+    // Modes of displaying the matrix (used in gradingform_matrix_renderer)
+    /** Matrix display mode: For editing (moderator or teacher creates a matrix) */
     const DISPLAY_EDIT_FULL     = 1;
-    /** Rubric display mode: Preview the rubric design with hidden fields */
+    /** Matrix display mode: Preview the matrix design with hidden fields */
     const DISPLAY_EDIT_FROZEN   = 2;
-    /** Rubric display mode: Preview the rubric design (for person with manage permission) */
+    /** Matrix display mode: Preview the matrix design (for person with manage permission) */
     const DISPLAY_PREVIEW       = 3;
-    /** Rubric display mode: Preview the rubric (for people being graded) */
+    /** Matrix display mode: Preview the matrix (for people being graded) */
     const DISPLAY_PREVIEW_GRADED= 8;
-    /** Rubric display mode: For evaluation, enabled (teacher grades a student) */
+    /** Matrix display mode: For evaluation, enabled (teacher grades a student) */
     const DISPLAY_EVAL          = 4;
-    /** Rubric display mode: For evaluation, with hidden fields */
+    /** Matrix display mode: For evaluation, with hidden fields */
     const DISPLAY_EVAL_FROZEN   = 5;
-    /** Rubric display mode: Teacher reviews filled rubric */
+    /** Matrix display mode: Teacher reviews filled matrix */
     const DISPLAY_REVIEW        = 6;
-    /** Rubric display mode: Dispaly filled rubric (i.e. students see their grades) */
+    /** Matrix display mode: Dispaly filled matrix (i.e. students see their grades) */
     const DISPLAY_VIEW          = 7;
 
     /**
-     * Extends the module settings navigation with the rubric grading settings
+     * Extends the module settings navigation with the matrix grading settings
      *
      * This function is called when the context for the page is an activity module with the
      * FEATURE_ADVANCED_GRADING, the user has the permission moodle/grade:managegradingforms
-     * and there is an area with the active grading method set to 'rubric'.
+     * and there is an area with the active grading method set to 'matrix'.
      *
      * @param settings_navigation $settingsnav {@link settings_navigation}
      * @param navigation_node $node {@link navigation_node}
      */
     public function extend_settings_navigation(settings_navigation $settingsnav, ?navigation_node $node=null) {
-        $node->add(get_string('definerubric', 'gradingform_matrix'),
+        $node->add(get_string('defineform', 'gradingform_matrix'),
             $this->get_editor_url(), settings_navigation::TYPE_CUSTOM,
             null, null, new pix_icon('icon', '', 'gradingform_matrix'));
     }
@@ -99,10 +99,10 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Saves the rubric definition into the database
+     * Saves the matrix definition into the database
      *
      * @see parent::update_definition()
-     * @param stdClass $newdefinition rubric definition data as coming from gradingform_matrix_editrubric::get_data()
+     * @param stdClass $newdefinition matrix definition data as coming from gradingform_matrix_editmatrix::get_data()
      * @param int|null $usermodified optional userid of the author of the definition, defaults to the current user
      */
     public function update_definition(stdClass $newdefinition, $usermodified = null) {
@@ -113,16 +113,16 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Either saves the rubric definition into the database or check if it has been changed.
+     * Either saves the matrix definition into the database or check if it has been changed.
      * Returns the level of changes:
      * 0 - no changes
      * 1 - only texts or criteria sortorders are changed, students probably do not require re-grading
-     * 2 - added levels but maximum score on rubric is the same, students still may not require re-grading
+     * 2 - added levels but maximum score on matrix is the same, students still may not require re-grading
      * 3 - removed criteria or added levels or changed number of points, students require re-grading but may be re-graded automatically
      * 4 - removed levels - students require re-grading and not all students may be re-graded automatically
      * 5 - added criteria - all students require manual re-grading
      *
-     * @param stdClass $newdefinition rubric definition data as coming from gradingform_matrix_editrubric::get_data()
+     * @param stdClass $newdefinition matrix definition data as coming from gradingform_matrix_editmatrix::get_data()
      * @param int|null $usermodified optional userid of the author of the definition, defaults to the current user
      * @param boolean $doupdate if true actually updates DB, otherwise performs a check
      *
@@ -161,7 +161,7 @@ class gradingform_matrix_controller extends gradingform_controller {
             $haschanges[3] = true;
         }
 
-        // update rubric data
+        // update matrix data
         if (empty($newdefinition->matrix['criteria'])) {
             $newcriteria = array();
         } else {
@@ -293,7 +293,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Marks all instances filled with this rubric with the status INSTANCE_STATUS_NEEDUPDATE
+     * Marks all instances filled with this matrix with the status INSTANCE_STATUS_NEEDUPDATE
      */
     public function mark_for_regrade() {
         global $DB;
@@ -305,7 +305,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Loads the rubric form definition if it exists
+     * Loads the matrix form definition if it exists
      *
      * There is a new array called 'matrix_criteria' appended to the list of parent's definition properties.
      */
@@ -361,7 +361,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Returns the default options for the rubric display
+     * Returns the default options for the matrix display
      *
      * @return array
      */
@@ -381,10 +381,10 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Gets the options of this rubric definition, fills the missing options with default values
+     * Gets the options of this matrix definition, fills the missing options with default values
      *
      * The only exception is 'lockzeropoints' - if other options are present in the json string but this
-     * one is absent, this means that the rubric was created before Moodle 3.2 and the 0 value should be used.
+     * one is absent, this means that the matrix was created before Moodle 3.2 and the 0 value should be used.
      *
      * @return array
      */
@@ -396,7 +396,7 @@ class gradingform_matrix_controller extends gradingform_controller {
                 $options[$option] = $value;
             }
             if (!array_key_exists('lockzeropoints', $thisoptions)) {
-                // Rubrics created before Moodle 3.2 don't have 'lockzeropoints' option. In this case they should not
+                // Matrices created before Moodle 3.2 don't have 'lockzeropoints' option. In this case they should not
                 // assume default value 1 but use "legacy" value 0.
                 $options['lockzeropoints'] = 0;
             }
@@ -407,7 +407,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     /**
      * Converts the current definition into an object suitable for the editor form's set_data()
      *
-     * @param boolean $addemptycriterion whether to add an empty criterion if the rubric is completely empty (just being created)
+     * @param boolean $addemptycriterion whether to add an empty criterion if the matrix is completely empty (just being created)
      * @return stdClass
      */
     public function get_definition_for_editing($addemptycriterion = false) {
@@ -468,7 +468,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Options for displaying the rubric description field in the form
+     * Options for displaying the matrix description field in the form
      *
      * @param object $context
      * @return array options for the form description field
@@ -507,7 +507,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Returns the rubric plugin renderer
+     * Returns the matrix plugin renderer
      *
      * @param moodle_page $page the target page
      * @return gradingform_matrix_renderer
@@ -530,35 +530,35 @@ class gradingform_matrix_controller extends gradingform_controller {
 
         $criteria = $this->definition->matrix_criteria;
         $options = $this->get_options();
-        $rubric = '';
+        $matrix = '';
         if (has_capability('moodle/grade:managegradingforms', $page->context)) {
             $showdescription = true;
         } else {
             if (empty($options['alwaysshowdefinition']))  {
-                // ensure we don't display unless show rubric option enabled
+                // ensure we don't display unless show matrix option enabled
                 return '';
             }
             $showdescription = $options['showdescriptionstudent'];
         }
         $output = $this->get_renderer($page);
         if ($showdescription) {
-            $rubric .= $output->box($this->get_formatted_description(), 'gradingform_matrix-description');
+            $matrix .= $output->box($this->get_formatted_description(), 'gradingform_matrix-description');
         }
         if (has_capability('moodle/grade:managegradingforms', $page->context)) {
             if (!$options['lockzeropoints']) {
                 // Warn about using grade calculation method where minimum number of points is flexible.
-                $rubric .= $output->display_matrix_mapping_explained($this->get_min_max_score());
+                $matrix .= $output->display_matrix_mapping_explained($this->get_min_max_score());
             }
-            $rubric .= $output->display_matrix($criteria, $options, self::DISPLAY_PREVIEW, 'matrix');
+            $matrix .= $output->display_matrix($criteria, $options, self::DISPLAY_PREVIEW, 'matrix');
         } else {
-            $rubric .= $output->display_matrix($criteria, $options, self::DISPLAY_PREVIEW_GRADED, 'matrix');
+            $matrix .= $output->display_matrix($criteria, $options, self::DISPLAY_PREVIEW_GRADED, 'matrix');
         }
 
-        return $rubric;
+        return $matrix;
     }
 
     /**
-     * Deletes the rubric definition and all the associated information
+     * Deletes the matrix definition and all the associated information
      */
     protected function delete_plugin_definition() {
         global $DB;
@@ -652,11 +652,11 @@ class gradingform_matrix_controller extends gradingform_controller {
         $subsql = array();
         $params = array();
 
-        // search in rubric criteria description
+        // search in matrix criteria description
         $subsql[] = $DB->sql_like('rc.description', '?', false, false);
         $params[] = '%'.$DB->sql_like_escape($token).'%';
 
-        // search in rubric levels definition
+        // search in matrix levels definition
         $subsql[] = $DB->sql_like('rl.definition', '?', false, false);
         $params[] = '%'.$DB->sql_like_escape($token).'%';
 
@@ -664,7 +664,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Calculates and returns the possible minimum and maximum score (in points) for this rubric
+     * Calculates and returns the possible minimum and maximum score (in points) for this matrix
      *
      * @return array
      */
@@ -715,7 +715,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
-     * Returns an array that defines the structure of the rubric's filling. This function is used by
+     * Returns an array that defines the structure of the matrix's filling. This function is used by
      * the web service function core_grading_external::get_gradingform_instances().
      *
      * @return An array containing a single key/value pair with the 'criteria' external_multiple_structure
@@ -740,7 +740,7 @@ class gradingform_matrix_controller extends gradingform_controller {
 }
 
 /**
- * Class to manage one rubric grading instance.
+ * Class to manage one matrix grading instance.
  *
  * Stores information and performs actions like update, copy, validate, submit, etc.
  *
@@ -814,7 +814,7 @@ class gradingform_matrix_instance extends gradingform_instance {
     }
 
     /**
-     * Validates that rubric is fully completed and contains valid grade on each criterion
+     * Validates that matrix is fully completed and contains valid grade on each criterion
      *
      * @param array $elementvalue value of element as came in form submit
      * @return boolean true if the form data is validated and contains no errors
@@ -834,7 +834,7 @@ class gradingform_matrix_instance extends gradingform_instance {
     }
 
     /**
-     * Retrieves from DB and returns the data how this rubric was filled
+     * Retrieves from DB and returns the data how this matrix was filled
      *
      * @param boolean $force whether to force DB query even if the data is cached
      * @return array
@@ -959,7 +959,7 @@ class gradingform_matrix_instance extends gradingform_instance {
         if ($value === null) {
             $value = $this->get_matrix_filling();
         } else if (!$this->validate_grading_element($value)) {
-            $html .= html_writer::tag('div', get_string('rubricnotcompleted', 'gradingform_matrix'), array('class' => 'gradingform_matrix-error'));
+            $html .= html_writer::tag('div', get_string('formnotcompleted', 'gradingform_matrix'), array('class' => 'gradingform_matrix-error'));
         }
         $currentinstance = $this->get_current_instance();
         if ($currentinstance && $currentinstance->get_status() == gradingform_instance::INSTANCE_STATUS_NEEDUPDATE) {

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Generator for the gradingforum_rubric plugin.
+ * Generator for the gradingform_matrix plugin.
  *
  * @package    gradingform_matrix
  * @category   test
@@ -26,7 +26,7 @@
 namespace tests\gradingform_matrix\generator;
 
 /**
- * Convenience class to create rubric criterion.
+ * Convenience class to create matrix criterion.
  *
  * @package    gradingform_matrix
  * @copyright  2018 Adrian Greeve <adriangreeve.com>

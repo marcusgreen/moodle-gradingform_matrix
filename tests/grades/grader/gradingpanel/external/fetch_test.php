@@ -79,7 +79,7 @@ final class fetch_test extends advanced_testcase {
         $gradeitem = component_gradeitem::instance('mod_forum', $forum->get_context(), 'forum');
 
         $this->expectException(moodle_exception::class);
-        $this->expectExceptionMessage("not configured for advanced grading with a rubric");
+        $this->expectExceptionMessage("not configured for advanced grading with a matrix");
         fetch::execute('mod_forum', (int) $forum->get_context()->id, 'forum', (int) $student->id);
     }
 
@@ -226,7 +226,7 @@ final class fetch_test extends advanced_testcase {
      */
     private function execute_and_assert_fetch($forum, $controller, $definition, $fetcheruser, $grader, $gradeduser) {
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         $this->setUser($grader);
 
@@ -234,7 +234,7 @@ final class fetch_test extends advanced_testcase {
         $grade = $gradeitem->get_grade_for_user($gradeduser, $grader);
         $instance = $gradeitem->get_advanced_grading_instance($grader, $grade);
 
-        $submissiondata = $rubricgenerator->get_test_form_data($controller, (int) $gradeduser->id,
+        $submissiondata = $matrixgenerator->get_test_form_data($controller, (int) $gradeduser->id,
             0, 'Too many mistakes. Please try again.',
             2, 'Great number of pictures. Well done.'
         );
@@ -339,7 +339,7 @@ final class fetch_test extends advanced_testcase {
     }
 
     /**
-     * Get test data for forums graded using a rubric.
+     * Get test data for forums graded using a matrix.
      *
      * @return array
      */
@@ -349,7 +349,7 @@ final class fetch_test extends advanced_testcase {
         $this->resetAfterTest();
 
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         $forum = $this->get_forum_instance();
         $course = $forum->get_course_record();
@@ -358,7 +358,7 @@ final class fetch_test extends advanced_testcase {
 
         $this->setUser($teacher);
 
-        $controller = $rubricgenerator->get_test_rubric($forum->get_context(), 'forum', 'forum');
+        $controller = $matrixgenerator->get_test_matrix($forum->get_context(), 'forum', 'forum');
         $definition = $controller->get_definition();
 
         // In the situation of mod_forum this would be the id from forum_grades.
@@ -404,9 +404,9 @@ final class fetch_test extends advanced_testcase {
         string $pictureremark
     ): array {
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
-        return $rubricgenerator->get_test_form_data(
+        return $matrixgenerator->get_test_form_data(
             $controller,
             $itemid,
             $spellingscore,

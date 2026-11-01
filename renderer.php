@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains renderer used for displaying rubric
+ * Contains renderer used for displaying matrix
  *
  * @package    gradingform_matrix
  * @copyright  2011 Marina Glancy
@@ -35,11 +35,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
 
     /**
      * This function returns html code for displaying criterion. Depending on $mode it may be the
-     * code to edit rubric, to preview the rubric, to evaluate somebody or to review the evaluation.
+     * code to edit matrix, to preview the matrix, to evaluate somebody or to review the evaluation.
      *
-     * This function may be called from display_matrix() to display the whole rubric, or it can be
+     * This function may be called from display_matrix() to display the whole matrix, or it can be
      * called by itself to return a template used by JavaScript to add new empty criteria to the
-     * rubric being designed.
+     * matrix being designed.
      * In this case it will use macros like {NAME}, {LEVELS}, {CRITERION-id}, etc.
      *
      * When overriding this function it is very important to remember that all elements of html
@@ -48,8 +48,8 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * Also JavaScript relies on the class names of elements and when developer changes them
      * script might stop working.
      *
-     * @param int $mode rubric display mode, see {@link gradingform_matrix_controller}
-     * @param array $options display options for this rubric, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode, see {@link gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
      * @param array|null $criterion criterion data
      * @param string $levelsstr evaluated templates for this criterion levels
@@ -120,7 +120,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
 
         // Default value for criterion ids.
         // Edge case: submitting empty grade when remark field is disabled.
-        // Reason: we need the criteria keys for the clear_attempt to clear the rubric fillings.
+        // Reason: we need the criteria keys for the clear_attempt to clear the matrix fillings.
         if ($mode == gradingform_matrix_controller::DISPLAY_EVAL) {
             $criteriontemplate .= html_writer::empty_tag('input', [
                 'type' => 'hidden',
@@ -207,11 +207,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
 
     /**
      * This function returns html code for displaying one level of one criterion. Depending on $mode
-     * it may be the code to edit rubric, to preview the rubric, to evaluate somebody or to review the evaluation.
+     * it may be the code to edit matrix, to preview the matrix, to evaluate somebody or to review the evaluation.
      *
-     * This function may be called from display_matrix() to display the whole rubric, or it can be
+     * This function may be called from display_matrix() to display the whole matrix, or it can be
      * called by itself to return a template used by JavaScript to add new empty level to the
-     * criterion during the design of rubric.
+     * criterion during the design of matrix.
      * In this case it will use macros like {NAME}, {CRITERION-id}, {LEVEL-id}, etc.
      *
      * When overriding this function it is very important to remember that all elements of html
@@ -220,8 +220,8 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * Also JavaScript relies on the class names of elements and when developer changes them
      * script might stop working.
      *
-     * @param int $mode rubric display mode see {@link gradingform_matrix_controller}
-     * @param array $options display options for this rubric, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode see {@link gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
      * @param string|int $criterionid either id of the nesting criterion or a macro for template
      * @param array|null $level level data, also in view mode it might also have property $level['checked'] whether this level is checked
@@ -372,11 +372,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
     }
 
     /**
-     * This function returns html code for displaying rubric template (content before and after
-     * criteria list). Depending on $mode it may be the code to edit rubric, to preview the rubric,
+     * This function returns html code for displaying matrix template (content before and after
+     * criteria list). Depending on $mode it may be the code to edit matrix, to preview the matrix,
      * to evaluate somebody or to review the evaluation.
      *
-     * This function is called from display_matrix() to display the whole rubric.
+     * This function is called from display_matrix() to display the whole matrix.
      *
      * When overriding this function it is very important to remember that all elements of html
      * form (in edit or evaluate mode) must have the name $elementname.
@@ -384,10 +384,10 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * Also JavaScript relies on the class names of elements and when developer changes them
      * script might stop working.
      *
-     * @param int $mode rubric display mode see {@link gradingform_matrix_controller}
-     * @param array $options display options for this rubric, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode see {@link gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
-     * @param string $criteriastr evaluated templates for this rubric's criteria
+     * @param string $criteriastr evaluated templates for this matrix's criteria
      * @return string
      */
     protected function matrix_template($mode, $options, $elementname, $criteriastr) {
@@ -410,16 +410,16 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 $classsuffix = ' view';  break;
         }
 
-        $rubrictemplate = html_writer::start_tag('div', array('id' => 'matrix-{NAME}', 'class' => 'clearfix gradingform_matrix'.$classsuffix));
+        $matrixtemplate = html_writer::start_tag('div', array('id' => 'matrix-{NAME}', 'class' => 'clearfix gradingform_matrix'.$classsuffix));
 
-        // Rubric table.
-        $rubrictableparams = [
+        // Matrix table.
+        $matrixtableparams = [
             'class' => 'criteria',
             'id' => '{NAME}-criteria',
         ];
-        $caption = html_writer::tag('caption', get_string('rubric', 'gradingform_matrix'), ['class' => 'visually-hidden']);
-        $rubrictable = html_writer::tag('table', $caption . $criteriastr, $rubrictableparams);
-        $rubrictemplate .= html_writer::tag('div', $rubrictable, ['class' => 'criteria-wrapper']);
+        $caption = html_writer::tag('caption', get_string('gradingform', 'gradingform_matrix'), ['class' => 'visually-hidden']);
+        $matrixtable = html_writer::tag('table', $caption . $criteriastr, $matrixtableparams);
+        $matrixtemplate .= html_writer::tag('div', $matrixtable, ['class' => 'criteria-wrapper']);
         if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FULL) {
             $value = get_string('addcriterion', 'gradingform_matrix');
             $criteriainputparams = [
@@ -430,20 +430,20 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 'value' => $value
             ];
             $input = html_writer::empty_tag('input', $criteriainputparams);
-            $rubrictemplate .= html_writer::tag('div', $input, ['class' => 'addcriterion my-2']);
+            $matrixtemplate .= html_writer::tag('div', $input, ['class' => 'addcriterion my-2']);
         }
-        $rubrictemplate .= $this->matrix_edit_options($mode, $options);
-        $rubrictemplate .= html_writer::end_tag('div');
+        $matrixtemplate .= $this->matrix_edit_options($mode, $options);
+        $matrixtemplate .= html_writer::end_tag('div');
 
-        return str_replace('{NAME}', $elementname, $rubrictemplate);
+        return str_replace('{NAME}', $elementname, $matrixtemplate);
     }
 
     /**
-     * Generates html template to view/edit the rubric options. Expression {NAME} is used in
+     * Generates html template to view/edit the matrix options. Expression {NAME} is used in
      * template for the form element name
      *
-     * @param int $mode rubric display mode see {@link gradingform_matrix_controller}
-     * @param array $options display options for this rubric, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode see {@link gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
      * @return string
      */
     protected function matrix_edit_options($mode, $options) {
@@ -454,7 +454,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             return;
         }
         $html = html_writer::start_tag('div', array('class' => 'options'));
-        $html .= html_writer::tag('div', get_string('rubricoptions', 'gradingform_matrix'), array('class' => 'optionsheading'));
+        $html .= html_writer::tag('div', get_string('formoptions', 'gradingform_matrix'), array('class' => 'optionsheading'));
         $attrs = array('type' => 'hidden', 'name' => '{NAME}[options][optionsset]', 'value' => 1);
         foreach ($options as $option => $value) {
             $html .= html_writer::start_tag('div', array('class' => 'option '.$option));
@@ -507,17 +507,17 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
     }
 
     /**
-     * This function returns html code for displaying rubric. Depending on $mode it may be the code
-     * to edit rubric, to preview the rubric, to evaluate somebody or to review the evaluation.
+     * This function returns html code for displaying matrix. Depending on $mode it may be the code
+     * to edit matrix, to preview the matrix, to evaluate somebody or to review the evaluation.
      *
      * It is very unlikely that this function needs to be overriden by theme. It does not produce
-     * any html code, it just prepares data about rubric design and evaluation, adds the CSS
+     * any html code, it just prepares data about matrix design and evaluation, adds the CSS
      * class to elements and calls the functions level_template, criterion_template and
      * matrix_template
      *
-     * @param array $criteria data about the rubric design
-     * @param array $options display options for this rubric, defaults are: {@link gradingform_matrix_controller::get_default_options()}
-     * @param int $mode rubric display mode, see {@link gradingform_matrix_controller}
+     * @param array $criteria data about the matrix design
+     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode, see {@link gradingform_matrix_controller}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
      * @param array $values evaluation result
      * @return string
@@ -653,7 +653,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Generates and returns HTML code to display information box about how rubric score is converted to the grade
+     * Generates and returns HTML code to display information box about how matrix score is converted to the grade
      *
      * @param array $scores
      * @return string
@@ -666,7 +666,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         if ($scores['minscore'] <> 0) {
             $html .= $this->output->notification(get_string('zerolevelsabsent', 'gradingform_matrix'), 'error');
         }
-        $html .= $this->output->notification(get_string('rubricmappingexplained', 'gradingform_matrix', (object)$scores), 'info');
+        $html .= $this->output->notification(get_string('scoremappingexplained', 'gradingform_matrix', (object)$scores), 'info');
         return $html;
     }
 }

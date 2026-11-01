@@ -105,7 +105,7 @@ final class store_test extends advanced_testcase {
     public function test_execute_store_graded(): void {
         $this->resetAfterTest();
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         [
             'forum' => $forum,
@@ -121,7 +121,7 @@ final class store_test extends advanced_testcase {
         $grade = $gradeitem->get_grade_for_user($student, $teacher);
         $instance = $gradeitem->get_advanced_grading_instance($teacher, $grade);
 
-        $submissiondata = $rubricgenerator->get_test_form_data($controller, (int) $student->id,
+        $submissiondata = $matrixgenerator->get_test_form_data($controller, (int) $student->id,
             0, 'Too many mistakes. Please try again.',
             2, 'Great number of pictures. Well done.'
         );
@@ -224,7 +224,7 @@ final class store_test extends advanced_testcase {
     }
 
     /**
-     * Get test data for forums graded using a rubric.
+     * Get test data for forums graded using a matrix.
      *
      * @return array
      */
@@ -234,7 +234,7 @@ final class store_test extends advanced_testcase {
         $this->resetAfterTest();
 
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         $forum = $this->get_forum_instance();
         $course = $forum->get_course_record();
@@ -242,7 +242,7 @@ final class store_test extends advanced_testcase {
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
 
         $this->setUser($teacher);
-        $controller = $rubricgenerator->get_test_rubric($forum->get_context(), 'forum', 'forum');
+        $controller = $matrixgenerator->get_test_matrix($forum->get_context(), 'forum', 'forum');
         $definition = $controller->get_definition();
 
         $DB->set_field('forum', 'grade_forum', count($definition->matrix_criteria), ['id' => $forum->get_id()]);

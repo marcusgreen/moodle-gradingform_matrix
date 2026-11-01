@@ -1,10 +1,10 @@
 @gradingform @gradingform_matrix @javascript
-Feature: Rubrics can have levels with negative scores
-  In order to use and refine rubrics to grade students
+Feature: Matrices can have levels with negative scores
+  In order to use and refine matrices to grade students
   As a teacher
   I need to be able to penalise for very wrong submissions
 
-  Scenario: Using negative levels in rubrics
+  Scenario: Using negative levels in matrices
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
@@ -31,13 +31,13 @@ Feature: Rubrics can have levels with negative scores
     And I am on "Course 1" course homepage with editing mode on
     And I go to "Test assignment 1" advanced grading definition page
     And I set the following fields to these values:
-      | Name | Assignment 1 rubric |
-      | Description | Rubric test description |
+      | Name | Assignment 1 matrix |
+      | Description | Matrix test description |
     And I define the following matrix:
       | Criterion 1 | Did not try | -11 | Level 12 | 25 | Level 13 | 40 | Level 14  | 50  |
       | Criterion 2 | Very bad    | -20 | Level 22 | 25 | Level 23 | 30 |           |     |
       | Criterion 3 | Level 31    | 10  | Level 32 | 20 |          |    |           |     |
-    And I press "Save rubric and make it ready"
+    And I press "Save grading form and make it ready"
     # Grading a student.
     And I navigate to "Assignment" in current page administration
     And I go to "Student 1" "Test assignment 1" activity advanced grading page

@@ -39,7 +39,7 @@ use context_module;
 final class provider_test extends provider_testcase {
 
     /**
-     * Test the export of rubric data.
+     * Test the export of matrix data.
      */
     public function test_get_gradingform_export_data(): void {
         global $DB;
@@ -50,8 +50,8 @@ final class provider_test extends provider_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
 
-        // Generate a test rubric and get its controller.
-        $controller = $this->get_test_rubric($modulecontext, 'assign', 'submissions');
+        // Generate a test matrix and get its controller.
+        $controller = $this->get_test_matrix($modulecontext, 'assign', 'submissions');
 
         // In the situation of mod_assign this would be the id from assign_grades.
         $itemid = 1;
@@ -70,7 +70,7 @@ final class provider_test extends provider_testcase {
 
         // Let's try the method we are testing.
         provider::export_gradingform_instance_data($modulecontext, $instance->get_id(), ['Test']);
-        $data = (array) writer::with_context($modulecontext)->get_data(['Test', 'Rubric', $instanceid]);
+        $data = (array) writer::with_context($modulecontext)->get_data(['Test', 'Grading form', $instanceid]);
         $this->assertCount(2, $data);
         $this->assertEquals('Spelling is important', $data['Spelling is important']->description);
         $this->assertEquals('This user made several mistakes.', $data['Spelling is important']->remark);
@@ -79,7 +79,7 @@ final class provider_test extends provider_testcase {
     }
 
     /**
-     * Test the deletion of rubric user information via the instance ID.
+     * Test the deletion of matrix user information via the instance ID.
      */
     public function test_delete_gradingform_for_instances(): void {
         global $DB;
@@ -90,8 +90,8 @@ final class provider_test extends provider_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
 
-        // Generate a test rubric and get its controller.
-        $controller = $this->get_test_rubric($modulecontext, 'assign', 'submissions');
+        // Generate a test matrix and get its controller.
+        $controller = $this->get_test_matrix($modulecontext, 'assign', 'submissions');
 
         // In the situation of mod_assign this would be the id from assign_grades.
         $itemid = 1;
@@ -134,18 +134,18 @@ final class provider_test extends provider_testcase {
     }
 
     /**
-     * Generate a rubric controller with sample data required for testing of this class.
+     * Generate a matrix controller with sample data required for testing of this class.
      *
      * @param context_module $context
      * @param string $component
      * @param string $area
      * @return gradingform_matrix_controller
      */
-    protected function get_test_rubric(context_module $context, string $component, string $area): gradingform_matrix_controller {
+    protected function get_test_matrix(context_module $context, string $component, string $area): gradingform_matrix_controller {
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
-        return $rubricgenerator->get_test_rubric($context, $component, $area);
+        return $matrixgenerator->get_test_matrix($context, $component, $area);
     }
 
     /**
@@ -168,9 +168,9 @@ final class provider_test extends provider_testcase {
         string $pictureremark
     ): array {
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
-        return $rubricgenerator->get_test_form_data(
+        return $matrixgenerator->get_test_form_data(
             $controller,
             $itemid,
             $spellingscore,

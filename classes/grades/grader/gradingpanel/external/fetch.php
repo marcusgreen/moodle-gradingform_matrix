@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Web services relating to fetching of a rubric for the grading panel.
+ * Web services relating to fetching of a matrix for the grading panel.
  *
  * @package    gradingform_matrix
  * @copyright  2019 Mathew May <mathew.solutions>
@@ -43,7 +43,7 @@ use moodle_exception;
 require_once($CFG->dirroot.'/grade/grading/form/matrix/lib.php');
 
 /**
- * Web services relating to fetching of a rubric for the grading panel.
+ * Web services relating to fetching of a matrix for the grading panel.
  *
  * @package    gradingform_matrix
  * @copyright  2019 Mathew May <mathew.solutions>
@@ -121,7 +121,7 @@ class fetch extends external_api {
 
         if (MATRIX !== $gradeitem->get_advanced_grading_method()) {
             throw new moodle_exception(
-                "The {$itemname} item in {$component}/{$contextid} is not configured for advanced grading with a rubric"
+                "The {$itemname} item in {$component}/{$contextid} is not configured for advanced grading with a matrix"
             );
         }
 
@@ -174,7 +174,7 @@ class fetch extends external_api {
 
         $criterion = [];
         if ($definition->matrix_criteria) {
-            // Iterate over the defined criterion in the rubric and map out what we need to render each item.
+            // Iterate over the defined criterion in the matrix and map out what we need to render each item.
             $criterion = array_map(function($criterion) use ($definitionid, $fillings, $context, $hasgrade) {
                 // The general structure we'll be returning, we still need to get the remark (if any) and the levels associated.
                 $result = [
@@ -249,7 +249,7 @@ class fetch extends external_api {
             'grade' => [
                 'instanceid' => $instance->get_id(),
                 'criteria' => $criterion,
-                'rubricmode' => 'evaluate editable',
+                'matrixmode' => 'evaluate editable',
                 'teacherdescription' => $teacherdescription,
                 'canedit' => false,
                 'usergrade' => $grade->usergrade,
@@ -274,7 +274,7 @@ class fetch extends external_api {
             'hasgrade' => new external_value(PARAM_BOOL, 'Does the user have a grade?'),
             'grade' => new external_single_structure([
                 'instanceid' => new external_value(PARAM_INT, 'The id of the current grading instance'),
-                'rubricmode' => new external_value(PARAM_RAW, 'The mode i.e. evaluate editable'),
+                'matrixmode' => new external_value(PARAM_RAW, 'The mode i.e. evaluate editable'),
                 'canedit' => new external_value(PARAM_BOOL, 'Can the user edit this'),
                 'criteria' => new external_multiple_structure(
                     new external_single_structure([

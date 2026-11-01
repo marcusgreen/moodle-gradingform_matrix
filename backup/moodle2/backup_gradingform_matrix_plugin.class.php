@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Defines rubric backup structures
+ * Defines matrix backup structures
  *
  * @package    gradingform_matrix
  * @copyright  2011 David Mudrak <david@moodle.com>
@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
 
     /**
-     * Declares rubric structures to append to the grading form definition
+     * Declares matrix structures to append to the grading form definition
      */
     protected function define_definition_plugin_structure() {
 
@@ -81,7 +81,7 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
     }
 
     /**
-     * Declares rubric structures to append to the grading form instances
+     * Declares matrix structures to append to the grading form instances
      */
     protected function define_instance_plugin_structure() {
 

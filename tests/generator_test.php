@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Generator testcase for the gradingforum_rubric generator.
+ * Generator testcase for the gradingform_matrix generator.
  *
  * @package    gradingform_matrix
  * @category   test
@@ -31,7 +31,7 @@ use gradingform_matrix_controller;
 use gradingform_controller;
 
 /**
- * Generator testcase for the gradingforum_rubric generator.
+ * Generator testcase for the gradingform_matrix generator.
  *
  * @package    gradingform_matrix
  * @category   test
@@ -41,14 +41,14 @@ use gradingform_controller;
 final class generator_test extends advanced_testcase {
 
     /**
-     * Test rubric creation.
+     * Test matrix creation.
      */
-    public function test_rubric_creation(): void {
+    public function test_matrix_creation(): void {
         $this->resetAfterTest(true);
 
         // Fetch generators.
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         // Create items required for testing.
         $course = $generator->create_course();
@@ -57,8 +57,8 @@ final class generator_test extends advanced_testcase {
         $context = context_module::instance($module->cmid);
 
         // Data for testing.
-        $name = 'myfirstrubric';
-        $description = 'My first rubric';
+        $name = 'myfirstmatrix';
+        $description = 'My first matrix';
         $criteria = [
             'Alphabet' => [
                 'Not known' => 0,
@@ -76,7 +76,7 @@ final class generator_test extends advanced_testcase {
 
         // Unit under test.
         $this->setUser($user);
-        $controller = $rubricgenerator->create_instance($context, 'mod_assign', 'submission', $name, $description, $criteria);
+        $controller = $matrixgenerator->create_instance($context, 'mod_assign', 'submission', $name, $description, $criteria);
 
         $this->assertInstanceOf(gradingform_matrix_controller::class, $controller);
 
@@ -149,14 +149,14 @@ final class generator_test extends advanced_testcase {
 
     /**
      * Test the get_level_and_criterion_for_values function.
-     * This is used for finding criterion and level information within a rubric.
+     * This is used for finding criterion and level information within a matrix.
      */
     public function test_get_level_and_criterion_for_values(): void {
         $this->resetAfterTest(true);
 
         // Fetch generators.
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         // Create items required for testing.
         $course = $generator->create_course();
@@ -165,7 +165,7 @@ final class generator_test extends advanced_testcase {
         $context = context_module::instance($module->cmid);
 
         // Data for testing.
-        $description = 'My first rubric';
+        $description = 'My first matrix';
         $criteria = [
             'Alphabet' => [
                 'Not known' => 0,
@@ -182,33 +182,33 @@ final class generator_test extends advanced_testcase {
         ];
 
         $this->setUser($user);
-        $controller = $rubricgenerator->create_instance($context, 'mod_assign', 'submission', 'matrix', $description, $criteria);
+        $controller = $matrixgenerator->create_instance($context, 'mod_assign', 'submission', 'matrix', $description, $criteria);
 
         // Valid criterion and level.
-        $result = $rubricgenerator->get_level_and_criterion_for_values($controller, 'Alphabet', 2);
+        $result = $matrixgenerator->get_level_and_criterion_for_values($controller, 'Alphabet', 2);
         $this->assertEquals('Alphabet', $result['criterion']->description);
         $this->assertEquals('2', $result['level']->score);
         $this->assertEquals('Letters known in order ascending', $result['level']->definition);
 
         // Valid criterion. Invalid level.
-        $result = $rubricgenerator->get_level_and_criterion_for_values($controller, 'Alphabet', 3);
+        $result = $matrixgenerator->get_level_and_criterion_for_values($controller, 'Alphabet', 3);
         $this->assertEquals('Alphabet', $result['criterion']->description);
         $this->assertNull($result['level']);
 
         // Invalid criterion.
-        $result = $rubricgenerator->get_level_and_criterion_for_values($controller, 'Foo', 0);
+        $result = $matrixgenerator->get_level_and_criterion_for_values($controller, 'Foo', 0);
         $this->assertNull($result['criterion']);
     }
 
     /**
-     * Tests for the get_test_rubric function.
+     * Tests for the get_test_matrix function.
      */
-    public function test_get_test_rubric(): void {
+    public function test_get_test_matrix(): void {
         $this->resetAfterTest(true);
 
         // Fetch generators.
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         // Create items required for testing.
         $course = $generator->create_course();
@@ -217,14 +217,14 @@ final class generator_test extends advanced_testcase {
         $context = context_module::instance($module->cmid);
 
         $this->setUser($user);
-        $rubric = $rubricgenerator->get_test_rubric($context, 'assign', 'submissions');
-        $definition = $rubric->get_definition();
+        $matrix = $matrixgenerator->get_test_matrix($context, 'assign', 'submissions');
+        $definition = $matrix->get_definition();
 
-        $this->assertEquals('testrubric', $definition->name);
+        $this->assertEquals('testmatrix', $definition->name);
         $this->assertEquals('Description text', $definition->description);
         $this->assertEquals(gradingform_controller::DEFINITION_STATUS_READY, $definition->status);
 
-        // Should create a rubric with 2 criterion.
+        // Should create a matrix with 2 criterion.
         $this->assertCount(2, $definition->matrix_criteria);
     }
 
@@ -236,7 +236,7 @@ final class generator_test extends advanced_testcase {
 
         // Fetch generators.
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         // Create items required for testing.
         $course = $generator->create_course();
@@ -245,9 +245,9 @@ final class generator_test extends advanced_testcase {
         $context = context_module::instance($module->cmid);
 
         $this->setUser($user);
-        $controller = $rubricgenerator->get_test_rubric($context, 'assign', 'submissions');
+        $controller = $matrixgenerator->get_test_matrix($context, 'assign', 'submissions');
 
-        $result = $rubricgenerator->get_submitted_form_data($controller, 93, [
+        $result = $matrixgenerator->get_submitted_form_data($controller, 93, [
             'Spelling is important' => [
                 'score' => 1,
                 'remark' => 'Good speeling',
@@ -263,12 +263,12 @@ final class generator_test extends advanced_testcase {
         $this->assertIsArray($result['criteria']);
         $this->assertCount(2, $result['criteria']);
 
-        $spelling = $rubricgenerator->get_level_and_criterion_for_values($controller, 'Spelling is important', 1);
+        $spelling = $matrixgenerator->get_level_and_criterion_for_values($controller, 'Spelling is important', 1);
         $this->assertIsArray($result['criteria'][$spelling['criterion']->id]);
         $this->assertEquals($spelling['level']->id, $result['criteria'][$spelling['criterion']->id]['levelid']);
         $this->assertEquals('Good speeling', $result['criteria'][$spelling['criterion']->id]['remark']);
 
-        $pictures = $rubricgenerator->get_level_and_criterion_for_values($controller, 'Pictures', 2);
+        $pictures = $matrixgenerator->get_level_and_criterion_for_values($controller, 'Pictures', 2);
         $this->assertIsArray($result['criteria'][$pictures['criterion']->id]);
         $this->assertEquals($pictures['level']->id, $result['criteria'][$pictures['criterion']->id]['levelid']);
         $this->assertEquals('Lots of nice pictures!', $result['criteria'][$pictures['criterion']->id]['remark']);
@@ -282,7 +282,7 @@ final class generator_test extends advanced_testcase {
 
         // Fetch generators.
         $generator = \testing_util::get_data_generator();
-        $rubricgenerator = $generator->get_plugin_generator('gradingform_matrix');
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
 
         // Create items required for testing.
         $course = $generator->create_course();
@@ -291,10 +291,10 @@ final class generator_test extends advanced_testcase {
         $context = context_module::instance($module->cmid);
 
         $this->setUser($user);
-        $controller = $rubricgenerator->get_test_rubric($context, 'assign', 'submissions');
+        $controller = $matrixgenerator->get_test_matrix($context, 'assign', 'submissions');
 
         // Unit under test.
-        $result = $rubricgenerator->get_test_form_data(
+        $result = $matrixgenerator->get_test_form_data(
             $controller,
             1839,
             1, 'Propper good speling',
@@ -306,12 +306,12 @@ final class generator_test extends advanced_testcase {
         $this->assertIsArray($result['criteria']);
         $this->assertCount(2, $result['criteria']);
 
-        $spelling = $rubricgenerator->get_level_and_criterion_for_values($controller, 'Spelling is important', 1);
+        $spelling = $matrixgenerator->get_level_and_criterion_for_values($controller, 'Spelling is important', 1);
         $this->assertIsArray($result['criteria'][$spelling['criterion']->id]);
         $this->assertEquals($spelling['level']->id, $result['criteria'][$spelling['criterion']->id]['levelid']);
         $this->assertEquals('Propper good speling', $result['criteria'][$spelling['criterion']->id]['remark']);
 
-        $pictures = $rubricgenerator->get_level_and_criterion_for_values($controller, 'Pictures', 0);
+        $pictures = $matrixgenerator->get_level_and_criterion_for_values($controller, 'Pictures', 0);
         $this->assertIsArray($result['criteria'][$pictures['criterion']->id]);
         $this->assertEquals($pictures['level']->id, $result['criteria'][$pictures['criterion']->id]['levelid']);
         $this->assertEquals('ASCII art is not a picture', $result['criteria'][$pictures['criterion']->id]['remark']);

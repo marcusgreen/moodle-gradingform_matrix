@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Preview rubric page
+ * Preview matrix page
  *
  * @package    gradingform_matrix
  * @copyright  2011 Marina Glancy
@@ -39,7 +39,7 @@ $controller = $manager->get_controller('matrix');
 $options = $controller->get_options();
 
 if (!$controller->is_form_defined() || empty($options['alwaysshowdefinition'])) {
-    throw new moodle_exception('nopermissions', 'error', '', get_string('previewrubric', 'gradingform_matrix'));
+    throw new moodle_exception('nopermissions', 'error', '', get_string('previewform', 'gradingform_matrix'));
 }
 
 $title = get_string('gradingof', 'gradingform_matrix', $manager->get_area_title());

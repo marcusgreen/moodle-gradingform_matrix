@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The form used at the rubric editor page is defined here
+ * The form used at the matrix editor page is defined here
  *
  * @package    gradingform_matrix
  * @copyright  2011 Marina Glancy <marina@moodle.com>
@@ -29,13 +29,13 @@ require_once(__DIR__.'/matrixeditor.php');
 MoodleQuickForm::registerElementType('matrixeditor', $CFG->dirroot.'/grade/grading/form/matrix/matrixeditor.php', 'MoodleQuickForm_matrixeditor');
 
 /**
- * Defines the rubric edit form
+ * Defines the matrix edit form
  *
  * @package    gradingform_matrix
  * @copyright  2011 Marina Glancy <marina@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class gradingform_matrix_editrubric extends moodleform {
+class gradingform_matrix_editmatrix extends moodleform {
 
     /**
      * Form element definition
@@ -59,23 +59,23 @@ class gradingform_matrix_editrubric extends moodleform {
         $form->addElement('editor', 'description_editor', get_string('description', 'gradingform_matrix'), null, $options);
         $form->setType('description_editor', PARAM_RAW);
 
-        // rubric completion status
+        // matrix completion status
         $choices = array();
         $choices[gradingform_controller::DEFINITION_STATUS_DRAFT]    = html_writer::tag('span', get_string('statusdraft', 'core_grading'), array('class' => 'status draft'));
         $choices[gradingform_controller::DEFINITION_STATUS_READY]    = html_writer::tag('span', get_string('statusready', 'core_grading'), array('class' => 'status ready'));
-        $form->addElement('select', 'status', get_string('rubricstatus', 'gradingform_matrix'), $choices)->freeze();
+        $form->addElement('select', 'status', get_string('formstatus', 'gradingform_matrix'), $choices)->freeze();
 
-        // rubric editor
-        $form->addElement('matrixeditor', 'matrix', get_string('rubric', 'gradingform_matrix'));
-        $form->addHelpButton('matrix', 'rubric', 'gradingform_matrix');
+        // matrix editor
+        $form->addElement('matrixeditor', 'matrix', get_string('gradingform', 'gradingform_matrix'));
+        $form->addHelpButton('matrix', 'gradingform', 'gradingform_matrix');
         $form->setType('matrix', PARAM_RAW);
 
         $buttonarray = array();
-        $buttonarray[] = &$form->createElement('submit', 'saverubric', get_string('saverubric', 'gradingform_matrix'));
+        $buttonarray[] = &$form->createElement('submit', 'saveform', get_string('saveform', 'gradingform_matrix'));
         if ($this->_customdata['allowdraft']) {
-            $buttonarray[] = &$form->createElement('submit', 'saverubricdraft', get_string('saverubricdraft', 'gradingform_matrix'));
+            $buttonarray[] = &$form->createElement('submit', 'saveformdraft', get_string('saveformdraft', 'gradingform_matrix'));
         }
-        $editbutton = &$form->createElement('submit', 'editrubric', ' ');
+        $editbutton = &$form->createElement('submit', 'editform', ' ');
         $editbutton->freeze();
         $buttonarray[] = &$editbutton;
         $buttonarray[] = &$form->createElement('cancel');
@@ -88,7 +88,7 @@ class gradingform_matrix_editrubric extends moodleform {
      * data submission and set_data().
      * All form setup that is dependent on form values should go in here.
      *
-     * We remove the element status if there is no current status (i.e. rubric is only being created)
+     * We remove the element status if there is no current status (i.e. matrix is only being created)
      * so the users do not get confused
      */
     public function definition_after_data() {
@@ -99,7 +99,7 @@ class gradingform_matrix_editrubric extends moodleform {
         } else {
             $vals = array_values($el->getValue());
             if ($vals[0] == gradingform_controller::DEFINITION_STATUS_READY) {
-                $this->findButton('saverubric')->setValue(get_string('save', 'gradingform_matrix'));
+                $this->findButton('saveform')->setValue(get_string('save', 'gradingform_matrix'));
             }
         }
     }
@@ -121,14 +121,14 @@ class gradingform_matrix_editrubric extends moodleform {
         $matrixel = $form->getElement('matrix');
         if ($matrixel->non_js_button_pressed($data['matrix'])) {
             // if JS is disabled and button such as 'Add criterion' is pressed - prevent from submit
-            $err['rubricdummy'] = 1;
-        } else if (isset($data['editrubric'])) {
+            $err['formdummy'] = 1;
+        } else if (isset($data['editform'])) {
             // continue editing
-            $err['rubricdummy'] = 1;
-        } else if (isset($data['saverubric']) && $data['saverubric']) {
-            // If user attempts to make rubric active - it needs to be validated
+            $err['formdummy'] = 1;
+        } else if (isset($data['saveform']) && $data['saveform']) {
+            // If user attempts to make matrix active - it needs to be validated
             if ($matrixel->validate($data['matrix']) !== false) {
-                $err['rubricdummy'] = 1;
+                $err['formdummy'] = 1;
             }
         }
         return $err;
@@ -142,16 +142,16 @@ class gradingform_matrix_editrubric extends moodleform {
      */
     public function get_data() {
         $data = parent::get_data();
-        if (!empty($data->saverubric)) {
+        if (!empty($data->saveform)) {
             $data->status = gradingform_controller::DEFINITION_STATUS_READY;
-        } else if (!empty($data->saverubricdraft)) {
+        } else if (!empty($data->saveformdraft)) {
             $data->status = gradingform_controller::DEFINITION_STATUS_DRAFT;
         }
         return $data;
     }
 
     /**
-     * Check if there are changes in the rubric and it is needed to ask user whether to
+     * Check if there are changes in the matrix and it is needed to ask user whether to
      * mark the current grades for re-grading. User may confirm re-grading and continue,
      * return to editing or cancel the changes
      *
@@ -163,8 +163,8 @@ class gradingform_matrix_editrubric extends moodleform {
             // we have already displayed the confirmation on the previous step
             return false;
         }
-        if (!isset($data->saverubric) || !$data->saverubric) {
-            // we only need confirmation when button 'Save rubric' is pressed
+        if (!isset($data->saveform) || !$data->saveform) {
+            // we only need confirmation when button 'Save matrix' is pressed
             return false;
         }
         if (!$controller->has_active_instances()) {
@@ -173,7 +173,7 @@ class gradingform_matrix_editrubric extends moodleform {
         }
         $changelevel = $controller->update_or_check_matrix($data);
         if ($changelevel == 0) {
-            // no changes in the rubric, no confirmation needed
+            // no changes in the matrix, no confirmation needed
             return false;
         }
 
@@ -188,9 +188,9 @@ class gradingform_matrix_editrubric extends moodleform {
             }
         }
 
-        // replace button text 'saverubric' and unfreeze 'Back to edit' button
-        $this->findButton('saverubric')->setValue(get_string('continue'));
-        $el =& $this->findButton('editrubric');
+        // replace button text 'saveform' and unfreeze 'Back to edit' button
+        $this->findButton('saveform')->setValue(get_string('continue'));
+        $el =& $this->findButton('editform');
         $el->setValue(get_string('backtoediting', 'gradingform_matrix'));
         $el->unfreeze();
 

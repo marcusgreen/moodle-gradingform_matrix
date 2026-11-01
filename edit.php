@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Rubric editor page
+ * Matrix editor page
  *
  * @package    gradingform_matrix
  * @copyright  2011 Marina Glancy
@@ -39,10 +39,10 @@ require_capability('moodle/grade:managegradingforms', $context);
 $controller = $manager->get_controller('matrix');
 
 $PAGE->set_url(new moodle_url('/grade/grading/form/matrix/edit.php', array('areaid' => $areaid)));
-$PAGE->set_title(get_string('definerubric', 'gradingform_matrix'));
-$PAGE->set_heading(get_string('definerubric', 'gradingform_matrix'));
+$PAGE->set_title(get_string('defineform', 'gradingform_matrix'));
+$PAGE->set_heading(get_string('defineform', 'gradingform_matrix'));
 
-$mform = new gradingform_matrix_editrubric(null, array('areaid' => $areaid, 'context' => $context, 'allowdraft' => !$controller->has_active_instances()), 'post', '', array('class' => 'gradingform_matrix_editform'));
+$mform = new gradingform_matrix_editmatrix(null, array('areaid' => $areaid, 'context' => $context, 'allowdraft' => !$controller->has_active_instances()), 'post', '', array('class' => 'gradingform_matrix_editform'));
 $data = $controller->get_definition_for_editing(true);
 $returnurl = optional_param('returnurl', $manager->get_management_url(), PARAM_LOCALURL);
 $data->returnurl = $returnurl;
@@ -50,7 +50,7 @@ $mform->set_data($data);
 if ($mform->is_cancelled()) {
     redirect($returnurl);
 } else if ($mform->is_submitted() && $mform->is_validated() && !$mform->need_confirm_regrading($controller)) {
-    // Everything ok, validated, re-grading confirmed if needed. Make changes to the rubric.
+    // Everything ok, validated, re-grading confirmed if needed. Make changes to the matrix.
     $data = $mform->get_data();
     $controller->update_definition($data);
 

@@ -27,10 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 require_once("HTML/QuickForm/input.php");
 
 /**
- * Form element for handling rubric editor
+ * Form element for handling matrix editor
  *
- * The rubric editor is defined as a separate form element. This allows us to render
- * criteria, levels and buttons using the rubric's own renderer. Also, the required
+ * The matrix editor is defined as a separate form element. This allows us to render
+ * criteria, levels and buttons using the matrix's own renderer. Also, the required
  * Javascript library is included, which processes, on the client, buttons needed
  * for reordering, adding and deleting criteria.
  *
@@ -50,11 +50,11 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     protected $wasvalidated = false;
     /** @var bool If non-submit (JS) button was pressed: null - unknown, true/false - button was/wasn't pressed */
     protected $nonjsbuttonpressed = false;
-    /** @var bool Message to display in front of the editor (that there exist grades on this rubric being edited) */
+    /** @var bool Message to display in front of the editor (that there exist grades on this matrix being edited) */
     protected $regradeconfirmation = false;
 
     /**
-     * Constructor for rubric editor
+     * Constructor for matrix editor
      *
      * @param string $elementName
      * @param string $elementLabel
@@ -83,7 +83,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     }
 
     /**
-     * Specifies that confirmation about re-grading needs to be added to this rubric editor.
+     * Specifies that confirmation about re-grading needs to be added to this matrix editor.
      * $changelevel is saved in $this->regradeconfirmation and retrieved in toHtml()
      *
      * @see gradingform_matrix_controller::update_or_check_matrix()
@@ -116,7 +116,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 array('type' => 'text/template', 'id' => 'matrix-'.$name.'-level-template'));
             $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', array($name));
         } else {
-            // Rubric is frozen, no javascript needed
+            // Matrix is frozen, no javascript needed
             if ($this->_persistantFreeze) {
                 $mode = gradingform_matrix_controller::DISPLAY_EDIT_FROZEN;
             } else {
@@ -140,7 +140,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
      * Prepares the data passed in $_POST:
      * - processes the pressed buttons 'addlevel', 'addcriterion', 'moveup', 'movedown', 'delete' (when JavaScript is disabled)
      *   sets $this->nonjsbuttonpressed to true/false if such button was pressed
-     * - if options not passed (i.e. we create a new rubric) fills the options array with the default values
+     * - if options not passed (i.e. we create a new matrix) fills the options array with the default values
      * - if options are passed completes the options array with unchecked checkboxes
      * - if $withvalidation is set, adds 'error_xxx' attributes to elements that contain errors and creates an error string
      *   and stores it in $this->validationerrors
@@ -355,7 +355,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     }
 
     /**
-     * Validates that rubric has at least one criterion, at least two levels within one criterion,
+     * Validates that matrix has at least one criterion, at least two levels within one criterion,
      * each level has a valid score, all levels have filled definitions and all criteria
      * have filled descriptions
      *

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Web services relating to fetching of a rubric for the grading panel.
+ * Web services relating to fetching of a matrix for the grading panel.
  *
  * @package    gradingform_matrix
  * @copyright  2019 Mathew May <mathew.solutions>
@@ -40,7 +40,7 @@ use moodle_exception;
 require_once($CFG->dirroot.'/grade/grading/form/matrix/lib.php');
 
 /**
- * Web services relating to storing of a rubric for the grading panel.
+ * Web services relating to storing of a matrix for the grading panel.
  *
  * @package    gradingform_matrix
  * @copyright  2019 Mathew May <mathew.solutions>
@@ -149,7 +149,7 @@ class store extends external_api {
 
         if (MATRIX !== $gradeitem->get_advanced_grading_method()) {
             throw new moodle_exception(
-                "The {$itemname} item in {$component}/{$contextid} is not configured for advanced grading with a rubric"
+                "The {$itemname} item in {$component}/{$contextid} is not configured for advanced grading with a matrix"
             );
         }
 
