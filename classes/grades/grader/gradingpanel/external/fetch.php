@@ -119,7 +119,7 @@ class fetch extends external_api {
         // Fetch the gradeitem instance.
         $gradeitem = gradeitem::instance($component, $context, $itemname);
 
-        if (MATRIX !== $gradeitem->get_advanced_grading_method()) {
+        if (\gradingform_matrix_controller::METHOD !== $gradeitem->get_advanced_grading_method()) {
             throw new moodle_exception(
                 "The {$itemname} item in {$component}/{$contextid} is not configured for advanced grading with a matrix"
             );

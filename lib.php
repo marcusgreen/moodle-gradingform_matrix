@@ -26,14 +26,18 @@ use core_external\external_format_value;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use gradingform_matrix\local\framework\change_level;
+use gradingform_matrix\local\framework\criteria_repository;
+use gradingform_matrix\local\framework\definition_diff;
+use gradingform_matrix\local\framework\filling_repository;
+use gradingform_matrix\local\framework\filling_validator;
+use gradingform_matrix\local\framework\grade_calculator;
+use gradingform_matrix\local\framework\level_sum_calculator;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/grade/grading/form/lib.php');
 require_once($CFG->dirroot.'/lib/filelib.php');
-
-/** matrix: Used to compare our gradeitem_type against. */
-const MATRIX = 'matrix';
 
 /**
  * This controller encapsulates the matrix grading logic
@@ -43,6 +47,9 @@ const MATRIX = 'matrix';
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class gradingform_matrix_controller extends gradingform_controller {
+    /** Grading method name, used to compare against a grade item's advanced grading method. */
+    const METHOD = 'matrix';
+
     // Modes of displaying the matrix (used in gradingform_matrix_renderer)
     /** Matrix display mode: For editing (moderator or teacher creates a matrix) */
     const DISPLAY_EDIT_FULL     = 1;
@@ -130,14 +137,12 @@ class gradingform_matrix_controller extends gradingform_controller {
     public function update_or_check_matrix(stdClass $newdefinition, $usermodified = null, $doupdate = false) {
         global $DB;
 
-        // firstly update the common definition data in the {grading_definition} table
         if ($this->definition === false) {
             if (!$doupdate) {
-                // if we create the new definition there is no such thing as re-grading anyway
-                return 5;
+                // If we create the new definition there is no such thing as re-grading anyway.
+                return change_level::CRITERIA_ADDED->value;
             }
-            // if definition does not exist yet, create a blank one
-            // (we need id to save files embedded in description)
+            // If definition does not exist yet, create a blank one (we need id to save files embedded in description).
             parent::update_definition(new stdClass(), $usermodified);
             parent::load_definition();
         }
@@ -149,147 +154,79 @@ class gradingform_matrix_controller extends gradingform_controller {
         $newdefinition = file_postupdate_standard_editor($newdefinition, 'description', $editoroptions, $this->get_context(),
             'grading', 'description', $this->definition->id);
 
-        // reload the definition from the database
+        // Reload the definition from the database.
         $currentdefinition = $this->get_definition(true);
-
-        $haschanges = array();
-
-        // Check if 'lockzeropoints' option has changed.
-        $newlockzeropoints = $newdefinition->matrix['options']['lockzeropoints'];
-        $currentoptions = $this->get_options();
-        if ((bool)$newlockzeropoints != (bool)$currentoptions['lockzeropoints']) {
-            $haschanges[3] = true;
-        }
-
-        // update matrix data
-        if (empty($newdefinition->matrix['criteria'])) {
-            $newcriteria = array();
-        } else {
-            $newcriteria = $newdefinition->matrix['criteria']; // new ones to be saved
-        }
         $currentcriteria = $currentdefinition->matrix_criteria;
-        $criteriafields = array('sortorder', 'description', 'descriptionformat');
-        $levelfields = array('score', 'definition', 'definitionformat');
-        foreach ($newcriteria as $id => $criterion) {
-            // get list of submitted levels
-            $levelsdata = array();
-            if (array_key_exists('levels', $criterion)) {
-                $levelsdata = $criterion['levels'];
-            }
-            $criterionmaxscore = null;
-            if (preg_match('/^NEWID\d+$/', $id)) {
-                // insert criterion into DB
-                $data = array('definitionid' => $this->definition->id, 'descriptionformat' => FORMAT_MOODLE); // TODO MDL-31235 format is not supported yet
-                foreach ($criteriafields as $key) {
-                    if (array_key_exists($key, $criterion)) {
-                        $data[$key] = $criterion[$key];
-                    }
-                }
-                if ($doupdate) {
-                    $id = $DB->insert_record('gradingform_matrix_criteria', $data);
-                }
-                $haschanges[5] = true;
-            } else {
-                // update criterion in DB
-                $data = array();
-                foreach ($criteriafields as $key) {
-                    if (array_key_exists($key, $criterion) && $criterion[$key] != $currentcriteria[$id][$key]) {
-                        $data[$key] = $criterion[$key];
-                    }
-                }
-                if (!empty($data)) {
-                    // update only if something is changed
-                    $data['id'] = $id;
-                    if ($doupdate) {
-                        $DB->update_record('gradingform_matrix_criteria', $data);
-                    }
-                    $haschanges[1] = true;
-                }
-                // remove deleted levels from DB and calculate the maximum score for this criteria
-                foreach ($currentcriteria[$id]['levels'] as $levelid => $currentlevel) {
-                    if ($criterionmaxscore === null || $criterionmaxscore < $currentlevel['score']) {
-                        $criterionmaxscore = $currentlevel['score'];
-                    }
-                    if (!array_key_exists($levelid, $levelsdata)) {
-                        if ($doupdate) {
-                            $DB->delete_records('gradingform_matrix_levels', array('id' => $levelid));
-                        }
-                        $haschanges[4] = true;
-                    }
-                }
-            }
-            foreach ($levelsdata as $levelid => $level) {
-                if (isset($level['score'])) {
-                    $level['score'] = unformat_float($level['score']);
-                }
-                if (preg_match('/^NEWID\d+$/', $levelid)) {
-                    // insert level into DB
-                    $data = array('criterionid' => $id, 'definitionformat' => FORMAT_MOODLE); // TODO MDL-31235 format is not supported yet
-                    foreach ($levelfields as $key) {
-                        if (array_key_exists($key, $level)) {
-                            $data[$key] = $level[$key];
-                        }
-                    }
-                    if ($doupdate) {
-                        $levelid = $DB->insert_record('gradingform_matrix_levels', $data);
-                    }
-                    if ($criterionmaxscore !== null && $criterionmaxscore >= $level['score']) {
-                        // new level is added but the maximum score for this criteria did not change, re-grading may not be necessary
-                        $haschanges[2] = true;
-                    } else {
-                        $haschanges[3] = true;
-                    }
-                } else {
-                    // update level in DB
-                    $data = array();
-                    foreach ($levelfields as $key) {
-                        if (array_key_exists($key, $level) && $level[$key] != $currentcriteria[$id]['levels'][$levelid][$key]) {
-                            $data[$key] = $level[$key];
-                        }
-                    }
-                    if (!empty($data)) {
-                        // update only if something is changed
-                        $data['id'] = $levelid;
-                        if ($doupdate) {
-                            $DB->update_record('gradingform_matrix_levels', $data);
-                        }
-                        if (isset($data['score'])) {
-                            $haschanges[3] = true;
-                        }
-                        $haschanges[1] = true;
-                    }
-                }
-            }
-        }
-        // remove deleted criteria from DB
-        foreach (array_keys($currentcriteria) as $id) {
-            if (!array_key_exists($id, $newcriteria)) {
-                if ($doupdate) {
-                    $DB->delete_records('gradingform_matrix_criteria', array('id' => $id));
-                    $DB->delete_records('gradingform_matrix_levels', array('criterionid' => $id));
-                }
-                $haschanges[3] = true;
-            }
-        }
-        foreach (array('status', 'description', 'descriptionformat', 'name', 'options') as $key) {
-            if (isset($newdefinition->$key) && $newdefinition->$key != $this->definition->$key) {
-                $haschanges[1] = true;
-            }
-        }
-        if ($usermodified && $usermodified != $this->definition->usermodified) {
-            $haschanges[1] = true;
-        }
-        if (!count($haschanges)) {
-            return 0;
+        $newcriteria = empty($newdefinition->matrix['criteria']) ? [] : self::normalise_scores($newdefinition->matrix['criteria']);
+
+        $summary = (new definition_diff())->compare(
+            $currentdefinition, $currentcriteria, !empty($this->get_options()['lockzeropoints']),
+            $newdefinition, $newcriteria, !empty($newdefinition->matrix['options']['lockzeropoints']),
+            $usermodified);
+        if (!$summary->has_changes()) {
+            return change_level::NONE->value;
         }
         if ($doupdate) {
+            $transaction = $DB->start_delegated_transaction();
+            $this->criteria_repository()->save($this->definition->id, $newcriteria, $currentcriteria);
             parent::update_definition($newdefinition, $usermodified);
+            $transaction->allow_commit();
             $this->load_definition();
         }
-        // return the maximum level of changes
-        $changelevels = array_keys($haschanges);
-        sort($changelevels);
-        return array_pop($changelevels);
+        return $summary->level()->value;
+    }
+
+    /**
+     * Converts submitted level scores from the user's number format to floats.
+     *
+     * @param array $criteria submitted criteria with levels
+     * @return array
+     */
+    protected static function normalise_scores(array $criteria): array {
+        foreach ($criteria as $cid => $criterion) {
+            foreach ($criterion['levels'] ?? [] as $lid => $level) {
+                if (isset($level['score'])) {
+                    $criteria[$cid]['levels'][$lid]['score'] = unformat_float($level['score']);
+                }
+            }
+        }
+        return $criteria;
+    }
+
+    /**
+     * Returns the repository for this method's criteria and levels.
+     *
+     * @return criteria_repository
+     */
+    protected function criteria_repository(): criteria_repository {
+        return new criteria_repository('gradingform_matrix_criteria', 'gradingform_matrix_levels');
+    }
+
+    /**
+     * Returns the repository for this method's fillings.
+     *
+     * @return filling_repository
+     */
+    public function filling_repository(): filling_repository {
+        return new filling_repository('gradingform_matrix_fillings');
+    }
+
+    /**
+     * Returns the calculator that turns a filling into a grade.
+     *
+     * @return grade_calculator
+     */
+    public function grade_calculator(): grade_calculator {
+        return new level_sum_calculator();
+    }
+
+    /**
+     * Returns the validator for submitted fillings.
+     *
+     * @return filling_validator
+     */
+    public function filling_validator(): filling_validator {
+        return new filling_validator();
     }
 
     /**
@@ -310,52 +247,17 @@ class gradingform_matrix_controller extends gradingform_controller {
      * There is a new array called 'matrix_criteria' appended to the list of parent's definition properties.
      */
     protected function load_definition() {
-        global $DB;
-        $sql = "SELECT gd.*,
-                       rc.id AS rcid, rc.sortorder AS rcsortorder, rc.description AS rcdescription, rc.descriptionformat AS rcdescriptionformat,
-                       rl.id AS rlid, rl.score AS rlscore, rl.definition AS rldefinition, rl.definitionformat AS rldefinitionformat
-                  FROM {grading_definitions} gd
-             LEFT JOIN {gradingform_matrix_criteria} rc ON (rc.definitionid = gd.id)
-             LEFT JOIN {gradingform_matrix_levels} rl ON (rl.criterionid = rc.id)
-                 WHERE gd.areaid = :areaid AND gd.method = :method
-              ORDER BY rc.sortorder,rl.score";
-        $params = array('areaid' => $this->areaid, 'method' => $this->get_method_name());
-
-        $rs = $DB->get_recordset_sql($sql, $params);
-        $this->definition = false;
-        foreach ($rs as $record) {
-            // pick the common definition data
-            if ($this->definition === false) {
-                $this->definition = new stdClass();
-                foreach (array('id', 'name', 'description', 'descriptionformat', 'status', 'copiedfromid',
-                        'timecreated', 'usercreated', 'timemodified', 'usermodified', 'timecopied', 'options') as $fieldname) {
-                    $this->definition->$fieldname = $record->$fieldname;
-                }
-                $this->definition->matrix_criteria = array();
-            }
-            // pick the criterion data
-            if (!empty($record->rcid) and empty($this->definition->matrix_criteria[$record->rcid])) {
-                foreach (array('id', 'sortorder', 'description', 'descriptionformat') as $fieldname) {
-                    $this->definition->matrix_criteria[$record->rcid][$fieldname] = $record->{'rc'.$fieldname};
-                }
-                $this->definition->matrix_criteria[$record->rcid]['levels'] = array();
-            }
-            // pick the level data
-            if (!empty($record->rlid)) {
-                foreach (array('id', 'score', 'definition', 'definitionformat') as $fieldname) {
-                    $value = $record->{'rl'.$fieldname};
-                    if ($fieldname == 'score') {
-                        $value = (float)$value; // To prevent display like 1.00000
-                    }
-                    $this->definition->matrix_criteria[$record->rcid]['levels'][$record->rlid][$fieldname] = $value;
-                }
-            }
+        $loaded = $this->criteria_repository()->load($this->areaid, $this->get_method_name());
+        if ($loaded === null) {
+            $this->definition = false;
+            return;
         }
-        $rs->close();
-        $options = $this->get_options();
-        if (!$options['sortlevelsasc']) {
+        [$this->definition, $criteria] = $loaded;
+        $this->definition->matrix_criteria = $criteria;
+        if (!$this->get_options()['sortlevelsasc']) {
             foreach (array_keys($this->definition->matrix_criteria) as $rcid) {
-                $this->definition->matrix_criteria[$rcid]['levels'] = array_reverse($this->definition->matrix_criteria[$rcid]['levels'], true);
+                $this->definition->matrix_criteria[$rcid]['levels'] =
+                    array_reverse($this->definition->matrix_criteria[$rcid]['levels'], true);
             }
         }
     }
@@ -562,19 +464,11 @@ class gradingform_matrix_controller extends gradingform_controller {
      */
     protected function delete_plugin_definition() {
         global $DB;
-
-        // get the list of instances
-        $instances = array_keys($DB->get_records('grading_instances', array('definitionid' => $this->definition->id), '', 'id'));
-        // delete all fillings
-        $DB->delete_records_list('gradingform_matrix_fillings', 'instanceid', $instances);
-        // delete instances
-        $DB->delete_records_list('grading_instances', 'id', $instances);
-        // get the list of criteria records
-        $criteria = array_keys($DB->get_records('gradingform_matrix_criteria', array('definitionid' => $this->definition->id), '', 'id'));
-        // delete levels
-        $DB->delete_records_list('gradingform_matrix_levels', 'criterionid', $criteria);
-        // delete critera
-        $DB->delete_records_list('gradingform_matrix_criteria', 'id', $criteria);
+        $transaction = $DB->start_delegated_transaction();
+        $this->filling_repository()->delete_for_definition($this->definition->id);
+        $DB->delete_records('grading_instances', ['definitionid' => $this->definition->id]);
+        $this->criteria_repository()->delete_for_definition($this->definition->id);
+        $transaction->allow_commit();
     }
 
     /**
@@ -672,17 +566,7 @@ class gradingform_matrix_controller extends gradingform_controller {
         if (!$this->is_form_available()) {
             return null;
         }
-        $returnvalue = array('minscore' => 0, 'maxscore' => 0);
-        foreach ($this->get_definition()->matrix_criteria as $id => $criterion) {
-            $scores = array();
-            foreach ($criterion['levels'] as $level) {
-                $scores[] = $level['score'];
-            }
-            sort($scores);
-            $returnvalue['minscore'] += $scores[0];
-            $returnvalue['maxscore'] += $scores[sizeof($scores)-1];
-        }
-        return $returnvalue;
+        return level_sum_calculator::score_bounds($this->get_definition()->matrix_criteria);
     }
 
     /**
@@ -757,9 +641,8 @@ class gradingform_matrix_instance extends gradingform_instance {
      * Deletes this (INCOMPLETE) instance from database.
      */
     public function cancel() {
-        global $DB;
         parent::cancel();
-        $DB->delete_records('gradingform_matrix_fillings', array('instanceid' => $this->get_id()));
+        $this->get_controller()->filling_repository()->delete($this->get_id());
     }
 
     /**
@@ -771,14 +654,8 @@ class gradingform_matrix_instance extends gradingform_instance {
      * @return int id of the new instance
      */
     public function copy($raterid, $itemid) {
-        global $DB;
         $instanceid = parent::copy($raterid, $itemid);
-        $currentgrade = $this->get_matrix_filling();
-        foreach ($currentgrade['criteria'] as $criterionid => $record) {
-            $params = array('instanceid' => $instanceid, 'criterionid' => $criterionid,
-                'levelid' => $record['levelid'], 'remark' => $record['remark'], 'remarkformat' => $record['remarkformat']);
-            $DB->insert_record('gradingform_matrix_fillings', $params);
-        }
+        $this->get_controller()->filling_repository()->copy($this->get_matrix_filling()['criteria'], $instanceid);
         return $instanceid;
     }
 
@@ -789,28 +666,16 @@ class gradingform_matrix_instance extends gradingform_instance {
      * @return boolean true if the form is empty
      */
     public function is_empty_form($elementvalue) {
-        $criteria = $this->get_controller()->get_definition()->matrix_criteria;
-
-        foreach ($criteria as $id => $criterion) {
-            if (isset($elementvalue['criteria'][$id]['levelid'])
-                    || !empty($elementvalue['criteria'][$id]['remark'])) {
-                return false;
-            }
-        }
-        return true;
+        $controller = $this->get_controller();
+        return $controller->filling_validator()->is_empty($controller->get_definition()->matrix_criteria, $elementvalue);
     }
 
     /**
-     * Removes the attempt from the gradingform_guide_fillings table
+     * Removes the attempt from the fillings table
      * @param array $data the attempt data
      */
     public function clear_attempt($data) {
-        global $DB;
-
-        foreach ($data['criteria'] as $criterionid => $record) {
-            $DB->delete_records('gradingform_matrix_fillings',
-                array('criterionid' => $criterionid, 'instanceid' => $this->get_id()));
-        }
+        $this->get_controller()->filling_repository()->delete($this->get_id(), array_keys($data['criteria'] ?? []));
     }
 
     /**
@@ -820,17 +685,8 @@ class gradingform_matrix_instance extends gradingform_instance {
      * @return boolean true if the form data is validated and contains no errors
      */
     public function validate_grading_element($elementvalue) {
-        $criteria = $this->get_controller()->get_definition()->matrix_criteria;
-        if (!isset($elementvalue['criteria']) || !is_array($elementvalue['criteria']) || sizeof($elementvalue['criteria']) < sizeof($criteria)) {
-            return false;
-        }
-        foreach ($criteria as $id => $criterion) {
-            if (!isset($elementvalue['criteria'][$id]['levelid'])
-                    || !array_key_exists($elementvalue['criteria'][$id]['levelid'], $criterion['levels'])) {
-                return false;
-            }
-        }
-        return true;
+        $controller = $this->get_controller();
+        return $controller->filling_validator()->is_complete($controller->get_definition()->matrix_criteria, $elementvalue);
     }
 
     /**
@@ -840,13 +696,8 @@ class gradingform_matrix_instance extends gradingform_instance {
      * @return array
      */
     public function get_matrix_filling($force = false) {
-        global $DB;
         if ($this->matrix === null || $force) {
-            $records = $DB->get_records('gradingform_matrix_fillings', array('instanceid' => $this->get_id()));
-            $this->matrix = array('criteria' => array());
-            foreach ($records as $record) {
-                $this->matrix['criteria'][$record->criterionid] = (array)$record;
-            }
+            $this->matrix = ['criteria' => $this->get_controller()->filling_repository()->load($this->get_id())];
         }
         return $this->matrix;
     }
@@ -861,36 +712,16 @@ class gradingform_matrix_instance extends gradingform_instance {
     public function update($data) {
         global $DB;
         $currentgrade = $this->get_matrix_filling();
-        parent::update($data);
+        $submitted = [];
         foreach ($data['criteria'] as $criterionid => $record) {
-            // Hardcoding/defaulting to html format for new/existing record
+            // Hardcoding/defaulting to html format for new/existing record.
             $record['remarkformat'] = FORMAT_HTML;
-
-            if (!array_key_exists($criterionid, $currentgrade['criteria'])) {
-                $newrecord = array('instanceid' => $this->get_id(), 'criterionid' => $criterionid,
-                    'levelid' => $record['levelid'], 'remarkformat' => $record['remarkformat']);
-                if (isset($record['remark'])) {
-                    $newrecord['remark'] = $record['remark'];
-                }
-                $DB->insert_record('gradingform_matrix_fillings', $newrecord);
-            } else {
-                $newrecord = array('id' => $currentgrade['criteria'][$criterionid]['id']);
-                foreach (array('levelid', 'remark', 'remarkformat') as $key) {
-                    // TODO MDL-31235 format is not supported yet
-                    if (isset($record[$key]) && $currentgrade['criteria'][$criterionid][$key] != $record[$key]) {
-                        $newrecord[$key] = $record[$key];
-                    }
-                }
-                if (count($newrecord) > 1) {
-                    $DB->update_record('gradingform_matrix_fillings', $newrecord);
-                }
-            }
+            $submitted[$criterionid] = $record;
         }
-        foreach ($currentgrade['criteria'] as $criterionid => $record) {
-            if (!array_key_exists($criterionid, $data['criteria'])) {
-                $DB->delete_records('gradingform_matrix_fillings', array('id' => $record['id']));
-            }
-        }
+        $transaction = $DB->start_delegated_transaction();
+        parent::update($data);
+        $this->get_controller()->filling_repository()->save($this->get_id(), $currentgrade['criteria'], $submitted);
+        $transaction->allow_commit();
         $this->get_matrix_filling(true);
     }
 
@@ -900,37 +731,17 @@ class gradingform_matrix_instance extends gradingform_instance {
      * @return float|int the valid grade from $this->get_controller()->get_grade_range()
      */
     public function get_grade() {
-        $grade = $this->get_matrix_filling();
-
-        if (!($scores = $this->get_controller()->get_min_max_score()) || $scores['maxscore'] <= $scores['minscore']) {
+        $controller = $this->get_controller();
+        if (!$controller->is_form_available()) {
             return -1;
         }
-
-        $graderange = array_keys($this->get_controller()->get_grade_range());
-        if (empty($graderange)) {
-            return -1;
-        }
-        sort($graderange);
-        $mingrade = $graderange[0];
-        $maxgrade = $graderange[sizeof($graderange) - 1];
-
-        $curscore = 0;
-        foreach ($grade['criteria'] as $id => $record) {
-            $curscore += $this->get_controller()->get_definition()->matrix_criteria[$id]['levels'][$record['levelid']]['score'];
-        }
-
-        $allowdecimals = $this->get_controller()->get_allow_grade_decimals();
-        $options = $this->get_controller()->get_options();
-
-        if ($options['lockzeropoints']) {
-            // Grade calculation method when 0-level is locked.
-            $grade = max($mingrade, $curscore / $scores['maxscore'] * $maxgrade);
-            return $allowdecimals ? $grade : round($grade, 0);
-        } else {
-            // Alternative grade calculation method.
-            $gradeoffset = ($curscore - $scores['minscore']) / ($scores['maxscore'] - $scores['minscore']) * ($maxgrade - $mingrade);
-            return ($allowdecimals ? $gradeoffset : round($gradeoffset, 0)) + $mingrade;
-        }
+        return $controller->grade_calculator()->calculate(
+            $controller->get_definition()->matrix_criteria,
+            $this->get_matrix_filling()['criteria'],
+            array_keys($controller->get_grade_range()),
+            $controller->get_options(),
+            (bool)$controller->get_allow_grade_decimals()
+        );
     }
 
     /**
