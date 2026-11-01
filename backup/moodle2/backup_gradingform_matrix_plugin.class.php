@@ -49,14 +49,14 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
 
         // Define our elements
 
-        $criteria = new backup_nested_element('criteria');
+        $criteria = new backup_nested_element('matrixcriteria');
 
-        $criterion = new backup_nested_element('criterion', array('id'), array(
+        $criterion = new backup_nested_element('matrixcriterion', array('id'), array(
             'sortorder', 'description', 'descriptionformat'));
 
-        $levels = new backup_nested_element('levels');
+        $levels = new backup_nested_element('matrixlevels');
 
-        $level = new backup_nested_element('level', array('id'), array(
+        $level = new backup_nested_element('matrixlevel', array('id'), array(
             'score', 'definition', 'definitionformat'));
 
         // Build elements hierarchy

@@ -43,10 +43,10 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
         $paths = array();
 
         $paths[] = new restore_path_element('gradingform_matrix_criterion',
-            $this->get_pathfor('/criteria/criterion'));
+            $this->get_pathfor('/matrixcriteria/matrixcriterion'));
 
         $paths[] = new restore_path_element('gradingform_matrix_level',
-            $this->get_pathfor('/criteria/criterion/levels/level'));
+            $this->get_pathfor('/matrixcriteria/matrixcriterion/matrixlevels/matrixlevel'));
 
         return $paths;
     }
