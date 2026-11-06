@@ -74,5 +74,25 @@ if ($mform->is_cancelled()) {
 \core\session\manager::keepalive();
 
 echo $OUTPUT->header();
+
+$actions = [];
+if ($controller->can_import()) {
+    $actions[] = html_writer::link(
+        new moodle_url('/grade/grading/form/matrix/import.php', ['areaid' => $areaid, 'returnurl' => $returnurl]),
+        get_string('import', 'gradingform_matrix'),
+        ['class' => 'btn btn-secondary']
+    );
+}
+if ($controller->is_form_defined()) {
+    $actions[] = html_writer::link(
+        new moodle_url('/grade/grading/form/matrix/export.php', ['areaid' => $areaid]),
+        get_string('export', 'gradingform_matrix'),
+        ['class' => 'btn btn-secondary']
+    );
+}
+if ($actions) {
+    echo html_writer::div(implode('', $actions), 'gradingform_matrix-importexport d-flex flex-wrap gap-2 mb-3');
+}
+
 $mform->display();
 echo $OUTPUT->footer();

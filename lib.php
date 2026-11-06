@@ -29,6 +29,8 @@ use core_external\external_value;
 use gradingform_matrix\local\framework\change_level;
 use gradingform_matrix\local\framework\criteria_repository;
 use gradingform_matrix\local\framework\definition_diff;
+use gradingform_matrix\local\framework\definition_exporter;
+use gradingform_matrix\local\framework\definition_importer;
 use gradingform_matrix\local\framework\filling_repository;
 use gradingform_matrix\local\framework\filling_validator;
 use gradingform_matrix\local\framework\grade_calculator;
@@ -227,6 +229,157 @@ class gradingform_matrix_controller extends gradingform_controller {
      */
     public function filling_validator(): filling_validator {
         return new filling_validator();
+    }
+
+    /**
+     * Returns the writer for exported definitions.
+     *
+     * @return definition_exporter
+     */
+    public function definition_exporter(): definition_exporter {
+        return new definition_exporter($this->get_method_name());
+    }
+
+    /**
+     * Returns the reader for imported definitions.
+     *
+     * @return definition_importer
+     */
+    public function definition_importer(): definition_importer {
+        return new definition_importer(self::get_default_options());
+    }
+
+    /**
+     * Exports the current definition.
+     *
+     * @return string JSON
+     */
+    public function export_definition(): string {
+        $definition = $this->get_definition();
+        if (!$definition) {
+            throw new coding_exception('There is no definition to export.');
+        }
+        $exporter = $this->definition_exporter();
+        $files = [];
+        $areafiles = get_file_storage()->get_area_files(
+            $this->get_context()->id,
+            'grading',
+            'description',
+            $definition->id,
+            'filepath, filename',
+            false
+        );
+        foreach ($areafiles as $file) {
+            $files[] = [
+                'filepath' => $file->get_filepath(),
+                'filename' => $file->get_filename(),
+                'mimetype' => $file->get_mimetype(),
+                'content' => $file->get_content(),
+            ];
+        }
+        return $exporter->to_json(
+            $definition->name,
+            (string)$definition->description,
+            (int)$definition->descriptionformat,
+            $this->get_options(),
+            $definition->matrix_criteria,
+            $files
+        );
+    }
+
+    /**
+     * Whether an import may replace the definition.
+     *
+     * False once anyone has been graded with it, including grades that are waiting for regrading,
+     * because their fillings refer to the levels that an import replaces.
+     *
+     * @return bool
+     */
+    public function can_import(): bool {
+        global $DB;
+        if (empty($this->definition->id)) {
+            return true;
+        }
+        [$insql, $params] = $DB->get_in_or_equal(
+            [gradingform_instance::INSTANCE_STATUS_ACTIVE, gradingform_instance::INSTANCE_STATUS_NEEDUPDATE],
+            SQL_PARAMS_NAMED
+        );
+        $params['definitionid'] = $this->definition->id;
+        return !$DB->record_exists_select('grading_instances', "definitionid = :definitionid AND status $insql", $params);
+    }
+
+    /**
+     * Replaces the definition with imported data and saves it as a draft.
+     *
+     * Values missing from the import (name, description, options) are kept from the current definition.
+     * Not allowed once the form has been used for grading, see {@see can_import()}.
+     *
+     * @param array $data result of {@see definition_importer::from_json()}
+     * @param string $fallbackname name to use when neither the import nor the current definition has one
+     * @param int|null $usermodified optional userid of the author of the definition, defaults to the current user
+     * @throws moodle_exception if the form has been used for grading
+     */
+    public function import_definition(array $data, string $fallbackname, $usermodified = null): void {
+        if (!$this->can_import()) {
+            throw new moodle_exception('importerrorused', 'gradingform_matrix');
+        }
+        $current = $this->get_definition();
+
+        $new = new stdClass();
+        $new->name = $data['name'] ?? (($current && $current->name !== '') ? $current->name : $fallbackname);
+        if (isset($data['description'])) {
+            // Saving through a draft area replaces the description's files and applies the editor's size limits.
+            $new->description_editor = [
+                'text' => $data['description'],
+                'format' => $data['descriptionformat'],
+                'itemid' => self::create_draft_area($data['files'] ?? []),
+            ];
+        } else {
+            $new->description_editor = [
+                'text' => $current ? (string)$current->description : '',
+                'format' => $current ? (int)$current->descriptionformat : FORMAT_HTML,
+            ];
+        }
+        $new->status = self::DEFINITION_STATUS_DRAFT;
+        $new->matrix = ['options' => $data['options'] ?? $this->get_options(), 'criteria' => []];
+
+        $newlevid = 1;
+        foreach (array_values($data['criteria']) as $index => $criterion) {
+            $levels = [];
+            foreach ($criterion['levels'] as $level) {
+                $levels['NEWID' . $newlevid++] = ['score' => $level['score'], 'definition' => $level['definition']];
+            }
+            $new->matrix['criteria']['NEWID' . ($index + 1)] = [
+                'sortorder' => $index + 1,
+                'description' => $criterion['description'],
+                'levels' => $levels,
+            ];
+        }
+
+        $this->update_definition($new, $usermodified);
+    }
+
+    /**
+     * Puts files into a new draft area of the current user.
+     *
+     * @param array $files list of ['filepath', 'filename', 'content']
+     * @return int draft item id
+     */
+    protected static function create_draft_area(array $files): int {
+        global $USER;
+        $draftitemid = file_get_unused_draft_itemid();
+        $fs = get_file_storage();
+        foreach ($files as $file) {
+            $fs->create_file_from_string([
+                'contextid' => context_user::instance($USER->id)->id,
+                'component' => 'user',
+                'filearea' => 'draft',
+                'itemid' => $draftitemid,
+                'filepath' => $file['filepath'],
+                'filename' => $file['filename'],
+            ], $file['content']);
+        }
+        return $draftitemid;
     }
 
     /**

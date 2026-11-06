@@ -48,6 +48,8 @@ $string['err_nodescription'] = 'Criterion description can not be empty';
 $string['err_novariations'] = 'Criterion levels cannot all be worth the same number of points';
 $string['err_scoreformat'] = 'Number of points for each level must be a valid number';
 $string['err_totalscore'] = 'Maximum number of points possible when graded by the grading form must be more than zero';
+$string['export'] = 'Export';
+$string['exportnothing'] = 'There is no saved grading form to export.';
 $string['formnotcompleted'] = 'Please choose something for each criterion';
 $string['formoptions'] = 'Grading form options';
 $string['formstatus'] = 'Current grading form status';
@@ -60,6 +62,19 @@ For example, a criterion description could be:
 
 * **Structure** - is the report *well organised* with a clear introduction, body and conclusion?';
 $string['gradingof'] = '{$a} grading';
+$string['import'] = 'Import';
+$string['importerrorfile'] = 'The file contains an embedded file that can\'t be read: {$a}.';
+$string['importerrorjson'] = 'The file is not valid JSON.';
+$string['importerrorscore'] = '"{$a->score}" is not a valid number of points ({$a->where}).';
+$string['importerrorstructure'] = 'The file is not a grading form export: each criterion needs a description and a list of levels, and each level a definition and a score.';
+$string['importerrorused'] = 'This grading form has already been used for grading, so it can\'t be replaced by an import.';
+$string['importerrorversion'] = 'The file has an unsupported format version ({$a}).';
+$string['importfile'] = 'File to import';
+$string['importfile_help'] = 'A JSON file made by "Export" on this or another site. It holds the whole grading form: name, description with its images, options, criteria and levels.';
+$string['importform'] = 'Import grading form';
+$string['importreplaces'] = 'Importing replaces the current grading form: its name, description, options, criteria and levels.';
+$string['importsuccess'] = 'Imported {$a} criteria. The grading form is saved as a draft: check it, then save it to make it ready.';
+$string['importwherelevel'] = 'criterion {$a->criterion}, level {$a->level}';
 $string['level'] = 'Level {$a->definition}, {$a->score} points.';
 $string['leveldefinition'] = 'Level {$a} definition';
 $string['leveldelete'] = 'Delete level {$a}';
