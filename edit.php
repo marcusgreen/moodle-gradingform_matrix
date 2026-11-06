@@ -38,6 +38,10 @@ require_capability('moodle/grade:managegradingforms', $context);
 
 $controller = $manager->get_controller('matrix');
 
+// Hide the sticky navigation footer (MDL-87575). Only available from Moodle 5.3.
+if (method_exists($PAGE, 'set_show_navigation_footer')) {
+    $PAGE->set_show_navigation_footer(false);
+}
 $PAGE->set_url(new moodle_url('/grade/grading/form/matrix/edit.php', array('areaid' => $areaid)));
 $PAGE->set_title(get_string('defineform', 'gradingform_matrix'));
 $PAGE->set_heading(get_string('defineform', 'gradingform_matrix'));

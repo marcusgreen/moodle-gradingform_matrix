@@ -99,7 +99,7 @@
 }
 
 .gradingform_matrix .criterion.even td {
-    background: #f0f0f0;
+    background: var(--bs-secondary-bg);
 }
 
 .gradingform_matrix .criterion.odd td {
