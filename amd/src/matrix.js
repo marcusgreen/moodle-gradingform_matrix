@@ -25,15 +25,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-const SELECTORS = {
-    LEVEL: '.level',
-    RADIO_WRAPPER: '.radio',
-    RADIO_INPUT: 'input[type=radio]',
-    REMARK_TEXTAREA: '.remark textarea',
-    CRITERION: '.criterion',
-    FITEM: '.fitem',
-    POPOUT_CONTENT: '.felement',
-};
+import {SELECTORS, IDS} from 'gradingform_matrix/local/selectors';
 
 const toggleLevel = (level) => {
     const row = level.closest(SELECTORS.CRITERION) || level.parentNode;
@@ -117,7 +109,7 @@ const observePopout = (root) => {
 };
 
 export const init = (name) => {
-    const root = document.getElementById(`matrix-${name}`);
+    const root = document.getElementById(IDS.root(name));
     if (!root) {
         return;
     }

@@ -31,6 +31,7 @@
 import {get_strings as getStrings} from 'core/str';
 import Notification from 'core/notification';
 import Pending from 'core/pending';
+import {SELECTORS, IDS} from 'gradingform_matrix/local/selectors';
 
 /**
  * Escape a string for safe insertion as text/HTML content.
@@ -58,7 +59,7 @@ class MatrixEditor {
         this.name = name;
         this.templates = {criterion: criterionTemplate, level: levelTemplate};
         this.strings = strings;
-        this.root = document.getElementById(`matrix-${name}`);
+        this.root = document.getElementById(IDS.root(name));
         if (!this.root) {
             return;
         }
@@ -91,7 +92,7 @@ class MatrixEditor {
      * Switch all level/description cells in this editor back to plain (non-edit) mode.
      */
     disableAllEditors() {
-        this.root.querySelectorAll('.level, .description').forEach((node) => {
+        this.root.querySelectorAll(SELECTORS.EDITABLE_CELL).forEach((node) => {
             this.editMode(node, false);
         });
     }
@@ -146,7 +147,7 @@ class MatrixEditor {
         const pseudotablink = '<span class="pseudotablink" tabindex="0"></span>';
         let taplain = ta.parentNode.querySelector('.plainvalue');
         let tbplain = null;
-        const tb = el.querySelector('.score input[type=text]');
+        const tb = el.querySelector(SELECTORS.SCORE_INPUT);
 
         // Lazily create the .plainvalue holders next to the textarea (and score input).
         if (!taplain) {
@@ -240,17 +241,17 @@ class MatrixEditor {
 
         let elementsStr;
         if (chunks.length > 4 || action === 'addlevel') {
-            elementsStr = `#${name}-criteria-${chunks[2]}-levels .level`;
+            elementsStr = `#${IDS.levels(name, chunks[2])} ${SELECTORS.LEVEL}`;
         } else {
-            elementsStr = `#matrix-${name} .criterion`;
+            elementsStr = `#${IDS.root(name)} ${SELECTORS.CRITERION}`;
         }
 
         // Prepare the ids of the next inserted level/criterion.
         let newlevid = 0;
         let newid = 0;
         if (action === 'addcriterion' || action === 'addlevel' || action === 'duplicate') {
-            newid = this.calculateNewId(`#matrix-${name} .criterion`);
-            newlevid = this.calculateNewId(`#matrix-${name} .level`);
+            newid = this.calculateNewId(`#${IDS.root(name)} ${SELECTORS.CRITERION}`);
+            newlevid = this.calculateNewId(`#${IDS.root(name)} ${SELECTORS.LEVEL}`);
         }
 
         if (chunks.length === 3 && action === 'addcriterion') {
@@ -258,20 +259,20 @@ class MatrixEditor {
         } else if (chunks.length === 5 && action === 'addlevel') {
             this.addLevel(chunks[2], newlevid, elementsStr);
         } else if (chunks.length === 4 && action === 'moveup') {
-            const el = document.getElementById(`${name}-criteria-${chunks[2]}`);
+            const el = document.getElementById(IDS.criterion(name, chunks[2]));
             if (el && el.previousElementSibling) {
                 el.parentNode.insertBefore(el, el.previousElementSibling);
             }
             this.assignClasses(elementsStr);
         } else if (chunks.length === 4 && action === 'movedown') {
-            const el = document.getElementById(`${name}-criteria-${chunks[2]}`);
+            const el = document.getElementById(IDS.criterion(name, chunks[2]));
             if (el && el.nextElementSibling) {
                 el.parentNode.insertBefore(el.nextElementSibling, el);
             }
             this.assignClasses(elementsStr);
         } else if (chunks.length === 4 && action === 'delete') {
             if (confirmed) {
-                const el = document.getElementById(`${name}-criteria-${chunks[2]}`);
+                const el = document.getElementById(IDS.criterion(name, chunks[2]));
                 if (el) {
                     el.remove();
                 }
@@ -284,7 +285,7 @@ class MatrixEditor {
             this.duplicateCriterion(chunks[2], newid, newlevid, elementsStr);
         } else if (chunks.length === 6 && action === 'delete') {
             if (confirmed) {
-                const el = document.getElementById(`${name}-criteria-${chunks[2]}-${chunks[3]}-${chunks[4]}`);
+                const el = document.getElementById(IDS.level(name, chunks[2], chunks[4]));
                 if (el) {
                     el.remove();
                 }
@@ -334,16 +335,16 @@ class MatrixEditor {
         const name = this.name;
         const levelsscores = [0];
         let levidx = 1;
-        let parentel = document.getElementById(`${name}-criteria`);
+        let parentel = document.getElementById(IDS.criteria(name));
         const tbody = parentel.querySelector(':scope > tbody');
         if (tbody) {
             parentel = tbody;
         }
-        const criteria = parentel.querySelectorAll('.criterion');
+        const criteria = parentel.querySelectorAll(SELECTORS.CRITERION);
         if (criteria.length) {
-            const lastLevels = criteria[criteria.length - 1].querySelectorAll('.level');
+            const lastLevels = criteria[criteria.length - 1].querySelectorAll(SELECTORS.LEVEL);
             for (levidx = 0; levidx < lastLevels.length; levidx++) {
-                levelsscores[levidx] = lastLevels[levidx].querySelector('.score input[type=text]').value;
+                levelsscores[levidx] = lastLevels[levidx].querySelector(SELECTORS.SCORE_INPUT).value;
             }
         }
         for (levidx; levidx < 3; levidx++) {
@@ -361,10 +362,10 @@ class MatrixEditor {
         parentel.insertAdjacentHTML('beforeend',
             newcriterion.replace(/\{CRITERION-id\}/g, `NEWID${newid}`).replace(/\{.+?\}/g, ''));
 
-        this.assignClasses(`#matrix-${name} #${name}-criteria-NEWID${newid}-levels .level`);
+        this.assignClasses(`#${IDS.levels(name, `NEWID${newid}`)} ${SELECTORS.LEVEL}`);
         this.disableAllEditors();
         this.assignClasses(elementsStr);
-        this.editMode(document.getElementById(`${name}-criteria-NEWID${newid}-description-cell`), true);
+        this.editMode(document.getElementById(IDS.descriptionCell(name, `NEWID${newid}`)), true);
     }
 
     /**
@@ -376,11 +377,11 @@ class MatrixEditor {
      */
     addLevel(criterionid, newlevid, elementsStr) {
         const name = this.name;
-        const parent = document.getElementById(`${name}-criteria-${criterionid}-levels`);
+        const parent = document.getElementById(IDS.levels(name, criterionid));
         let newscore = 0;
         let levelIndex = 1;
-        parent.querySelectorAll('.level').forEach((node) => {
-            newscore = Math.max(newscore, parseFloat(node.querySelector('.score input[type=text]').value) + 1);
+        parent.querySelectorAll(SELECTORS.LEVEL).forEach((node) => {
+            newscore = Math.max(newscore, parseFloat(node.querySelector(SELECTORS.SCORE_INPUT).value) + 1);
             levelIndex++;
         });
         const newlevel = this.templates.level
@@ -393,7 +394,7 @@ class MatrixEditor {
 
         this.disableAllEditors();
         this.assignClasses(elementsStr);
-        const levels = parent.querySelectorAll('.level');
+        const levels = parent.querySelectorAll(SELECTORS.LEVEL);
         this.editMode(levels[levels.length - 1], true);
     }
 
@@ -410,19 +411,19 @@ class MatrixEditor {
         const levelsdef = [];
         const levelsscores = [0];
         let levidx = 0;
-        let parentel = document.getElementById(`${name}-criteria`);
+        let parentel = document.getElementById(IDS.criteria(name));
         const tbody = parentel.querySelector(':scope > tbody');
         if (tbody) {
             parentel = tbody;
         }
 
-        const source = document.getElementById(`${name}-criteria-${criterionid}`);
-        const sourceLevels = source.querySelectorAll('.level');
+        const source = document.getElementById(IDS.criterion(name, criterionid));
+        const sourceLevels = source.querySelectorAll(SELECTORS.LEVEL);
         for (levidx = 0; levidx < sourceLevels.length; levidx++) {
             levelsdef[levidx] = sourceLevels[levidx].querySelector('.definition .textvalue').innerHTML;
         }
         for (levidx = 0; levidx < sourceLevels.length; levidx++) {
-            levelsscores[levidx] = sourceLevels[levidx].querySelector('.score input[type=text]').value;
+            levelsscores[levidx] = sourceLevels[levidx].querySelector(SELECTORS.SCORE_INPUT).value;
         }
         for (levidx; levidx < 3; levidx++) {
             levelsscores[levidx] = parseFloat(levelsscores[levidx - 1]) + 1;
@@ -442,10 +443,10 @@ class MatrixEditor {
         parentel.insertAdjacentHTML('beforeend',
             newcriterion.replace(/\{CRITERION-id\}/g, `NEWID${newid}`).replace(/\{.+?\}/g, ''));
 
-        this.assignClasses(`#matrix-${name} #${name}-criteria-NEWID${newid}-levels .level`);
+        this.assignClasses(`#${IDS.levels(name, `NEWID${newid}`)} ${SELECTORS.LEVEL}`);
         this.disableAllEditors();
         this.assignClasses(elementsStr);
-        this.editMode(document.getElementById(`${name}-criteria-NEWID${newid}-description-cell`), true);
+        this.editMode(document.getElementById(IDS.descriptionCell(name, `NEWID${newid}`)), true);
     }
 
     /**
@@ -464,7 +465,7 @@ class MatrixEditor {
             if (i === elements.length - 1) {
                 el.classList.add('last');
             }
-            el.querySelectorAll('input[type=hidden]').forEach((node) => {
+            el.querySelectorAll(SELECTORS.SORTORDER_INPUT).forEach((node) => {
                 if (/sortorder/.test(node.name)) {
                     node.value = i;
                 }
@@ -504,8 +505,8 @@ class MatrixEditor {
  * @return {Promise}
  */
 export const init = (name) => {
-    const criterionHolder = document.getElementById(`matrix-${name}-criterion-template`);
-    const levelHolder = document.getElementById(`matrix-${name}-level-template`);
+    const criterionHolder = document.getElementById(IDS.criterionTemplate(name));
+    const levelHolder = document.getElementById(IDS.levelTemplate(name));
     const criterionTemplate = criterionHolder ? criterionHolder.textContent : '';
     const levelTemplate = levelHolder ? levelHolder.textContent : '';
 

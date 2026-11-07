@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {call as fetchMany} from 'core/ajax';
+import {fetchGrade, storeGrade} from 'gradingform_matrix/repository';
 import {normaliseResult} from 'core_grades/grades/grader/gradingpanel/normalise';
 import {compareData} from 'core_grades/grades/grader/gradingpanel/comparison';
 
@@ -39,15 +39,7 @@ import jQuery from 'jquery';
  * @returns {Promise}
  */
 export const fetchCurrentGrade = (component, contextid, itemname, gradeduserid) => {
-    return fetchMany([{
-        methodname: `gradingform_matrix_grader_gradingpanel_fetch`,
-        args: {
-            component,
-            contextid,
-            itemname,
-            gradeduserid,
-        },
-    }])[0];
+    return fetchGrade(component, contextid, itemname, gradeduserid);
 };
 
 /**
@@ -66,17 +58,8 @@ export const storeCurrentGrade = async(component, contextid, itemname, gradeduse
     const form = rootNode.querySelector('form');
 
     if (compareData(form) === true) {
-        return normaliseResult(await fetchMany([{
-            methodname: `gradingform_matrix_grader_gradingpanel_store`,
-            args: {
-                component,
-                contextid,
-                itemname,
-                gradeduserid,
-                notifyuser: notifyUser,
-                formdata: jQuery(form).serialize(),
-            },
-        }])[0]);
+        const formdata = jQuery(form).serialize();
+        return normaliseResult(await storeGrade(component, contextid, itemname, gradeduserid, notifyUser, formdata));
     } else {
         return '';
     }
