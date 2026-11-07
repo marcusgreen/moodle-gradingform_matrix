@@ -25,9 +25,6 @@ import {fetchGrade, storeGrade} from 'gradingform_matrix/repository';
 import {normaliseResult} from 'core_grades/grades/grader/gradingpanel/normalise';
 import {compareData} from 'core_grades/grades/grader/gradingpanel/comparison';
 
-// Note: We use jQuery.serializer here until we can rewrite Ajax to use XHR.send()
-import jQuery from 'jquery';
-
 /**
  * For a given component, contextid, itemname & gradeduserid we can fetch the currently assigned grade.
  *
@@ -58,7 +55,7 @@ export const storeCurrentGrade = async(component, contextid, itemname, gradeduse
     const form = rootNode.querySelector('form');
 
     if (compareData(form) === true) {
-        const formdata = jQuery(form).serialize();
+        const formdata = new URLSearchParams(new FormData(form)).toString();
         return normaliseResult(await storeGrade(component, contextid, itemname, gradeduserid, notifyUser, formdata));
     } else {
         return '';
