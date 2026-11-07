@@ -115,7 +115,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             // Set description's cell as tab-focusable.
             $descriptiontdparams['tabindex'] = '0';
             // Set label for the criterion cell.
-            $descriptiontdparams['aria-label'] = get_string('criterion', 'gradingform_matrix', s($criterion['description']));
+            $descriptiontdparams['aria-label'] = get_string('criterion', 'gradingform_matrix', $this->plain_text($criterion['description']));
         }
 
         // Default value for criterion ids.
@@ -134,7 +134,6 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         // Levels table.
         $levelsrowparams = [
             'id' => '{NAME}-criteria-{CRITERION-id}-levels',
-            'aria-label' => get_string('levelsgroup', 'gradingform_matrix'),
         ];
         // Add radiogroup role only when not previewing or editing.
         $isradiogroup = !in_array($mode, [
@@ -144,6 +143,12 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             gradingform_matrix_controller::DISPLAY_PREVIEW_GRADED,
         ]);
         $levelsrowparams['role'] = $isradiogroup ? 'radiogroup' : 'list';
+        if ($isradiogroup) {
+            // Named after its criterion, so moving between criteria says which one this is.
+            $levelsrowparams['aria-labelledby'] = '{NAME}-criteria-{CRITERION-id}-description-cell';
+        } else {
+            $levelsrowparams['aria-label'] = get_string('levelsgroup', 'gradingform_matrix');
+        }
         $levelsrow = html_writer::tag('tr', $levelsstr, $levelsrowparams);
 
         $levelstableparams = [
@@ -171,7 +176,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
 
             // Label for criterion remark.
             $remarkinfo = new stdClass();
-            $remarkinfo->description = s($criterion['description']);
+            $remarkinfo->description = $this->plain_text($criterion['description']);
             $remarkinfo->remark = $currentremark;
             $remarklabeltext = get_string('criterionremark', 'gradingform_matrix', $remarkinfo);
 
@@ -312,7 +317,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
 
             $tdattributes['tabindex'] = '0';
             $levelinfo = new stdClass();
-            $levelinfo->definition = s($level['definition']);
+            $levelinfo->definition = $this->plain_text($level['definition']);
             $levelinfo->score = $level['score'];
             $tdattributes['aria-label'] = get_string('level', 'gradingform_matrix', $levelinfo);
 
@@ -668,5 +673,23 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         }
         $html .= $this->output->notification(get_string('scoremappingexplained', 'gradingform_matrix', (object)$scores), 'info');
         return $html;
+    }
+
+    /**
+     * Converts criterion or level text to plain text for an accessible name.
+     *
+     * The text is Markdown, so the raw value would make screen readers read the markup
+     * ("star star"). Blocks such as paragraphs are joined with commas. The result is not
+     * escaped, because html_writer escapes attribute values.
+     *
+     * @param string $text
+     * @return string
+     */
+    protected function plain_text(string $text): string {
+        $html = format_text($text, FORMAT_MARKDOWN, ['context' => $this->page->context]);
+        $html = preg_replace('~</(p|li|h[1-6]|div|tr|td|th)>|<br\s*/?>~i', "\n", $html);
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $lines = array_filter(array_map(fn($line) => trim(preg_replace('/\s+/u', ' ', $line)), explode("\n", $text)));
+        return implode(', ', $lines);
     }
 }

@@ -276,14 +276,25 @@
 
 /* Highlight selected / hovered level in evaluate mode (mirrors gradingform_rubric). */
 .gradingform_matrix.evaluate .criterion .levels .level:hover {
-    background: #dff0d8;
+    background: var(--bs-secondary-bg);
     cursor: pointer;
 }
 
 .gradingform_matrix.evaluate .criterion .levels .level.checked,
 .gradingform_matrix .criterion .levels .level.checked {
-    background: #d0ffd0;
-    border: 1px solid #555;
+    position: relative;
+    background: var(--bs-success-bg-subtle);
+    box-shadow: inset 0 0 0 2px var(--bs-success);
+}
+
+/* A tick, so the selection does not rely on colour alone. Screen readers get the state from aria-checked. */
+.gradingform_matrix .criterion .levels .level.checked::after {
+    content: "\2713" / ""; /* stylelint-disable-line csstree/validator */
+    position: absolute;
+    top: 0.25rem;
+    inset-inline-end: 0.5rem;
+    color: var(--bs-success-text-emphasis);
+    font-weight: bold;
 }
 
 .gradingform_matrix .criterion .levels .level.currentchecked {
