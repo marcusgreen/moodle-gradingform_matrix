@@ -26,6 +26,9 @@ use moodle_exception;
  * Content rules (two levels per criterion, non-empty texts, ...) are left to the editor, because an
  * import is saved as a draft and the teacher makes it ready from there.
  *
+ * Error messages come from the lang component passed in, which must define the strings importerrorjson,
+ * importerrorversion, importerrorstructure, importerrorfile, importerrorscore, importwherelevel and err_nocriteria.
+ *
  * {@see from_json()} returns:
  * - 'name', 'description', 'descriptionformat', 'options': values from the file, or null when absent
  * - 'criteria': list of ['description' => string, 'levels' => list of ['score' => float, 'definition' => string]]
@@ -44,10 +47,13 @@ class definition_importer {
      * Constructor.
      *
      * @param array $defaultoptions the method's options with default values; other option keys are dropped
+     * @param string $component lang component that holds the error strings
      */
     public function __construct(
         /** @var array the method's options with default values; other option keys are dropped */
         protected readonly array $defaultoptions,
+        /** @var string lang component that holds the error strings */
+        protected readonly string $component,
     ) {
     }
 
@@ -61,14 +67,14 @@ class definition_importer {
     public function from_json(string $content): array {
         $data = json_decode(self::strip_bom($content), true);
         if (!is_array($data)) {
-            throw new moodle_exception('importerrorjson', 'gradingform_matrix');
+            throw new moodle_exception('importerrorjson', $this->component);
         }
         $version = $data['formatversion'] ?? null;
         if ($version !== definition_exporter::FORMAT_VERSION) {
-            throw new moodle_exception('importerrorversion', 'gradingform_matrix', '', s(json_encode($version)));
+            throw new moodle_exception('importerrorversion', $this->component, '', s(json_encode($version)));
         }
         if (!isset($data['criteria']) || !is_array($data['criteria']) || !array_is_list($data['criteria'])) {
-            throw new moodle_exception('importerrorstructure', 'gradingform_matrix');
+            throw new moodle_exception('importerrorstructure', $this->component);
         }
 
         $criteria = [];
@@ -77,22 +83,22 @@ class definition_importer {
                 !is_array($criterion) || !self::is_text($criterion['description'] ?? null)
                     || !is_array($criterion['levels'] ?? null) || !array_is_list($criterion['levels'])
             ) {
-                throw new moodle_exception('importerrorstructure', 'gradingform_matrix');
+                throw new moodle_exception('importerrorstructure', $this->component);
             }
             $levels = [];
             foreach ($criterion['levels'] as $l => $level) {
                 if (!is_array($level) || !self::is_text($level['definition'] ?? null) || !array_key_exists('score', $level)) {
-                    throw new moodle_exception('importerrorstructure', 'gradingform_matrix');
+                    throw new moodle_exception('importerrorstructure', $this->component);
                 }
-                $where = get_string('importwherelevel', 'gradingform_matrix', ['criterion' => $c + 1, 'level' => $l + 1]);
+                $where = get_string('importwherelevel', $this->component, ['criterion' => $c + 1, 'level' => $l + 1]);
                 $levels[] = [
-                    'score' => self::parse_score($level['score'], $where),
+                    'score' => $this->parse_score($level['score'], $where),
                     'definition' => trim((string)$level['definition']),
                 ];
             }
             $criteria[] = ['description' => trim((string)$criterion['description']), 'levels' => $levels];
         }
-        self::require_criteria($criteria);
+        $this->require_criteria($criteria);
 
         $name = self::is_text($data['name'] ?? null) ? core_text::substr(trim(clean_param($data['name'], PARAM_TEXT)), 0, 255) : '';
         $description = self::is_text($data['description'] ?? null) ? (string)$data['description'] : null;
@@ -106,7 +112,7 @@ class definition_importer {
             'descriptionformat' => $description === null ? null : $format,
             'options' => is_array($data['options'] ?? null) ? $this->clean_options($data['options']) : null,
             'criteria' => $criteria,
-            'files' => $description === null ? [] : self::parse_files($data['files'] ?? []),
+            'files' => $description === null ? [] : $this->parse_files($data['files'] ?? []),
         ];
     }
 
@@ -119,9 +125,9 @@ class definition_importer {
      * @return array list of ['filepath' => string, 'filename' => string, 'content' => binary string]
      * @throws moodle_exception if a file entry is invalid
      */
-    protected static function parse_files(mixed $files): array {
+    protected function parse_files(mixed $files): array {
         if (!is_array($files) || !array_is_list($files)) {
-            throw new moodle_exception('importerrorstructure', 'gradingform_matrix');
+            throw new moodle_exception('importerrorstructure', $this->component);
         }
         $result = [];
         foreach ($files as $file) {
@@ -132,7 +138,7 @@ class definition_importer {
             $valid = $filename !== '' && $filename === clean_param($filename, PARAM_FILE)
                 && $filepath === '/' && $content !== false;
             if (!$valid || isset($result[$filepath . $filename])) {
-                throw new moodle_exception('importerrorfile', 'gradingform_matrix', '', s($filepath . $filename));
+                throw new moodle_exception('importerrorfile', $this->component, '', s($filepath . $filename));
             }
             $result[$filepath . $filename] = ['filepath' => $filepath, 'filename' => $filename, 'content' => $content];
         }
@@ -163,11 +169,11 @@ class definition_importer {
      * @return float
      * @throws moodle_exception if the score is not a number
      */
-    protected static function parse_score(mixed $score, string $where): float {
+    protected function parse_score(mixed $score, string $where): float {
         $value = is_int($score) || is_float($score) || is_string($score) ? unformat_float((string)$score, true) : false;
         if ($value === false || $value === null || !is_finite($value)) {
             $a = ['score' => s(is_scalar($score) ? (string)$score : json_encode($score)), 'where' => $where];
-            throw new moodle_exception('importerrorscore', 'gradingform_matrix', '', $a);
+            throw new moodle_exception('importerrorscore', $this->component, '', $a);
         }
         return $value;
     }
@@ -178,9 +184,9 @@ class definition_importer {
      * @param array $criteria
      * @throws moodle_exception if the list is empty
      */
-    protected static function require_criteria(array $criteria): void {
+    protected function require_criteria(array $criteria): void {
         if (!$criteria) {
-            throw new moodle_exception('err_nocriteria', 'gradingform_matrix');
+            throw new moodle_exception('err_nocriteria', $this->component);
         }
     }
 

@@ -246,7 +246,7 @@ class gradingform_matrix_controller extends gradingform_controller {
      * @return definition_importer
      */
     public function definition_importer(): definition_importer {
-        return new definition_importer(self::get_default_options());
+        return new definition_importer(self::get_default_options(), 'gradingform_matrix');
     }
 
     /**

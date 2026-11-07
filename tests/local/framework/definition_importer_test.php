@@ -49,7 +49,7 @@ final class definition_importer_test extends \basic_testcase {
      * @return definition_importer
      */
     private function importer(): definition_importer {
-        return new definition_importer(self::DEFAULTS);
+        return new definition_importer(self::DEFAULTS, 'gradingform_matrix');
     }
 
     /**
