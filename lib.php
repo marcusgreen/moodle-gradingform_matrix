@@ -865,15 +865,17 @@ class gradingform_matrix_instance extends gradingform_instance {
     public function update($data) {
         global $DB;
         $currentgrade = $this->get_matrix_filling();
+        $controller = $this->get_controller();
         $submitted = [];
-        foreach ($data['criteria'] as $criterionid => $record) {
+        $criteria = $controller->filling_validator()->filter($controller->get_definition()->matrix_criteria, $data);
+        foreach ($criteria as $criterionid => $record) {
             // Hardcoding/defaulting to html format for new/existing record.
             $record['remarkformat'] = FORMAT_HTML;
             $submitted[$criterionid] = $record;
         }
         $transaction = $DB->start_delegated_transaction();
         parent::update($data);
-        $this->get_controller()->filling_repository()->save($this->get_id(), $currentgrade['criteria'], $submitted);
+        $controller->filling_repository()->save($this->get_id(), $currentgrade['criteria'], $submitted);
         $transaction->allow_commit();
         $this->get_matrix_filling(true);
     }

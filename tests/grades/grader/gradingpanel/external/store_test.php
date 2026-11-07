@@ -205,6 +205,61 @@ final class store_test extends advanced_testcase {
     }
 
     /**
+     * Ensure that values that don't fit the definition are not stored.
+     */
+    public function test_execute_store_ignores_foreign_values(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $generator = \testing_util::get_data_generator();
+        $matrixgenerator = $generator->get_plugin_generator('gradingform_matrix');
+
+        [
+            'forum' => $forum,
+            'controller' => $controller,
+            'definition' => $definition,
+            'student' => $student,
+            'teacher' => $teacher,
+        ] = $this->get_test_data();
+
+        $this->setUser($teacher);
+
+        $gradeitem = component_gradeitem::instance('mod_forum', $forum->get_context(), 'forum');
+        $grade = $gradeitem->get_grade_for_user($student, $teacher);
+        $instance = $gradeitem->get_advanced_grading_instance($teacher, $grade);
+
+        $submissiondata = $matrixgenerator->get_test_form_data(
+            $controller,
+            (int) $student->id,
+            0,
+            'Spelling remark',
+            0,
+            'Pictures remark'
+        );
+        [$spellingid, $picturesid] = array_keys($definition->matrix_criteria);
+        // Pictures gets the highest level of Spelling, and a criterion that isn't in the definition is added.
+        $spellinglevels = $definition->matrix_criteria[$spellingid]['levels'];
+        $submissiondata['criteria'][$picturesid]['levelid'] = array_key_last($spellinglevels);
+        $submissiondata['criteria'][$spellingid + $picturesid + 1000] = ['levelid' => 1, 'remark' => 'Foreign'];
+
+        $formdata = http_build_query((object) [
+            'instanceid' => $instance->get_id(),
+            'advancedgrading' => $submissiondata,
+        ]);
+        store::execute('mod_forum', (int) $forum->get_context()->id, 'forum', (int) $student->id, false, $formdata);
+
+        $fillings = $DB->get_records(
+            'gradingform_matrix_fillings',
+            ['instanceid' => $instance->get_id()],
+            '',
+            'criterionid, levelid, remark'
+        );
+        $this->assertEqualsCanonicalizing([$spellingid, $picturesid], array_keys($fillings));
+        $this->assertNull($fillings[$picturesid]->levelid);
+        $this->assertEquals('Pictures remark', $fillings[$picturesid]->remark);
+        $this->assertEquals(array_key_first($spellinglevels), $fillings[$spellingid]->levelid);
+    }
+
+    /**
      * Get a forum instance.
      *
      * @param array $config

@@ -52,6 +52,28 @@ final class filling_validator_test extends \basic_testcase {
         $this->assertFalse($validator->is_complete(self::CRITERIA, ['criteria' => 'x']));
     }
 
+    public function test_filter(): void {
+        $validator = new filling_validator();
+        $this->assertSame(
+            [1 => ['levelid' => 10, 'remark' => 'a'], 2 => ['remark' => 'b']],
+            $validator->filter(self::CRITERIA, ['criteria' => [
+                1 => ['levelid' => 10, 'remark' => 'a'],
+                // Level of another criterion.
+                2 => ['levelid' => 11, 'remark' => 'b'],
+                // Criterion not in the definition.
+                3 => ['levelid' => 20, 'remark' => 'c'],
+            ]])
+        );
+        // Incomplete fillings are kept.
+        $this->assertSame([2 => ['levelid' => 21]], $validator->filter(self::CRITERIA, ['criteria' => [2 => ['levelid' => 21]]]));
+        $this->assertSame([1 => ['remark' => 'x']], $validator->filter(self::CRITERIA, ['criteria' => [
+            1 => ['levelid' => ['10'], 'remark' => 'x'],
+            2 => 'not an array',
+        ]]));
+        $this->assertSame([], $validator->filter(self::CRITERIA, []));
+        $this->assertSame([], $validator->filter(self::CRITERIA, ['criteria' => 'x']));
+    }
+
     public function test_is_empty(): void {
         $validator = new filling_validator();
         $this->assertTrue($validator->is_empty(self::CRITERIA, []));

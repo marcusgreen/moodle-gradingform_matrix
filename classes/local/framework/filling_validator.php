@@ -48,6 +48,35 @@ class filling_validator {
     }
 
     /**
+     * Keeps only the submitted values that fit the definition, for saving.
+     *
+     * Criteria that are not in the definition are dropped, and so is a levelid that is not one of its
+     * criterion's levels. Incomplete fillings are kept, because drafts are saved before grading is finished.
+     * Needed because web services save fillings without {@see is_complete()} being called first.
+     *
+     * @param array $criteria definition criteria keyed by id, each with 'levels' keyed by id
+     * @param mixed $submitted submitted element value
+     * @return array submitted values keyed by criterion id
+     */
+    public function filter(array $criteria, $submitted): array {
+        if (!isset($submitted['criteria']) || !is_array($submitted['criteria'])) {
+            return [];
+        }
+        $filtered = [];
+        foreach ($submitted['criteria'] as $id => $values) {
+            if (!array_key_exists($id, $criteria) || !is_array($values)) {
+                continue;
+            }
+            $levelid = $values['levelid'] ?? null;
+            if ($levelid !== null && (!is_scalar($levelid) || !array_key_exists($levelid, $criteria[$id]['levels']))) {
+                unset($values['levelid']);
+            }
+            $filtered[$id] = $values;
+        }
+        return $filtered;
+    }
+
+    /**
      * Whether nothing was selected or written for any criterion.
      *
      * @param array $criteria
