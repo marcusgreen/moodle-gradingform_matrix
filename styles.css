@@ -291,24 +291,107 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Popout overlay (popout.md §9.2 + §9.6).
- * Self-contained: keyed on .fitem.popout containing a matrix so styles work
- * regardless of which mod hosts the grader. Adds resize handle + sane sizing.
- * Flex reflow (§9.3) is scoped inside .fitem.popout only, so normal in-panel
- * grading keeps its original table layout (and proven click behaviour).
+ * Popout overlay.
+ * mod_assign pops a grading field out as a fixed box with all four insets at 20%.
+ * For a matrix the box is anchored at its top-left corner instead, so the browser's
+ * resize handle can grow it towards the bottom right, and it is kept inside the
+ * viewport. The header and content are a flex column, so the content fills
+ * whatever height is left. The content is a size container, so the grid
+ * reflows by the width of the box, not the width of the screen.
+ * Normal in-panel grading keeps its original table layout.
  * ------------------------------------------------------------------------- */
-.fitem.popout:has(.gradingform_matrix) {
-    resize: both;
-    overflow: hidden;
-    min-width: 320px;
-    min-height: 240px;
+.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) {
+    right: auto;
+    bottom: auto;
     width: 60vw;
     height: 60vh;
+    min-width: 320px;
+    min-height: 240px;
+    max-width: calc(80vw - 1rem);
+    max-height: calc(80vh - 1rem);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
 
-.fitem.popout:has(.gradingform_matrix) > .felement {
-    height: calc(100% - 54px);
+/* Maximised with the button added by amd/src/local/popout.js. */
+.path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-maximised:has(.gradingform_matrix) {
+    inset: 1rem;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+}
+
+/* Resize grip added by amd/src/local/popout.js; works with the keyboard and a pointer. */
+.gradingform_matrix-resizegrip {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    border-bottom-right-radius: inherit;
+    background:
+        linear-gradient(
+            135deg,
+            transparent 55%,
+            var(--bs-secondary-color) 55%,
+            var(--bs-secondary-color) 62%,
+            transparent 62%,
+            transparent 75%,
+            var(--bs-secondary-color) 75%,
+            var(--bs-secondary-color) 82%,
+            transparent 82%
+        );
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+.gradingform_matrix-resizegrip:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color, var(--bs-primary));
+    outline-offset: -2px;
+}
+
+.fitem:not(.popout) > * > .gradingform_matrix-maximise,
+.fitem:not(.popout) > [data-region="gradingform_matrix-popoutcontrols"],
+.gradingform_matrix-maximised [data-region="gradingform_matrix-popoutcontrols"] .gradingform_matrix-resizegrip {
+    display: none;
+}
+
+.fitem.popout .gradingform_matrix-maximise {
+    float: right;
+}
+
+.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) > .felement {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
     overflow: auto;
+    overflow-wrap: anywhere;
+    container: matrixpopout / inline-size; /* stylelint-disable-line csstree/validator */
+}
+
+.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) > :not(.felement) {
+    flex: none;
+}
+
+/* On small screens fill the screen; there is no room left to resize into. */
+@media (max-width: 575.98px) {
+    .path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) {
+        inset: 0.5rem;
+        width: auto;
+        height: auto;
+        max-width: none;
+        max-height: none;
+    }
+
+    .fitem.popout .gradingform_matrix-maximise,
+    .fitem.popout [data-region="gradingform_matrix-popoutcontrols"] {
+        display: none;
+    }
 }
 
 .fitem.popout .gradingform_matrix {
@@ -368,14 +451,44 @@
 }
 
 .fitem.popout .gradingform_matrix .criterion > .remark {
-    display: block;
+    display: flex;
+    flex-direction: column;
     flex: 0 0 200px;
     min-width: 150px;
 }
 
+/* The remark fills the height of its row, which the levels decide. */
 .fitem.popout .gradingform_matrix .criterion > .remark textarea {
+    flex: 1 1 auto;
     width: 100%;
+    height: auto;
+    min-height: 4rem;
     box-sizing: border-box;
-    resize: vertical;
-    min-height: 60px;
+    resize: none;
 }
+
+/* The validator used by Moodle's stylelint does not know container queries yet. */
+/* stylelint-disable csstree/validator */
+
+/* Narrow popout: description, levels and remark each take a full row. */
+@container matrixpopout (max-width: 700px) {
+    .fitem.popout .gradingform_matrix .criterion > .description,
+    .fitem.popout .gradingform_matrix .criterion > .levels,
+    .fitem.popout .gradingform_matrix .criterion > .remark {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+}
+
+/* Very narrow popout: levels are listed one above the other. */
+@container matrixpopout (max-width: 420px) {
+    .fitem.popout .gradingform_matrix .criterion > .levels > table > tbody > tr {
+        flex-direction: column;
+    }
+
+    .fitem.popout .gradingform_matrix .criterion .levels .level {
+        flex: 0 0 auto;
+        min-width: 0;
+    }
+}
+/* stylelint-enable csstree/validator */

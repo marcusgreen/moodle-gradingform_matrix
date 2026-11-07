@@ -32,9 +32,7 @@ export const SELECTORS = {
     SORTORDER_INPUT: 'input[type=hidden]',
     RADIO_WRAPPER: '.radio',
     RADIO_INPUT: 'input[type=radio]',
-    REMARK_TEXTAREA: '.remark textarea',
     FITEM: '.fitem',
-    POPOUT_CONTENT: '.felement',
 };
 
 export const IDS = {

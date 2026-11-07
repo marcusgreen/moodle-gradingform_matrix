@@ -16,9 +16,8 @@
 /**
  * Matrix grading form behaviour.
  *
- * Handles level cell click/keyboard toggling and popout-aware sizing of
- * the remark textareas so the grader can use the matrix in a resized
- * overlay.
+ * Handles level cell click/keyboard toggling, and adds size controls when
+ * the grading form is popped out.
  *
  * @module     gradingform_matrix/matrix
  * @copyright  2026 Marcus Green
@@ -26,6 +25,7 @@
  */
 
 import {SELECTORS, IDS} from 'gradingform_matrix/local/selectors';
+import * as Popout from 'gradingform_matrix/local/popout';
 
 const toggleLevel = (level) => {
     const row = level.closest(SELECTORS.CRITERION) || level.parentNode;
@@ -68,44 +68,16 @@ const handleEvent = (root) => (event) => {
     toggleLevel(level);
 };
 
-const distributeRemarkHeights = (root) => {
-    const fitem = root.closest(SELECTORS.FITEM);
-    const textareas = root.querySelectorAll(SELECTORS.REMARK_TEXTAREA);
-    if (!fitem || !fitem.classList.contains('popout')) {
-        textareas.forEach((ta) => {
-            ta.style.height = '';
-        });
-        return;
-    }
-    const felement = root.closest(SELECTORS.POPOUT_CONTENT);
-    if (!felement) {
-        return;
-    }
-    const rows = root.querySelectorAll(SELECTORS.CRITERION);
-    if (!rows.length) {
-        return;
-    }
-    const available = felement.clientHeight;
-    const perRow = Math.max(60, Math.floor(available / rows.length) - 120);
-    textareas.forEach((ta) => {
-        ta.style.height = `${perRow}px`;
-        ta.style.boxSizing = 'border-box';
-    });
-};
-
 const observePopout = (root) => {
     const fitem = root.closest(SELECTORS.FITEM);
-    if (!fitem || typeof ResizeObserver === 'undefined') {
+    if (!fitem) {
         return;
     }
-    const recompute = () => distributeRemarkHeights(root);
-    new ResizeObserver(recompute).observe(fitem);
-    new MutationObserver(recompute).observe(fitem, {
+    new MutationObserver(() => Popout.sync(fitem)).observe(fitem, {
         attributes: true,
         attributeFilter: ['class'],
     });
-    window.addEventListener('resize', recompute);
-    recompute();
+    Popout.sync(fitem);
 };
 
 export const init = (name) => {
