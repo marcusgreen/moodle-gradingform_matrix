@@ -22,6 +22,12 @@ use gradingform_instance;
 use gradingform_matrix_controller;
 use moodle_exception;
 
+defined('MOODLE_INTERNAL') || die();
+
+// The TestWith attributes use gradingform_instance constants, and are read before setUp() runs.
+global $CFG;
+require_once($CFG->dirroot . '/grade/grading/form/lib.php');
+
 /**
  * Tests exporting and importing definitions through the controller.
  *
