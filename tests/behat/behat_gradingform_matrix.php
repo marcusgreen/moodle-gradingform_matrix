@@ -97,17 +97,11 @@ class behat_gradingform_matrix extends behat_base {
 
         if ($criteria) {
             foreach ($criteria as $criterionit => $criterion) {
-                // Unset empty levels in criterion.
-                foreach ($criterion as $i => $value) {
-                    if (empty($value)) {
-                        unset($criterion[$i]);
-                    }
-                }
-
-                // Remove empty criterion, as TableNode might contain them to make table rows equal size.
+                // Remove empty cells, as TableNode might contain them to make table rows equal size.
+                // Compare with '' rather than empty(), which would also drop a score of 0.
                 $newcriterion = [];
                 foreach ($criterion as $k => $c) {
-                    if (!empty($c)) {
+                    if ($c !== '') {
                         $newcriterion[$k] = $c;
                     }
                 }
