@@ -235,7 +235,8 @@ class behat_gradingform_matrix extends behat_base {
             "/descendant::td[contains(concat(' ', normalize-space(@class), ' '), ' description ')]";
         // It differs between JS on/off.
         if ($this->running_javascript()) {
-            $criterionxpath .= "/descendant::span[@class='textvalue'][text()=$criterionliteral]" .
+            // The plain value shows the description formatted as Markdown, inside a paragraph.
+            $criterionxpath .= "/descendant::span[@class='textvalue'][normalize-space(.)=$criterionliteral]" .
                 "/ancestor::tr[contains(concat(' ', normalize-space(@class), ' '), ' criterion ')]";
         } else {
             $criterionxpath .= "/descendant::textarea[text()=$criterionliteral]" .
@@ -508,6 +509,7 @@ class behat_gradingform_matrix extends behat_base {
     protected function get_criterion_xpath($criterionname) {
         $literal = behat_context_helper::escape($criterionname);
         return "//tr[contains(concat(' ', normalize-space(@class), ' '), ' criterion ')]" .
-            "[./descendant::td[@class='description'][text()=$literal]]";
+            // The description is formatted as Markdown, so its text is inside a paragraph.
+            "[./descendant::td[@class='description'][normalize-space(.)=$literal]]";
     }
 }
