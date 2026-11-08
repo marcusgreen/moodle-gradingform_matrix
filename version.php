@@ -27,6 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component  = 'gradingform_matrix';
 $plugin->version    = 2026110701;
 
-$plugin->requires   = 2025041400; // Moodle 5.0.
+$plugin->requires   = 2025092600; // Moodle 5.1: the AI assistant uses core AI APIs added in 5.1.
 
 $plugin->maturity   = MATURITY_ALPHA;
