@@ -340,23 +340,25 @@ class MatrixEditor {
      */
     async confirmDelete(e, messagekey, pendingkey) {
         const pendingPromise = new Pending(pendingkey);
+        let answer;
         try {
             const [title, question, yes] = await getStrings([
                 {key: 'confirmation', component: 'admin'},
                 {key: messagekey, component: 'gradingform_matrix'},
                 {key: 'yes', component: 'moodle'},
             ]);
-            let confirmed = true;
-            await Notification.saveCancelPromise(title, question, yes).catch(() => {
-                confirmed = false;
-            });
-            if (confirmed) {
-                this.buttonClick(e, true);
-            }
+            answer = Notification.saveCancelPromise(title, question, yes);
         } catch (error) {
             Notification.exception(error);
+            return;
         } finally {
+            // Stop at opening the dialogue: waiting for the user's answer is not pending work, and Behat could
+            // not click the answer while it waits for pending work. The modal tracks its own display.
             pendingPromise.resolve();
+        }
+        const confirmed = await answer.then(() => true, () => false);
+        if (confirmed) {
+            this.buttonClick(e, true);
         }
     }
 
