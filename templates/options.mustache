@@ -22,7 +22,8 @@
     Context variables required for this template:
     * items: list of options, each with
       * class
-      * select: optional {id, label, selecthtml} or {id, label, valuetext}, for a choice
+      * select: optional {id, label, menu} or {id, label, valuetext}, for a choice; menu is
+        the context of gradingform_matrix/select
       * checkbox: optional {id, name, checked, disabled, label}, for a yes/no option
       * hidden: optional {name, id, value}, the value to submit while the option is frozen
       * helphtml: optional help icon
@@ -43,7 +44,7 @@
         <div class="{{class}}">
             {{#select}}
                 <label for="{{id}}">{{label}}</label>
-                <span class="value">{{#selecthtml}}{{{.}}}{{/selecthtml}}{{^selecthtml}}{{valuetext}}{{/selecthtml}}</span>
+                <span class="value">{{#menu}}{{> gradingform_matrix/select }}{{/menu}}{{^menu}}{{valuetext}}{{/menu}}</span>
                 {{#hidden}}
                     <input name="{{name}}" id="{{id}}" type="hidden" value="{{value}}">
                 {{/hidden}}

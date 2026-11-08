@@ -20,7 +20,8 @@
     Asks whether to mark existing grades for regrading when a used grading form changes.
 
     Context variables required for this template:
-    * choice: optional {selectid, selecthtml}, when the teacher may choose
+    * choice: optional {selectid, menu}, when the teacher may choose; menu is the context of
+      gradingform_matrix/select
     * forced: optional {name}, when the change always needs regrading
 
     Example context (json):
@@ -30,6 +31,6 @@
 }}
 {{! The message is the div's own text, so keep whitespace out of it. }}
 <div class="gradingform_matrix-regrade" role="alert">{{!
-    }}{{#choice}}<label for="{{selectid}}">{{#str}} regrademessage1, gradingform_matrix {{/str}}</label>{{{selecthtml}}}{{/choice}}{{!
+    }}{{#choice}}<label for="{{selectid}}">{{#str}} regrademessage1, gradingform_matrix {{/str}}</label>{{#menu}}{{> gradingform_matrix/select }}{{/menu}}{{/choice}}{{!
     }}{{#forced}}{{#str}} regrademessage5, gradingform_matrix {{/str}}<input name="{{name}}" value="1" type="hidden">{{/forced}}{{!
 }}</div>

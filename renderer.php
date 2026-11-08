@@ -418,7 +418,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                         0 => get_string($option . '0', 'gradingform_matrix'),
                         1 => get_string($option . '1', 'gradingform_matrix'),
                     ];
-                    $item['select']['selecthtml'] = html_writer::select($choices, $name, $value, false, ['id' => $id]);
+                    $item['select']['menu'] = $this->select_context($choices, $name, $value, $id);
                 } else {
                     $item['select']['valuetext'] = get_string($option . $value, 'gradingform_matrix');
                     if ($mode == $c::DISPLAY_EDIT_FROZEN) {
@@ -539,16 +539,16 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * @return string
      */
     public function display_instances($instances, $defaultcontent, $cangrade) {
-        $return = '';
-        if (count($instances)) {
-            $return .= html_writer::start_tag('div', ['class' => 'advancedgrade']);
-            $idx = 0;
-            foreach ($instances as $instance) {
-                $return .= $this->display_instance($instance, $idx++, $cangrade);
-            }
-            $return .= html_writer::end_tag('div');
+        $rendered = [];
+        $idx = 0;
+        foreach ($instances as $instance) {
+            $rendered[] = $this->display_instance($instance, $idx++, $cangrade);
         }
-        return $return . $defaultcontent;
+        return $this->render_from_template('gradingform_matrix/instances', [
+            'hasinstances' => !empty($rendered),
+            'instances' => $rendered,
+            'defaultcontent' => $defaultcontent,
+        ]);
     }
 
     /**
@@ -557,11 +557,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * @param gradingform_matrix_instance $instance
      * @param int $idx unique number of instance on page
      * @param bool $cangrade whether current user has capability to grade in this context
+     * @return string
      */
     public function display_instance(gradingform_matrix_instance $instance, $idx, $cangrade) {
-        $criteria = $instance->get_controller()->get_definition()->matrix_criteria;
-        $options = $instance->get_controller()->get_options();
-        $values = $instance->get_matrix_filling();
+        $controller = $instance->get_controller();
+        $options = $controller->get_options();
         if ($cangrade) {
             $mode = gradingform_matrix_controller::DISPLAY_REVIEW;
             $showdescription = $options['showdescriptionteacher'];
@@ -569,12 +569,29 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             $mode = gradingform_matrix_controller::DISPLAY_VIEW;
             $showdescription = $options['showdescriptionstudent'];
         }
-        $output = '';
-        if ($showdescription) {
-            $output .= $this->box($instance->get_controller()->get_formatted_description(), 'gradingform_matrix-description');
+        $criteria = $controller->get_definition()->matrix_criteria;
+        return $this->render_from_template('gradingform_matrix/instance', [
+            'descriptionhtml' => $showdescription ? $controller->get_formatted_description() : null,
+            'matrixhtml' => $this->display_matrix($criteria, $options, $mode, 'matrix' . $idx, $instance->get_matrix_filling()),
+        ]);
+    }
+
+    /**
+     * Builds the context for the gradingform_matrix/select template, matching html_writer::select().
+     *
+     * @param array $choices value => label
+     * @param string $name name of the select element
+     * @param mixed $selected the selected value
+     * @param string|null $id id of the select element; defaults to menu followed by the name without brackets
+     * @return array
+     */
+    protected function select_context(array $choices, string $name, $selected, ?string $id = null): array {
+        $menu = 'menu' . str_replace(['[', ']'], '', $name);
+        $options = [];
+        foreach ($choices as $value => $text) {
+            $options[] = ['value' => $value, 'text' => $text, 'selected' => (string)$value === (string)$selected];
         }
-        $output .= $this->display_matrix($criteria, $options, $mode, 'matrix' . $idx, $values);
-        return $output;
+        return ['id' => $id ?? $menu, 'name' => $name, 'class' => 'select form-select ' . $menu, 'options' => $options];
     }
 
     /**
@@ -592,10 +609,8 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 0 => get_string('regradeoption0', 'gradingform_matrix'),
                 1 => get_string('regradeoption1', 'gradingform_matrix'),
             ];
-            $context['choice'] = [
-                'selectid' => 'menu' . $elementname . 'regrade',
-                'selecthtml' => html_writer::select($choices, $elementname . '[regrade]', $value, false),
-            ];
+            $menu = $this->select_context($choices, $elementname . '[regrade]', $value);
+            $context['choice'] = ['selectid' => $menu['id'], 'menu' => $menu];
         } else {
             $context['forced'] = ['name' => $elementname . '[regrade]'];
         }
@@ -625,7 +640,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      *
      * The text is Markdown, so the raw value would make screen readers read the markup
      * ("star star"). Blocks such as paragraphs are joined with commas. The result is not
-     * escaped, because html_writer escapes attribute values.
+     * escaped, because the templates escape it.
      *
      * @param string $text
      * @return string
