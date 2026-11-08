@@ -33,6 +33,7 @@ use moodle_exception;
  * @copyright 2019 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(store::class)]
 final class store_test extends advanced_testcase {
     /**
      * Ensure that an execute with an invalid component is rejected.

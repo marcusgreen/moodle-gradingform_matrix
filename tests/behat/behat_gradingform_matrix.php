@@ -27,6 +27,9 @@
 
 require_once(__DIR__ . '/../../../../../../lib/behat/behat_base.php');
 
+// Behat reads each step definition from a single line of its docblock.
+// phpcs:disable moodle.Files.LineLength
+
 use Behat\Gherkin\Node\TableNode;
 use Behat\Mink\Exception\ElementNotFoundException;
 use Behat\Mink\Exception\ExpectationException;
@@ -269,7 +272,9 @@ class behat_gradingform_matrix extends behat_base {
     }
 
     /**
-     * Grades filling the current page matrix. Set one line per criterion and for each criterion set "| Criterion name | Points | Remark |".
+     * Grades filling the current page matrix.
+     *
+     * Set one line per criterion and for each criterion set "| Criterion name | Points | Remark |".
      *
      * @When /^I grade by filling the matrix with:$/
      *
@@ -320,7 +325,7 @@ class behat_gradingform_matrix extends behat_base {
                 $radioxpath = $this->get_criterion_xpath($name) .
                     $selectedlevelxpath . "/descendant::input[@type='radio']";
                 $radionode = $this->find('xpath', $radioxpath);
-                // which will delegate the process to the field type.
+                // Setting the value delegates the process to the field type.
                 $radionode->setValue($radionode->getAttribute('value'));
             }
 
@@ -342,8 +347,8 @@ class behat_gradingform_matrix extends behat_base {
      *
      * @Then /^the level with "(?P<points_number>\d+)" points was previously selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
-     * @param string $criterionname
      * @param int $points
+     * @param string $criterionname
      * @return void
      */
     public function the_level_with_points_was_previously_selected_for_the_matrix_criterion($points, $criterionname) {
@@ -370,8 +375,8 @@ class behat_gradingform_matrix extends behat_base {
      *
      * @Then /^the level with "(?P<points_number>\d+)" points is selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
-     * @param string $criterionname
      * @param int $points
+     * @param string $criterionname
      * @return void
      */
     public function the_level_with_points_is_selected_for_the_matrix_criterion($points, $criterionname) {
@@ -400,8 +405,8 @@ class behat_gradingform_matrix extends behat_base {
      *
      * @Then /^the level with "(?P<points_number>\d+)" points is not selected for the matrix criterion "(?P<criterion_name_string>(?:[^"]|\\")*)"$/
      * @throws ExpectationException
-     * @param string $criterionname
      * @param int $points
+     * @param string $criterionname
      * @return void
      */
     public function the_level_with_points_is_not_selected_for_the_matrix_criterion($points, $criterionname) {

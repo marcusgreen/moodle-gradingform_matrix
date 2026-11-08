@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Defines matrix backup structures
  *
@@ -37,16 +35,16 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
      */
     protected function define_definition_plugin_structure() {
 
-        // Append data only if the grand-parent element has 'method' set to 'matrix'
+        // Append data only if the grand-parent element has 'method' set to 'matrix'.
         $plugin = $this->get_plugin_element(null, '../../method', 'matrix');
 
-        // Create a visible container for our data
+        // Create a visible container for our data.
         $pluginwrapper = new backup_nested_element($this->get_recommended_name());
 
-        // Connect our visible container to the parent
+        // Connect our visible container to the parent.
         $plugin->add_child($pluginwrapper);
 
-        // Define our elements
+        // Define our elements.
 
         $criteria = new backup_nested_element('matrixcriteria');
 
@@ -58,14 +56,14 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
         $level = new backup_nested_element('matrixlevel', ['id'], [
             'score', 'definition', 'definitionformat']);
 
-        // Build elements hierarchy
+        // Build elements hierarchy.
 
         $pluginwrapper->add_child($criteria);
         $criteria->add_child($criterion);
         $criterion->add_child($levels);
         $levels->add_child($level);
 
-        // Set sources to populate the data
+        // Set sources to populate the data.
 
         $criterion->set_source_table(
             'gradingform_matrix_criteria',
@@ -77,8 +75,8 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
             ['criterionid' => backup::VAR_PARENTID]
         );
 
-        // no need to annotate ids or files yet (one day when criterion definition supports
-        // embedded files, they must be annotated here)
+        // No need to annotate ids or files yet (one day when criterion definition supports
+        // embedded files, they must be annotated here).
 
         return $plugin;
     }
@@ -88,30 +86,30 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
      */
     protected function define_instance_plugin_structure() {
 
-        // Append data only if the ancestor 'definition' element has 'method' set to 'matrix'
+        // Append data only if the ancestor 'definition' element has 'method' set to 'matrix'.
         $plugin = $this->get_plugin_element(null, '../../../../method', 'matrix');
 
-        // Create a visible container for our data
+        // Create a visible container for our data.
         $pluginwrapper = new backup_nested_element($this->get_recommended_name());
 
-        // Connect our visible container to the parent
+        // Connect our visible container to the parent.
         $plugin->add_child($pluginwrapper);
 
-        // Define our elements
+        // Define our elements.
 
         $fillings = new backup_nested_element('fillings');
 
         $filling = new backup_nested_element('filling', ['id'], [
             'criterionid', 'levelid', 'remark', 'remarkformat']);
 
-        // Build elements hierarchy
+        // Build elements hierarchy.
 
         $pluginwrapper->add_child($fillings);
         $fillings->add_child($filling);
 
-        // Set sources to populate the data
+        // Set sources to populate the data.
 
-        // Binding criterionid to ensure it's existence
+        // Binding criterionid to ensure its existence.
         $filling->set_source_sql(
             'SELECT rf.*
                 FROM {gradingform_matrix_fillings} rf
@@ -121,8 +119,8 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
             ['instanceid' => backup::VAR_PARENTID]
         );
 
-        // no need to annotate ids or files yet (one day when remark field supports
-        // embedded fileds, they must be annotated here)
+        // No need to annotate ids or files yet (one day when remark field supports
+        // embedded files, they must be annotated here).
 
         return $plugin;
     }

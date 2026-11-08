@@ -26,6 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once("HTML/QuickForm/input.php");
 
+// The QuickForm methods this element overrides (toHtml(), exportValue() and others) are camelCase.
+// phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseMethod
+
 /**
  * Form element for handling matrix editor
  *
@@ -43,7 +46,7 @@ require_once("HTML/QuickForm/input.php");
  */
 class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     /** @var string help message */
-    public $_helpbutton = '';
+    public $_helpbutton = ''; // phpcs:ignore PSR2.Classes.PropertyDeclaration.Underscore
     /** @var string|bool stores the result of the last validation: null - undefined, false - no errors, string - error(s) text */
     protected $validationerrors = null;
     /** @var bool if element has already been validated **/
@@ -52,17 +55,6 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     protected $nonjsbuttonpressed = false;
     /** @var bool Message to display in front of the editor (that there exist grades on this matrix being edited) */
     protected $regradeconfirmation = false;
-
-    /**
-     * Constructor for matrix editor
-     *
-     * @param string $elementName
-     * @param string $elementLabel
-     * @param array $attributes
-     */
-    public function __construct($elementName = null, $elementLabel = null, $attributes = null) {
-        parent::__construct($elementName, $elementLabel, $attributes);
-    }
 
     /**
      * get html for help button
@@ -120,7 +112,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             );
             $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', [$name]);
         } else {
-            // Matrix is frozen, no javascript needed
+            // Matrix is frozen, no javascript needed.
             if ($this->_persistantFreeze) {
                 $mode = gradingform_matrix_controller::DISPLAY_EDIT_FROZEN;
             } else {
@@ -167,10 +159,10 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             $value['criteria'] = [];
             $errors['err_nocriteria'] = 1;
         }
-        // If options are present in $value, replace default values with submitted values
+        // If options are present in $value, replace default values with submitted values.
         if (!empty($value['options'])) {
             foreach (array_keys($return['options']) as $option) {
-                // special treatment for checkboxes
+                // Special treatment for checkboxes.
                 if (!empty($value['options'][$option])) {
                     $return['options'][$option] = $value['options'][$option];
                 } else {
@@ -179,7 +171,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             }
         }
         if (is_array($value)) {
-            // for other array keys of $value no special treatmeant neeeded, copy them to return value as is
+            // For other array keys of $value no special treatment needed, copy them to return value as is.
             foreach (array_keys($value) as $key) {
                 if ($key != 'options' && $key != 'criteria') {
                     $return[$key] = $value[$key];
@@ -187,7 +179,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             }
         }
 
-        // iterate through criteria
+        // Iterate through criteria.
         $lastaction = null;
         $lastid = null;
         $overallminscore = $overallmaxscore = 0;
@@ -196,7 +188,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 $id = $this->get_next_id(array_keys($value['criteria']));
                 $criterion = ['description' => '', 'levels' => []];
                 $i = 0;
-                // when adding new criterion copy the number of levels and their scores from the last criterion
+                // When adding new criterion copy the number of levels and their scores from the last criterion.
                 if (!empty($value['criteria'][$lastid]['levels'])) {
                     foreach ($value['criteria'][$lastid]['levels'] as $lastlevel) {
                         $criterion['levels']['NEWID' . ($i++)]['score'] = $lastlevel['score'];
@@ -204,11 +196,11 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 } else {
                     $criterion['levels']['NEWID' . ($i++)]['score'] = 0;
                 }
-                // add more levels so there are at least 3 in the new criterion. Increment by 1 the score for each next one
+                // Add more levels so there are at least 3 in the new criterion. Increment by 1 the score for each next one.
                 for ($i = $i; $i < 3; $i++) {
                     $criterion['levels']['NEWID' . $i]['score'] = $criterion['levels']['NEWID' . ($i - 1)]['score'] + 1;
                 }
-                // set other necessary fields (definition) for the levels in the new criterion
+                // Set other necessary fields (definition) for the levels in the new criterion.
                 foreach (array_keys($criterion['levels']) as $i) {
                     $criterion['levels'][$i]['definition'] = '';
                 }
@@ -299,13 +291,13 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             $errors['err_totalscore'] = 1;
         }
 
-        // add sort order field to criteria
+        // Add sort order field to criteria.
         $csortorder = 1;
         foreach (array_keys($return['criteria']) as $id) {
             $return['criteria'][$id]['sortorder'] = $csortorder++;
         }
 
-        // create validation error string (if needed)
+        // Create validation error string (if needed).
         if ($withvalidation) {
             if (!$return['options']['lockzeropoints']) {
                 if ($overallminscore == $overallmaxscore) {
@@ -377,12 +369,12 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
      * Prepares the data for saving
      *
      * @see prepare_data()
-     * @param array $submitValues
+     * @param array $submitvalues
      * @param boolean $assoc
      * @return array
      */
-    public function exportValue(&$submitValues, $assoc = false) {
-        $value = $this->prepare_data($this->_findValue($submitValues));
+    public function exportValue(&$submitvalues, $assoc = false) {
+        $value = $this->prepare_data($this->_findValue($submitvalues));
         return $this->_prepareValue($value, $assoc);
     }
 }

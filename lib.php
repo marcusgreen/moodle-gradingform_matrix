@@ -56,7 +56,7 @@ class gradingform_matrix_controller extends gradingform_controller {
     /** Grading method name, used to compare against a grade item's advanced grading method. */
     const METHOD = 'matrix';
 
-    // Modes of displaying the matrix (used in gradingform_matrix_renderer)
+    // Modes of displaying the matrix (used in gradingform_matrix_renderer).
     /** Matrix display mode: For editing (moderator or teacher creates a matrix) */
     const DISPLAY_EDIT_FULL     = 1;
     /** Matrix display mode: Preview the matrix design with hidden fields */
@@ -81,8 +81,8 @@ class gradingform_matrix_controller extends gradingform_controller {
      * FEATURE_ADVANCED_GRADING, the user has the permission moodle/grade:managegradingforms
      * and there is an area with the active grading method set to 'matrix'.
      *
-     * @param settings_navigation $settingsnav {@link settings_navigation}
-     * @param navigation_node $node {@link navigation_node}
+     * @param settings_navigation $settingsnav {@see settings_navigation}
+     * @param navigation_node|null $node {@see navigation_node}
      */
     public function extend_settings_navigation(settings_navigation $settingsnav, ?navigation_node $node = null) {
         $node->add(
@@ -101,18 +101,21 @@ class gradingform_matrix_controller extends gradingform_controller {
      * This function is called when the context for the page is an activity module with the
      * FEATURE_ADVANCED_GRADING and there is an area with the active grading method set to the given plugin.
      *
-     * @param global_navigation $navigation {@link global_navigation}
-     * @param navigation_node $node {@link navigation_node}
+     * @param global_navigation $navigation {@see global_navigation}
+     * @param navigation_node|null $node {@see navigation_node}
      */
     public function extend_navigation(global_navigation $navigation, ?navigation_node $node = null) {
         if (has_capability('moodle/grade:managegradingforms', $this->get_context())) {
-            // no need for preview if user can manage forms, he will have link to manage.php in settings instead
+            // No need for preview if user can manage forms, they have a link to manage.php in settings instead.
             return;
         }
         if ($this->is_form_defined() && ($options = $this->get_options()) && !empty($options['alwaysshowdefinition'])) {
             $node->add(
                 get_string('gradingof', 'gradingform_matrix', get_grading_manager($this->get_areaid())->get_area_title()),
-                new moodle_url('/grade/grading/form/' . $this->get_method_name() . '/preview.php', ['areaid' => $this->get_areaid()]),
+                new moodle_url(
+                    '/grade/grading/form/' . $this->get_method_name() . '/preview.php',
+                    ['areaid' => $this->get_areaid()]
+                ),
                 settings_navigation::TYPE_CUSTOM
             );
         }
@@ -138,7 +141,8 @@ class gradingform_matrix_controller extends gradingform_controller {
      * 0 - no changes
      * 1 - only texts or criteria sortorders are changed, students probably do not require re-grading
      * 2 - added levels but maximum score on matrix is the same, students still may not require re-grading
-     * 3 - removed criteria or added levels or changed number of points, students require re-grading but may be re-graded automatically
+     * 3 - removed criteria or added levels or changed number of points, students require re-grading but may be
+     *     re-graded automatically
      * 4 - removed levels - students require re-grading and not all students may be re-graded automatically
      * 5 - added criteria - all students require manual re-grading
      *
@@ -557,7 +561,7 @@ class gradingform_matrix_controller extends gradingform_controller {
      *
      * @see parent::get_definition_copy()
      * @param gradingform_controller $target the controller of the new copy
-     * @return stdClass definition structure to pass to the target's {@link update_definition()}
+     * @return stdClass definition structure to pass to the target's {@see update_definition()}
      */
     public function get_definition_copy(gradingform_controller $target) {
 
@@ -661,7 +665,7 @@ class gradingform_matrix_controller extends gradingform_controller {
             $showdescription = true;
         } else {
             if (empty($options['alwaysshowdefinition'])) {
-                // ensure we don't display unless show matrix option enabled
+                // Ensure we don't display unless show matrix option enabled.
                 return '';
             }
             $showdescription = $options['showdescriptionstudent'];
@@ -708,10 +712,8 @@ class gradingform_matrix_controller extends gradingform_controller {
      */
     public function get_or_create_instance($instanceid, $raterid, $itemid) {
         global $DB;
-        if (
-            $instanceid &&
-                $instance = $DB->get_record('grading_instances', ['id'  => $instanceid, 'raterid' => $raterid, 'itemid' => $itemid], '*', IGNORE_MISSING)
-        ) {
+        $conditions = ['id' => $instanceid, 'raterid' => $raterid, 'itemid' => $itemid];
+        if ($instanceid && $instance = $DB->get_record('grading_instances', $conditions, '*', IGNORE_MISSING)) {
             return $this->get_instance($instance);
         }
         if ($itemid && $raterid) {
@@ -745,7 +747,7 @@ class gradingform_matrix_controller extends gradingform_controller {
         return $this->get_renderer($page)->display_instances($this->get_active_instances($itemid), $defaultcontent, $cangrade);
     }
 
-    // ///// full-text search support /////////////////////////////////////////////
+    // Full-text search support.
 
     /**
      * Prepare the part of the search query to append to the FROM statement
@@ -774,11 +776,11 @@ class gradingform_matrix_controller extends gradingform_controller {
         $subsql = [];
         $params = [];
 
-        // search in matrix criteria description
+        // Search in matrix criteria description.
         $subsql[] = $DB->sql_like('rc.description', '?', false, false);
         $params[] = '%' . $DB->sql_like_escape($token) . '%';
 
-        // search in matrix levels definition
+        // Search in matrix levels definition.
         $subsql[] = $DB->sql_like('rl.definition', '?', false, false);
         $params[] = '%' . $DB->sql_like_escape($token) . '%';
 
@@ -798,36 +800,34 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
+     * Describes the definition details returned by core_grading_external::get_definitions().
+     *
      * @return array An array containing a single key/value pair with the 'matrix_criteria' external_multiple_structure.
      * @see gradingform_controller::get_external_definition_details()
      * @since Moodle 2.5
      */
     public static function get_external_definition_details() {
-        $matrix_criteria = new external_multiple_structure(
-            new external_single_structure(
-                [
-                   'id'   => new external_value(PARAM_INT, 'criterion id', VALUE_OPTIONAL),
-                   'sortorder' => new external_value(PARAM_INT, 'sortorder', VALUE_OPTIONAL),
-                   'description' => new external_value(PARAM_RAW, 'description', VALUE_OPTIONAL),
-                   'descriptionformat' => new external_format_value('description', VALUE_OPTIONAL),
-                   'levels' => new external_multiple_structure(
-                       new external_single_structure(
-                           [
-                                        'id' => new external_value(PARAM_INT, 'level id', VALUE_OPTIONAL),
-                                        'score' => new external_value(PARAM_FLOAT, 'score', VALUE_OPTIONAL),
-                                        'definition' => new external_value(PARAM_RAW, 'definition', VALUE_OPTIONAL),
-                                        'definitionformat' => new external_format_value('definition', VALUE_OPTIONAL),
-                                       ]
-                       ),
-                       'levels',
-                       VALUE_OPTIONAL
-                   ),
-                   ]
-            ),
+        $criteria = new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'criterion id', VALUE_OPTIONAL),
+                'sortorder' => new external_value(PARAM_INT, 'sortorder', VALUE_OPTIONAL),
+                'description' => new external_value(PARAM_RAW, 'description', VALUE_OPTIONAL),
+                'descriptionformat' => new external_format_value('description', VALUE_OPTIONAL),
+                'levels' => new external_multiple_structure(
+                    new external_single_structure([
+                        'id' => new external_value(PARAM_INT, 'level id', VALUE_OPTIONAL),
+                        'score' => new external_value(PARAM_FLOAT, 'score', VALUE_OPTIONAL),
+                        'definition' => new external_value(PARAM_RAW, 'definition', VALUE_OPTIONAL),
+                        'definitionformat' => new external_format_value('definition', VALUE_OPTIONAL),
+                    ]),
+                    'levels',
+                    VALUE_OPTIONAL
+                ),
+            ]),
             'definition details',
             VALUE_OPTIONAL
         );
-        return ['matrix_criteria' => $matrix_criteria];
+        return ['matrix_criteria' => $criteria];
     }
 
     /**
@@ -865,7 +865,7 @@ class gradingform_matrix_controller extends gradingform_controller {
  * @copyright  2011 Marina Glancy
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class gradingform_matrix_instance extends gradingform_instance {
+class gradingform_matrix_instance extends gradingform_instance { // phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
     /** @var array stores the matrix, has two keys: 'criteria' and 'options' */
     protected $matrix;
 
@@ -1004,7 +1004,11 @@ class gradingform_matrix_instance extends gradingform_instance {
         if ($value === null) {
             $value = $this->get_matrix_filling();
         } else if (!$this->validate_grading_element($value)) {
-            $html .= html_writer::tag('div', get_string('formnotcompleted', 'gradingform_matrix'), ['class' => 'gradingform_matrix-error']);
+            $html .= html_writer::tag(
+                'div',
+                get_string('formnotcompleted', 'gradingform_matrix'),
+                ['class' => 'gradingform_matrix-error']
+            );
         }
         $currentinstance = $this->get_current_instance();
         if ($currentinstance && $currentinstance->get_status() == gradingform_instance::INSTANCE_STATUS_NEEDUPDATE) {
@@ -1033,12 +1037,21 @@ class gradingform_matrix_instance extends gradingform_instance {
             }
         }
         if ($this->get_data('isrestored') && $haschanges) {
-            $html .= html_writer::tag('div', get_string('restoredfromdraft', 'gradingform_matrix'), ['class' => 'gradingform_matrix-restored']);
+            $html .= html_writer::tag(
+                'div',
+                get_string('restoredfromdraft', 'gradingform_matrix'),
+                ['class' => 'gradingform_matrix-restored']
+            );
         }
         if (!empty($options['showdescriptionteacher'])) {
-            $html .= html_writer::tag('div', $this->get_controller()->get_formatted_description(), ['class' => 'gradingform_matrix-description']);
+            $html .= html_writer::tag(
+                'div',
+                $this->get_controller()->get_formatted_description(),
+                ['class' => 'gradingform_matrix-description']
+            );
         }
-        $html .= $this->get_controller()->get_renderer($page)->display_matrix($criteria, $options, $mode, $gradingformelement->getName(), $value);
+        $renderer = $this->get_controller()->get_renderer($page);
+        $html .= $renderer->display_matrix($criteria, $options, $mode, $gradingformelement->getName(), $value);
         return $html;
     }
 }

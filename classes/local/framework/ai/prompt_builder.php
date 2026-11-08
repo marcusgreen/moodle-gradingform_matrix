@@ -16,6 +16,9 @@
 
 namespace gradingform_matrix\local\framework\ai;
 
+// Backticks here are Markdown code fences around the JSON proposal, not shell commands.
+// phpcs:disable moodle.Strings.ForbiddenStrings.Found
+
 /**
  * Builds the prompt for one turn of a conversation about a level-based grading form.
  *

@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Restores the matrix specific data from grading.xml file
  *
@@ -35,7 +33,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
     /**
      * Declares the matrix XML paths attached to the form definition element
      *
-     * @return array of {@link restore_path_element}
+     * @return array of {@see restore_path_element}
      */
     protected function define_definition_plugin_structure() {
 
@@ -57,7 +55,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
     /**
      * Declares the matrix XML paths attached to the form instance element
      *
-     * @return array of {@link restore_path_element}
+     * @return array of {@see restore_path_element}
      */
     protected function define_instance_plugin_structure() {
 
@@ -75,7 +73,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
      * Processes criterion element data
      *
      * Sets the mapping 'gradingform_matrix_criterion' to be used later by
-     * {@link self::process_gradingform_matrix_filling()}
+     * {@see self::process_gradingform_matrix_filling()}
      *
      * @param stdClass|array $data
      */
@@ -94,7 +92,7 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
      * Processes level element data
      *
      * Sets the mapping 'gradingform_matrix_level' to be used later by
-     * {@link self::process_gradingform_matrix_filling()}
+     * {@see self::process_gradingform_matrix_filling()}
      *
      * @param stdClass|array $data
      */

@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Grading method plugin renderer
  *
@@ -47,42 +45,62 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * Also JavaScript relies on the class names of elements and when developer changes them
      * script might stop working.
      *
-     * @param int $mode matrix display mode, see {@link gradingform_matrix_controller}
-     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode, see {@see gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are:
+     *     {@see gradingform_matrix_controller::get_default_options()}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
      * @param array|null $criterion criterion data
      * @param string $levelsstr evaluated templates for this criterion levels
      * @param array|null $value (only in view mode) teacher's feedback on this criterion
      * @return string
      */
-    public function criterion_template($mode, $options, $elementname = '{NAME}', $criterion = null, $levelsstr = '{LEVELS}', $value = null) {
+    public function criterion_template(
+        $mode,
+        $options,
+        $elementname = '{NAME}',
+        $criterion = null,
+        $levelsstr = '{LEVELS}',
+        $value = null
+    ) {
         // TODO MDL-31235 description format, remark format.
         // Until per-field formats are stored, criterion descriptions and level definitions are
         // rendered as Markdown in display modes (see format_text() calls below). Edit textareas and
         // round-trip hidden inputs keep the raw text, and aria-labels stay plain text.
         if ($criterion === null || !is_array($criterion) || !array_key_exists('id', $criterion)) {
-            $criterion = ['id' => '{CRITERION-id}', 'description' => '{CRITERION-description}', 'sortorder' => '{CRITERION-sortorder}', 'class' => '{CRITERION-class}'];
+            $criterion = [
+                'id' => '{CRITERION-id}',
+                'description' => '{CRITERION-description}',
+                'sortorder' => '{CRITERION-sortorder}',
+                'class' => '{CRITERION-class}',
+            ];
         } else {
             foreach (['sortorder', 'description', 'class'] as $key) {
-                // set missing array elements to empty strings to avoid warnings
+                // Set missing array elements to empty strings to avoid warnings.
                 if (!array_key_exists($key, $criterion)) {
                     $criterion[$key] = '';
                 }
             }
         }
-        $criteriontemplate = html_writer::start_tag('tr', ['class' => 'criterion' . $criterion['class'], 'id' => '{NAME}-criteria-{CRITERION-id}']);
+        $criteriontemplate = html_writer::start_tag(
+            'tr',
+            ['class' => 'criterion' . $criterion['class'], 'id' => '{NAME}-criteria-{CRITERION-id}']
+        );
         if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FULL) {
             $criteriontemplate .= html_writer::start_tag('td', ['class' => 'controls']);
             foreach (['moveup', 'delete', 'movedown', 'duplicate'] as $key) {
                 $value = get_string('criterion' . $key, 'gradingform_matrix');
-                $button = html_writer::empty_tag('input', ['type' => 'submit', 'name' => '{NAME}[criteria][{CRITERION-id}][' . $key . ']',
-                    'id' => '{NAME}-criteria-{CRITERION-id}-' . $key, 'value' => $value]);
+                $button = html_writer::empty_tag('input', [
+                    'type' => 'submit',
+                    'name' => '{NAME}[criteria][{CRITERION-id}][' . $key . ']',
+                    'id' => '{NAME}-criteria-{CRITERION-id}-' . $key,
+                    'value' => $value,
+                ]);
                 $criteriontemplate .= html_writer::tag('div', $button, ['class' => $key]);
             }
             $criteriontemplate .= html_writer::empty_tag('input', ['type' => 'hidden',
                                                                         'name' => '{NAME}[criteria][{CRITERION-id}][sortorder]',
                                                                         'value' => $criterion['sortorder']]);
-            $criteriontemplate .= html_writer::end_tag('td'); // .controls
+            $criteriontemplate .= html_writer::end_tag('td'); // End of .controls.
 
             // Criterion description text area.
             $descriptiontextareaparams = [
@@ -94,8 +112,16 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             $description = html_writer::tag('textarea', s($criterion['description']), $descriptiontextareaparams);
         } else {
             if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FROZEN) {
-                $criteriontemplate .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][sortorder]', 'value' => $criterion['sortorder']]);
-                $criteriontemplate .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][description]', 'value' => $criterion['description']]);
+                $criteriontemplate .= html_writer::empty_tag('input', [
+                    'type' => 'hidden',
+                    'name' => '{NAME}[criteria][{CRITERION-id}][sortorder]',
+                    'value' => $criterion['sortorder'],
+                ]);
+                $criteriontemplate .= html_writer::empty_tag('input', [
+                    'type' => 'hidden',
+                    'name' => '{NAME}[criteria][{CRITERION-id}][description]',
+                    'value' => $criterion['description'],
+                ]);
             }
             $description = format_text($criterion['description'], FORMAT_MARKDOWN);
         }
@@ -116,7 +142,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             // Set description's cell as tab-focusable.
             $descriptiontdparams['tabindex'] = '0';
             // Set label for the criterion cell.
-            $descriptiontdparams['aria-label'] = get_string('criterion', 'gradingform_matrix', $this->plain_text($criterion['description']));
+            $descriptiontdparams['aria-label'] = get_string(
+                'criterion',
+                'gradingform_matrix',
+                $this->plain_text($criterion['description'])
+            );
         }
 
         // Default value for criterion ids.
@@ -164,11 +194,17 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         $criteriontemplate .= html_writer::tag('td', $levelsstrtable, ['class' => $levelsclass]);
         if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FULL) {
             $value = get_string('criterionaddlevel', 'gradingform_matrix');
-            $button = html_writer::empty_tag('input', ['type' => 'submit', 'name' => '{NAME}[criteria][{CRITERION-id}][levels][addlevel]',
-                'id' => '{NAME}-criteria-{CRITERION-id}-levels-addlevel', 'value' => $value, 'class' => 'btn btn-secondary']);
+            $button = html_writer::empty_tag('input', [
+                'type' => 'submit',
+                'name' => '{NAME}[criteria][{CRITERION-id}][levels][addlevel]',
+                'id' => '{NAME}-criteria-{CRITERION-id}-levels-addlevel',
+                'value' => $value,
+                'class' => 'btn btn-secondary',
+            ]);
             $criteriontemplate .= html_writer::tag('td', $button, ['class' => 'addlevel']);
         }
-        $displayremark = ($options['enableremarks'] && ($mode != gradingform_matrix_controller::DISPLAY_VIEW || $options['showremarksstudent']));
+        $displayremark = $options['enableremarks']
+            && ($mode != gradingform_matrix_controller::DISPLAY_VIEW || $options['showremarksstudent']);
         if ($displayremark) {
             $currentremark = '';
             if (isset($value['remark'])) {
@@ -192,8 +228,17 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 $input = html_writer::tag('textarea', s($currentremark), $remarkparams);
                 $criteriontemplate .= html_writer::tag('td', $input, ['class' => 'remark']);
             } else if ($mode == gradingform_matrix_controller::DISPLAY_EVAL_FROZEN) {
-                $criteriontemplate .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][remark]', 'value' => $currentremark]);
-            } else if ($mode == gradingform_matrix_controller::DISPLAY_REVIEW || $mode == gradingform_matrix_controller::DISPLAY_VIEW) {
+                $criteriontemplate .= html_writer::empty_tag('input', [
+                    'type' => 'hidden',
+                    'name' => '{NAME}[criteria][{CRITERION-id}][remark]',
+                    'value' => $currentremark,
+                ]);
+            } else if (
+                in_array($mode, [
+                    gradingform_matrix_controller::DISPLAY_REVIEW,
+                    gradingform_matrix_controller::DISPLAY_VIEW,
+                ])
+            ) {
                 // HTML parameters for remarks cell.
                 $remarkparams = [
                     'class' => 'remark',
@@ -204,7 +249,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 $criteriontemplate .= html_writer::tag('td', s($currentremark), $remarkparams);
             }
         }
-        $criteriontemplate .= html_writer::end_tag('tr'); // .criterion
+        $criteriontemplate .= html_writer::end_tag('tr'); // End of .criterion.
 
         $criteriontemplate = str_replace('{NAME}', $elementname, $criteriontemplate);
         $criteriontemplate = str_replace('{CRITERION-id}', $criterion['id'], $criteriontemplate);
@@ -226,20 +271,28 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * Also JavaScript relies on the class names of elements and when developer changes them
      * script might stop working.
      *
-     * @param int $mode matrix display mode see {@link gradingform_matrix_controller}
-     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode see {@see gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are:
+     *     {@see gradingform_matrix_controller::get_default_options()}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
      * @param string|int $criterionid either id of the nesting criterion or a macro for template
-     * @param array|null $level level data, also in view mode it might also have property $level['checked'] whether this level is checked
+     * @param array|null $level level data, also in view mode it might also have property $level['checked'] whether this
+     *     level is checked
      * @return string
      */
     public function level_template($mode, $options, $elementname = '{NAME}', $criterionid = '{CRITERION-id}', $level = null) {
-        // TODO MDL-31235 definition format
+        // TODO MDL-31235 definition format.
         if (!isset($level['id'])) {
-            $level = ['id' => '{LEVEL-id}', 'definition' => '{LEVEL-definition}', 'score' => '{LEVEL-score}', 'class' => '{LEVEL-class}', 'checked' => false];
+            $level = [
+                'id' => '{LEVEL-id}',
+                'definition' => '{LEVEL-definition}',
+                'score' => '{LEVEL-score}',
+                'class' => '{LEVEL-class}',
+                'checked' => false,
+            ];
         } else {
             foreach (['score', 'definition', 'class', 'checked', 'index'] as $key) {
-                // set missing array elements to empty strings to avoid warnings
+                // Set missing array elements to empty strings to avoid warnings.
                 if (!array_key_exists($key, $level)) {
                     $level[$key] = '';
                 }
@@ -249,7 +302,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         // Get level index.
         $levelindex = isset($level['index']) ? $level['index'] : '{LEVEL-index}';
 
-        // Template for one level within one criterion
+        // Template for one level within one criterion.
         $tdattributes = [
             'id' => '{NAME}-criteria-{CRITERION-id}-levels-{LEVEL-id}',
             'class' => 'text-break level' . $level['class'],
@@ -279,8 +332,16 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             $score = html_writer::empty_tag('input', $scoreparams);
         } else {
             if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FROZEN) {
-                $leveltemplate .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][levels][{LEVEL-id}][definition]', 'value' => $level['definition']]);
-                $leveltemplate .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => '{NAME}[criteria][{CRITERION-id}][levels][{LEVEL-id}][score]', 'value' => $level['score']]);
+                $leveltemplate .= html_writer::empty_tag('input', [
+                    'type' => 'hidden',
+                    'name' => '{NAME}[criteria][{CRITERION-id}][levels][{LEVEL-id}][definition]',
+                    'value' => $level['definition'],
+                ]);
+                $leveltemplate .= html_writer::empty_tag('input', [
+                    'type' => 'hidden',
+                    'name' => '{NAME}[criteria][{CRITERION-id}][levels][{LEVEL-id}][score]',
+                    'value' => $level['score'],
+                ]);
             }
             $definition = format_text($level['definition'], FORMAT_MARKDOWN);
             $score = $level['score'];
@@ -308,7 +369,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 ]
             );
         }
-        $score = html_writer::tag('span', $score, ['id' => '{NAME}-criteria-{CRITERION-id}-levels-{LEVEL-id}-score', 'class' => 'scorevalue']);
+        $score = html_writer::tag(
+            'span',
+            $score,
+            ['id' => '{NAME}-criteria-{CRITERION-id}-levels-{LEVEL-id}-score', 'class' => 'scorevalue']
+        );
         $definitionclass = 'definition';
         if (isset($level['error_definition'])) {
             $definitionclass .= ' error';
@@ -347,10 +412,19 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         ];
         $leveltemplate .= html_writer::div($definition, $definitionclass, $leveltemplateparams);
         $displayscore = true;
-        if (!$options['showscoreteacher'] && in_array($mode, [gradingform_matrix_controller::DISPLAY_EVAL, gradingform_matrix_controller::DISPLAY_EVAL_FROZEN, gradingform_matrix_controller::DISPLAY_REVIEW])) {
+        $teachermodes = [
+            gradingform_matrix_controller::DISPLAY_EVAL,
+            gradingform_matrix_controller::DISPLAY_EVAL_FROZEN,
+            gradingform_matrix_controller::DISPLAY_REVIEW,
+        ];
+        if (!$options['showscoreteacher'] && in_array($mode, $teachermodes)) {
             $displayscore = false;
         }
-        if (!$options['showscorestudent'] && in_array($mode, [gradingform_matrix_controller::DISPLAY_VIEW, gradingform_matrix_controller::DISPLAY_PREVIEW_GRADED])) {
+        $studentmodes = [
+            gradingform_matrix_controller::DISPLAY_VIEW,
+            gradingform_matrix_controller::DISPLAY_PREVIEW_GRADED,
+        ];
+        if (!$options['showscorestudent'] && in_array($mode, $studentmodes)) {
             $displayscore = false;
         }
         if ($displayscore) {
@@ -358,7 +432,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             if (isset($level['error_score'])) {
                 $scoreclass .= ' error';
             }
-            $leveltemplate .= html_writer::tag('div', get_string('scorepostfix', 'gradingform_matrix', $score), ['class' => $scoreclass]);
+            $leveltemplate .= html_writer::tag(
+                'div',
+                get_string('scorepostfix', 'gradingform_matrix', $score),
+                ['class' => $scoreclass]
+            );
         }
         if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FULL) {
             $value = get_string('leveldelete', 'gradingform_matrix', $levelindex);
@@ -371,7 +449,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             $button = html_writer::empty_tag('input', $buttonparams);
             $leveltemplate .= html_writer::tag('div', $button, ['class' => 'delete']);
         }
-        $leveltemplate .= html_writer::end_tag('div'); // .level-wrapper
+        $leveltemplate .= html_writer::end_tag('div'); // End of .level-wrapper.
 
         $leveltemplate = html_writer::tag('td', $leveltemplate, $tdattributes); // The .level cell.
 
@@ -394,14 +472,15 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * Also JavaScript relies on the class names of elements and when developer changes them
      * script might stop working.
      *
-     * @param int $mode matrix display mode see {@link gradingform_matrix_controller}
-     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode see {@see gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are:
+     *     {@see gradingform_matrix_controller::get_default_options()}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
      * @param string $criteriastr evaluated templates for this matrix's criteria
      * @return string
      */
     protected function matrix_template($mode, $options, $elementname, $criteriastr) {
-        $classsuffix = ''; // CSS suffix for class of the main div. Depends on the mode
+        $classsuffix = ''; // CSS suffix for class of the main div. Depends on the mode.
         switch ($mode) {
             case gradingform_matrix_controller::DISPLAY_EDIT_FULL:
                 $classsuffix = ' editor editable';
@@ -427,7 +506,10 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 break;
         }
 
-        $matrixtemplate = html_writer::start_tag('div', ['id' => 'matrix-{NAME}', 'class' => 'clearfix gradingform_matrix' . $classsuffix]);
+        $matrixtemplate = html_writer::start_tag(
+            'div',
+            ['id' => 'matrix-{NAME}', 'class' => 'clearfix gradingform_matrix' . $classsuffix]
+        );
 
         // Matrix table.
         $matrixtableparams = [
@@ -459,8 +541,9 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * Generates html template to view/edit the matrix options. Expression {NAME} is used in
      * template for the form element name
      *
-     * @param int $mode matrix display mode see {@link gradingform_matrix_controller}
-     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode see {@see gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are:
+     *     {@see gradingform_matrix_controller::get_default_options()}
      * @return string
      */
     protected function matrix_edit_options($mode, $options) {
@@ -469,7 +552,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 && $mode != gradingform_matrix_controller::DISPLAY_EDIT_FROZEN
                 && $mode != gradingform_matrix_controller::DISPLAY_PREVIEW
         ) {
-            // Options are displayed only for people who can manage
+            // Options are displayed only for people who can manage.
             return;
         }
         $html = html_writer::start_tag('div', ['class' => 'options']);
@@ -480,11 +563,14 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             $attrs = ['name' => '{NAME}[options][' . $option . ']', 'id' => '{NAME}-options-' . $option];
             switch ($option) {
                 case 'sortlevelsasc':
-                    // Display option as dropdown
+                    // Display option as dropdown.
                     $html .= html_writer::label(get_string($option, 'gradingform_matrix'), $attrs['id'], false);
-                    $value = (int)(!!$value); // make sure $value is either 0 or 1
+                    $value = (int)(!!$value); // Make sure $value is either 0 or 1.
                     if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FULL) {
-                        $selectoptions = [0 => get_string($option . '0', 'gradingform_matrix'), 1 => get_string($option . '1', 'gradingform_matrix')];
+                        $selectoptions = [
+                            0 => get_string($option . '0', 'gradingform_matrix'),
+                            1 => get_string($option . '1', 'gradingform_matrix'),
+                        ];
                         $valuestr = html_writer::select($selectoptions, $attrs['name'], $value, false, ['id' => $attrs['id']]);
                         $html .= html_writer::tag('span', $valuestr, ['class' => 'value']);
                     } else {
@@ -500,13 +586,18 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                         $attrs['id'] .= '_hidden';
                         $html .= html_writer::empty_tag('input', $attrs + ['type' => 'hidden', 'value' => $value]);
                     }
-                    // Display option as checkbox
+                    // Display option as checkbox.
                     $attrs['type'] = 'checkbox';
                     $attrs['value'] = 1;
                     if ($value) {
                         $attrs['checked'] = 'checked';
                     }
-                    if ($mode == gradingform_matrix_controller::DISPLAY_EDIT_FROZEN || $mode == gradingform_matrix_controller::DISPLAY_PREVIEW) {
+                    if (
+                        in_array($mode, [
+                            gradingform_matrix_controller::DISPLAY_EDIT_FROZEN,
+                            gradingform_matrix_controller::DISPLAY_PREVIEW,
+                        ])
+                    ) {
                         $attrs['disabled'] = 'disabled';
                         unset($attrs['name']);
                         // Id should be different then the actual input added later.
@@ -519,9 +610,9 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             if (get_string_manager()->string_exists($option . '_help', 'gradingform_matrix')) {
                 $html .= $this->help_icon($option, 'gradingform_matrix');
             }
-            $html .= html_writer::end_tag('div'); // .option
+            $html .= html_writer::end_tag('div'); // End of .option.
         }
-        $html .= html_writer::end_tag('div'); // .options
+        $html .= html_writer::end_tag('div'); // End of .options.
         return $html;
     }
 
@@ -535,8 +626,9 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * matrix_template
      *
      * @param array $criteria data about the matrix design
-     * @param array $options display options for this matrix, defaults are: {@link gradingform_matrix_controller::get_default_options()}
-     * @param int $mode matrix display mode, see {@link gradingform_matrix_controller}
+     * @param array $options display options for this matrix, defaults are:
+     *     {@see gradingform_matrix_controller::get_default_options()}
+     * @param int $mode matrix display mode, see {@see gradingform_matrix_controller}
      * @param string $elementname the name of the form element (in editor mode) or the prefix for div ids (in view mode)
      * @param array $values evaluation result
      * @return string
@@ -545,7 +637,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         $criteriastr = '';
         $cnt = 0;
         foreach ($criteria as $id => $criterion) {
-            $criterion['class'] = $this->get_css_class_suffix($cnt++, sizeof($criteria) - 1);
+            $criterion['class'] = $this->get_css_class_suffix($cnt++, count($criteria) - 1);
             $criterion['id'] = $id;
             $levelsstr = '';
             $levelcnt = 0;
@@ -557,11 +649,17 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             $index = 1;
             foreach ($criterion['levels'] as $levelid => $level) {
                 $level['id'] = $levelid;
-                $level['class'] = $this->get_css_class_suffix($levelcnt++, sizeof($criterion['levels']) - 1);
+                $level['class'] = $this->get_css_class_suffix($levelcnt++, count($criterion['levels']) - 1);
                 $level['checked'] = (isset($criterionvalue['levelid']) && ((int)$criterionvalue['levelid'] === $levelid));
-                if ($level['checked'] && ($mode == gradingform_matrix_controller::DISPLAY_EVAL_FROZEN || $mode == gradingform_matrix_controller::DISPLAY_REVIEW || $mode == gradingform_matrix_controller::DISPLAY_VIEW)) {
+                $checkedmodes = [
+                    gradingform_matrix_controller::DISPLAY_EVAL_FROZEN,
+                    gradingform_matrix_controller::DISPLAY_REVIEW,
+                    gradingform_matrix_controller::DISPLAY_VIEW,
+                ];
+                if ($level['checked'] && in_array($mode, $checkedmodes)) {
                     $level['class'] .= ' checked';
-                    // in mode DISPLAY_EVAL the class 'checked' will be added by JS if it is enabled. If JS is not enabled, the 'checked' class will only confuse
+                    // In mode DISPLAY_EVAL the class 'checked' will be added by JS if it is enabled. If JS is not enabled,
+                    // the 'checked' class will only confuse.
                 }
                 if (isset($criterionvalue['savedlevelid']) && ((int)$criterionvalue['savedlevelid'] === $levelid)) {
                     $level['class'] .= ' currentchecked';
@@ -609,7 +707,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      */
     public function display_instances($instances, $defaultcontent, $cangrade) {
         $return = '';
-        if (sizeof($instances)) {
+        if (count($instances)) {
             $return .= html_writer::start_tag('div', ['class' => 'advancedgrade']);
             $idx = 0;
             foreach ($instances as $instance) {

@@ -16,6 +16,9 @@
 
 namespace gradingform_matrix\external;
 
+// Backticks here are Markdown code fences around the JSON proposal, not shell commands.
+// phpcs:disable moodle.Strings.ForbiddenStrings.Found
+
 use core_ai\aiactions\responses\response_generate_text;
 use core_external\external_api;
 

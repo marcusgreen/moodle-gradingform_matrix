@@ -26,6 +26,8 @@ declare(strict_types=1);
 
 namespace gradingform_matrix\grades\grader\gradingpanel\external;
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 
 use coding_exception;
@@ -96,8 +98,8 @@ class store extends external_api {
      * @param int $contextid
      * @param string $itemname
      * @param int $gradeduserid
-     * @param string $formdata
      * @param bool $notifyuser
+     * @param string $formdata
      * @return array
      * @throws coding_exception
      * @throws moodle_exception

@@ -38,6 +38,9 @@ use gradingform_controller;
  * @copyright  2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\gradingform_matrix_generator::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\tests\gradingform_matrix\generator\matrix::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\tests\gradingform_matrix\generator\criterion::class)]
 final class generator_test extends advanced_testcase {
     /**
      * Test matrix creation.

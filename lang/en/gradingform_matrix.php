@@ -85,6 +85,7 @@ $string['formnotcompleted'] = 'Please choose something for each criterion';
 $string['formoptions'] = 'Grading form options';
 $string['formstatus'] = 'Current grading form status';
 $string['gradingform'] = 'Grading form';
+// phpcs:disable moodle.Strings.ForbiddenStrings.Found
 $string['gradingform_help'] = 'Define the grading form used to grade this activity. Add one or more criteria, each with a set of levels and scores.
 
 Criterion descriptions and level definitions support **Markdown**:
@@ -105,6 +106,7 @@ For example, a level definition could be:
 
     * relevant detail
     * at least two sources';
+// phpcs:enable
 $string['gradingof'] = '{$a} grading';
 $string['import'] = 'Import';
 $string['importerrorfile'] = 'The file contains an embedded file that can\'t be read: {$a}.';

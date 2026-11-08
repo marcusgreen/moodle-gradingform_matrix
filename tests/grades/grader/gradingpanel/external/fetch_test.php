@@ -34,6 +34,7 @@ use moodle_exception;
  * @copyright 2019 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(fetch::class)]
 final class fetch_test extends advanced_testcase {
     /**
      * Ensure that an execute with an invalid component is rejected.
@@ -223,6 +224,13 @@ final class fetch_test extends advanced_testcase {
 
     /**
      * Executes and performs all the assertions of the fetch method with the given parameters.
+     *
+     * @param forum_entity $forum
+     * @param \gradingform_controller $controller
+     * @param \stdClass $definition
+     * @param \stdClass $fetcheruser the user who fetches the grading panel
+     * @param \stdClass $grader the user who grades
+     * @param \stdClass $gradeduser the user being graded
      */
     private function execute_and_assert_fetch($forum, $controller, $definition, $fetcheruser, $grader, $gradeduser) {
         $generator = \testing_util::get_data_generator();

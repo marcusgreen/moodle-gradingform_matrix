@@ -26,7 +26,11 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/formslib.php');
 require_once(__DIR__ . '/matrixeditor.php');
-MoodleQuickForm::registerElementType('matrixeditor', $CFG->dirroot . '/grade/grading/form/matrix/matrixeditor.php', 'MoodleQuickForm_matrixeditor');
+MoodleQuickForm::registerElementType(
+    'matrixeditor',
+    $CFG->dirroot . '/grade/grading/form/matrix/matrixeditor.php',
+    'MoodleQuickForm_matrixeditor'
+);
 
 /**
  * Defines the matrix edit form
@@ -48,23 +52,25 @@ class gradingform_matrix_editmatrix extends moodleform {
         $form->addElement('hidden', 'returnurl');
         $form->setType('returnurl', PARAM_LOCALURL);
 
-        // name
+        // Name.
         $form->addElement('text', 'name', get_string('name', 'gradingform_matrix'), ['size' => 52, 'aria-required' => 'true']);
         $form->addRule('name', get_string('required'), 'required', null, 'client');
         $form->setType('name', PARAM_TEXT);
 
-        // description
+        // Description.
         $options = gradingform_matrix_controller::description_form_field_options($this->_customdata['context']);
         $form->addElement('editor', 'description_editor', get_string('description', 'gradingform_matrix'), null, $options);
         $form->setType('description_editor', PARAM_RAW);
 
-        // matrix completion status
+        // Matrix completion status.
         $choices = [];
-        $choices[gradingform_controller::DEFINITION_STATUS_DRAFT]    = html_writer::tag('span', get_string('statusdraft', 'core_grading'), ['class' => 'status draft']);
-        $choices[gradingform_controller::DEFINITION_STATUS_READY]    = html_writer::tag('span', get_string('statusready', 'core_grading'), ['class' => 'status ready']);
+        $choices[gradingform_controller::DEFINITION_STATUS_DRAFT] =
+            html_writer::tag('span', get_string('statusdraft', 'core_grading'), ['class' => 'status draft']);
+        $choices[gradingform_controller::DEFINITION_STATUS_READY] =
+            html_writer::tag('span', get_string('statusready', 'core_grading'), ['class' => 'status ready']);
         $form->addElement('select', 'status', get_string('formstatus', 'gradingform_matrix'), $choices)->freeze();
 
-        // matrix editor
+        // Matrix editor.
         $form->addElement('matrixeditor', 'matrix', get_string('gradingform', 'gradingform_matrix'));
         $form->addHelpButton('matrix', 'gradingform', 'gradingform_matrix');
         $form->setType('matrix', PARAM_RAW);
@@ -98,7 +104,7 @@ class gradingform_matrix_editmatrix extends moodleform {
         } else {
             $vals = array_values($el->getValue());
             if ($vals[0] == gradingform_controller::DEFINITION_STATUS_READY) {
-                $this->findButton('saveform')->setValue(get_string('save', 'gradingform_matrix'));
+                $this->find_button('saveform')->setValue(get_string('save', 'gradingform_matrix'));
             }
         }
     }
@@ -119,13 +125,13 @@ class gradingform_matrix_editmatrix extends moodleform {
         $form = $this->_form;
         $matrixel = $form->getElement('matrix');
         if ($matrixel->non_js_button_pressed($data['matrix'])) {
-            // if JS is disabled and button such as 'Add criterion' is pressed - prevent from submit
+            // If JS is disabled and button such as 'Add criterion' is pressed - prevent from submit.
             $err['formdummy'] = 1;
         } else if (isset($data['editform'])) {
-            // continue editing
+            // Continue editing.
             $err['formdummy'] = 1;
         } else if (isset($data['saveform']) && $data['saveform']) {
-            // If user attempts to make matrix active - it needs to be validated
+            // If user attempts to make matrix active - it needs to be validated.
             if ($matrixel->validate($data['matrix']) !== false) {
                 $err['formdummy'] = 1;
             }
@@ -159,24 +165,24 @@ class gradingform_matrix_editmatrix extends moodleform {
     public function need_confirm_regrading($controller) {
         $data = $this->get_data();
         if (isset($data->matrix['regrade'])) {
-            // we have already displayed the confirmation on the previous step
+            // We have already displayed the confirmation on the previous step.
             return false;
         }
         if (!isset($data->saveform) || !$data->saveform) {
-            // we only need confirmation when button 'Save matrix' is pressed
+            // We only need confirmation when button 'Save matrix' is pressed.
             return false;
         }
         if (!$controller->has_active_instances()) {
-            // nothing to re-grade, confirmation not needed
+            // Nothing to re-grade, confirmation not needed.
             return false;
         }
         $changelevel = $controller->update_or_check_matrix($data);
         if ($changelevel == 0) {
-            // no changes in the matrix, no confirmation needed
+            // No changes in the matrix, no confirmation needed.
             return false;
         }
 
-        // freeze form elements and pass the values in hidden fields
+        // Freeze form elements and pass the values in hidden fields.
         $form = $this->_form;
         foreach (['matrix', 'name', 'description_editor'] as $fieldname) {
             $el =& $form->getElement($fieldname);
@@ -187,9 +193,9 @@ class gradingform_matrix_editmatrix extends moodleform {
             }
         }
 
-        // replace button text 'saveform' and unfreeze 'Back to edit' button
-        $this->findButton('saveform')->setValue(get_string('continue'));
-        $el =& $this->findButton('editform');
+        // Replace button text 'saveform' and unfreeze 'Back to edit' button.
+        $this->find_button('saveform')->setValue(get_string('continue'));
+        $el =& $this->find_button('editform');
         $el->setValue(get_string('backtoediting', 'gradingform_matrix'));
         $el->unfreeze();
 
@@ -202,7 +208,7 @@ class gradingform_matrix_editmatrix extends moodleform {
      * @param string $elementname
      * @return HTML_QuickForm_element
      */
-    protected function &findButton($elementname) {
+    protected function &find_button($elementname) {
         $form = $this->_form;
         $buttonar =& $form->getElement('buttonar');
         $elements =& $buttonar->getElements();

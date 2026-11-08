@@ -16,6 +16,9 @@
 
 namespace gradingform_matrix\local\framework\ai;
 
+// Backticks here are Markdown code fences around the JSON proposal, not shell commands.
+// phpcs:disable moodle.Strings.ForbiddenStrings.Found
+
 use gradingform_matrix\local\framework\definition_exporter;
 use gradingform_matrix\local\framework\definition_importer;
 use moodle_exception;
