@@ -90,8 +90,20 @@ if ($controller->is_form_defined()) {
         ['class' => 'btn btn-secondary']
     );
 }
+if (has_capability('moodle/site:config', context_system::instance())) {
+    // Grading methods have no place in the site administration tree, so link the settings from here.
+    $actions[] = html_writer::link(
+        \gradingform_matrix\local\plugin_settings::url($PAGE->url),
+        get_string('pluginsettings', 'gradingform_matrix'),
+        ['class' => 'btn btn-link']
+    );
+}
 if ($actions) {
-    echo html_writer::div(implode('', $actions), 'gradingform_matrix-importexport d-flex flex-wrap gap-2 mb-3');
+    // Line the buttons up with the form fields below, in the second column of the form layout.
+    echo html_writer::div(
+        html_writer::div(implode('', $actions), 'col-md-9 offset-md-3 d-flex flex-wrap gap-2 gradingform_matrix-importexport'),
+        'row mb-3'
+    );
 }
 
 $mform->display();
