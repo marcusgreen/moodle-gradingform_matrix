@@ -134,7 +134,7 @@ final class store_test extends advanced_testcase {
         $formdata = http_build_query((object) [
             'instanceid' => $instance->get_id(),
             'advancedgrading' => $submissiondata,
-        ]);
+        ], '', '&'); // Moodle 5.1 sets arg_separator.output to &amp;, which parse_str() does not split on.
 
         $result = store::execute('mod_forum', (int) $forum->get_context()->id, 'forum', (int) $student->id, false, $formdata);
         $result = external_api::clean_returnvalue(store::execute_returns(), $result);
@@ -248,7 +248,7 @@ final class store_test extends advanced_testcase {
         $formdata = http_build_query((object) [
             'instanceid' => $instance->get_id(),
             'advancedgrading' => $submissiondata,
-        ]);
+        ], '', '&'); // Moodle 5.1 sets arg_separator.output to &amp;, which parse_str() does not split on.
         store::execute('mod_forum', (int) $forum->get_context()->id, 'forum', (int) $student->id, false, $formdata);
 
         $fillings = $DB->get_records(
