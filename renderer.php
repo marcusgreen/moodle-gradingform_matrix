@@ -139,8 +139,11 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             $description['html'] = format_text($criterion['description'], FORMAT_MARKDOWN);
         }
         if (!$editing) {
+            $plaindescription = $this->plain_text($criterion['description']);
             $description['focusable'] = true;
-            $description['arialabel'] = get_string('criterion', 'gradingform_matrix', $this->plain_text($criterion['description']));
+            $description['arialabel'] = get_string('criterion', 'gradingform_matrix', $plaindescription);
+            // A stable hook for scripts and tests, independent of how the description is formatted.
+            $context['datacriterion'] = $plaindescription;
         }
         $context['description'] = $description;
 
@@ -301,6 +304,8 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 'value' => $level['id']];
         }
         if (!in_array($mode, [$c::DISPLAY_EDIT_FULL, $c::DISPLAY_EDIT_FROZEN])) {
+            // A stable hook for scripts and tests, present even when the score is not shown.
+            $context['datascore'] = ['value' => $level['score']];
             $context['focusable'] = true;
             $levelinfo = (object)['definition' => $this->plain_text($level['definition']), 'score' => $level['score']];
             $context['arialabel'] = get_string('level', 'gradingform_matrix', $levelinfo);

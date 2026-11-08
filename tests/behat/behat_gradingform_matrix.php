@@ -493,8 +493,8 @@ class behat_gradingform_matrix extends behat_base {
      * @return string
      */
     protected function get_level_xpath($points) {
-        return "//td[contains(concat(' ', normalize-space(@class), ' '), ' level ')]" .
-            "[./descendant::span[@class='scorevalue'][text()='$points']]";
+        // The renderer adds data-score in these modes, also when the score is hidden from the viewer.
+        return "//td[contains(concat(' ', normalize-space(@class), ' '), ' level ')][@data-score='$points']";
     }
 
     /**
@@ -508,8 +508,7 @@ class behat_gradingform_matrix extends behat_base {
      */
     protected function get_criterion_xpath($criterionname) {
         $literal = behat_context_helper::escape($criterionname);
-        return "//tr[contains(concat(' ', normalize-space(@class), ' '), ' criterion ')]" .
-            // The description is formatted as Markdown, so its text is inside a paragraph.
-            "[./descendant::td[@class='description'][normalize-space(.)=$literal]]";
+        // The renderer adds the plain text of the description as data-criterion in these modes.
+        return "//tr[contains(concat(' ', normalize-space(@class), ' '), ' criterion ')][@data-criterion=$literal]";
     }
 }

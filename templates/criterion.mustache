@@ -27,6 +27,7 @@
 
     Context variables required for this template:
     * id, class: the row
+    * datacriterion: optional plain text of the description, in display modes
     * controls: optional {buttons: [{key, name, id, value}], sortorder: {name, value} } when editing
     * hiddeninputs: list of {name, hasvalue, value} placed before the description
     * description: {id, class, focusable, arialabel, html} or the same with textarea: {id, name, arialabel, text}
@@ -48,7 +49,7 @@
         "remark": {"cell": {"id": "advancedgrading-criteria-1-remark", "arialabel": "Remark", "text": "Good"} }
     }
 }}
-<tr class="{{class}}" id="{{id}}">
+<tr class="{{class}}" id="{{id}}"{{#datacriterion}} data-criterion="{{.}}"{{/datacriterion}}>
     {{#controls}}
         <td class="controls">
             {{#buttons}}

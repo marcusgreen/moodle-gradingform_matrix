@@ -29,6 +29,7 @@
     * id, class, role: the cell
     * focusable: whether the cell is a tab stop
     * style, arialabel, ariachecked: optional attributes of the cell
+    * datascore: optional {value}, the score in display modes (an object, because a score of 0 is falsy)
     * hiddeninputs: list of {name, value} for frozen modes
     * radio: optional {id, name, value, checked} when evaluating
     * definition: {id, class, html} or {id, class, textarea: {id, name, arialabel, text} }
@@ -56,7 +57,8 @@
     {{#style}} style="{{.}}"{{/style}}
     {{#focusable}} tabindex="0"{{/focusable}}
     {{#arialabel}} aria-label="{{.}}"{{/arialabel}}
-    {{#ariachecked}} aria-checked="{{.}}"{{/ariachecked}}>
+    {{#ariachecked}} aria-checked="{{.}}"{{/ariachecked}}
+    {{#datascore}} data-score="{{value}}"{{/datascore}}>
     <div class="level-wrapper">
         {{#hiddeninputs}}
             <input type="hidden" name="{{name}}" value="{{value}}">
