@@ -304,14 +304,15 @@
 /* ---------------------------------------------------------------------------
  * Popout overlay.
  * mod_assign pops a grading field out as a fixed box with all four insets at 20%.
- * For a matrix the box is anchored at its top-left corner instead, so the browser's
+ * For a grading form watched by amd/src/local/popout.js (which adds
+ * .gradingform_matrix-popout) the box is anchored at its top-left corner instead, so the browser's
  * resize handle can grow it towards the bottom right, and it is kept inside the
  * viewport. The header and content are a flex column, so the content fills
- * whatever height is left. The content is a size container, so the grid
- * reflows by the width of the box, not the width of the screen.
+ * whatever height is left.
+ * These rules are shared with other grading methods that use the popout module.
  * Normal in-panel grading keeps its original table layout.
  * ------------------------------------------------------------------------- */
-.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) {
+.path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-popout {
     right: auto;
     bottom: auto;
     width: 60vw;
@@ -327,7 +328,7 @@
 }
 
 /* Maximised with the button added by amd/src/local/popout.js. */
-.path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-maximised:has(.gradingform_matrix) {
+.path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-popout.gradingform_matrix-maximised {
     inset: 1rem;
     width: auto;
     height: auto;
@@ -376,22 +377,27 @@
     float: right;
 }
 
-.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) > .felement {
+.path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-popout > .felement {
     flex: 1 1 auto;
     height: auto;
     min-height: 0;
     overflow: auto;
     overflow-wrap: anywhere;
+}
+
+/* For a matrix the content is a size container, so the grid reflows by the width of the box,
+ * not the width of the screen. */
+.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) > .felement {
     container: matrixpopout / inline-size; /* stylelint-disable-line csstree/validator */
 }
 
-.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) > :not(.felement) {
+.path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-popout > :not(.felement) {
     flex: none;
 }
 
 /* On small screens fill the screen; there is no room left to resize into. */
 @media (max-width: 575.98px) {
-    .path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) {
+    .path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-popout {
         inset: 0.5rem;
         width: auto;
         height: auto;

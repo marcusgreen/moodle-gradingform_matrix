@@ -121,18 +121,6 @@ const handleEvent = (root) => (event) => {
     }
 };
 
-const observePopout = (root) => {
-    const fitem = root.closest(SELECTORS.FITEM);
-    if (!fitem) {
-        return;
-    }
-    new MutationObserver(() => Popout.sync(fitem)).observe(fitem, {
-        attributes: true,
-        attributeFilter: ['class'],
-    });
-    Popout.sync(fitem);
-};
-
 export const init = (name) => {
     const root = document.getElementById(IDS.root(name));
     if (!root) {
@@ -154,5 +142,5 @@ export const init = (name) => {
     });
     root.querySelectorAll(SELECTORS.RADIOGROUP).forEach((group) => setTabStop(group));
 
-    observePopout(root);
+    Popout.watch(root);
 };
