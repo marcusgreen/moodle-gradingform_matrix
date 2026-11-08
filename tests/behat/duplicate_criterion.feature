@@ -40,3 +40,17 @@ Feature: Criteria can be duplicated
     And "(//tr[@data-criterion='Spelling'])[2]//td[@data-score='7']" "xpath_element" should exist
     And "(//tr[@data-criterion='Spelling'])[2]//td[contains(., 'No errors')]" "xpath_element" should exist
     And "//tr[@data-criterion='Pictures']" "xpath_element" should exist
+
+  @javascript
+  Scenario: Duplicating a criterion copies exactly its levels
+    When I go to "Test assignment 1 name" advanced grading definition page
+    And I set the following fields to these values:
+      | Name | Assignment 1 matrix |
+    And I define the following matrix:
+      | Spelling | Many errors | 0 | Few errors | 3 | No errors | 7 |
+      | Pictures | None        | 0 | Some {a}   | 5 |           |   |
+    And I click on "Duplicate criterion" "button" in the "Pictures" "table_row"
+    And I press "Save as draft"
+    Then "(//tr[@data-criterion='Pictures'])[2]//td[@data-score='5'][contains(., 'Some {a}')]" "xpath_element" should exist
+    And "(//tr[@data-criterion='Pictures'])[2]//td[contains(@class, 'level')][3]" "xpath_element" should not exist
+    And I should not see "undefined"

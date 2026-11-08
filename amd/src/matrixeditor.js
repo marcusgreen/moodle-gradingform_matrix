@@ -55,6 +55,17 @@ const escapeHTML = (text) => {
 const setHidden = (el, hidden) => el.classList.toggle('hiddenelement', hidden);
 
 /**
+ * Fill a template's {PLACEHOLDER-name} placeholders in one pass, so the values are not searched for placeholders.
+ * Placeholders without a value are removed.
+ *
+ * @param {String} template
+ * @param {Object} values HTML for each placeholder, by name without braces
+ * @return {String}
+ */
+const fillTemplate = (template, values) =>
+    template.replace(/\{([A-Z]+(?:-[a-z]+)?)\}/g, (match, key) => String(values[key] ?? ''));
+
+/**
  * A single matrix editor instance, scoped to one form element.
  */
 class MatrixEditor {
@@ -363,47 +374,23 @@ class MatrixEditor {
     }
 
     /**
-     * Add a new criterion, copying the level count/scores from the last criterion.
+     * Add a new criterion, copying the level count and scores from the last criterion.
+     *
+     * New criteria have at least three levels; missing ones score one more than the level before.
      *
      * @param {Number} newid
      * @param {Number} newlevid
      * @param {String} elementsStr
      */
     addCriterion(newid, newlevid, elementsStr) {
-        const name = this.name;
-        const levelsscores = [0];
-        let levidx = 1;
-        let parentel = document.getElementById(IDS.criteria(name));
-        const tbody = parentel.querySelector(':scope > tbody');
-        if (tbody) {
-            parentel = tbody;
+        const criteria = this.criteriaBody().querySelectorAll(SELECTORS.CRITERION);
+        const last = criteria.length ? criteria[criteria.length - 1] : null;
+        const scores = last ? [...last.querySelectorAll(SELECTORS.LEVEL)].map(
+            (level) => level.querySelector(SELECTORS.SCORE_INPUT).value) : [0];
+        while (scores.length < 3) {
+            scores.push(parseFloat(scores[scores.length - 1]) + 1);
         }
-        const criteria = parentel.querySelectorAll(SELECTORS.CRITERION);
-        if (criteria.length) {
-            const lastLevels = criteria[criteria.length - 1].querySelectorAll(SELECTORS.LEVEL);
-            for (levidx = 0; levidx < lastLevels.length; levidx++) {
-                levelsscores[levidx] = lastLevels[levidx].querySelector(SELECTORS.SCORE_INPUT).value;
-            }
-        }
-        for (levidx; levidx < 3; levidx++) {
-            levelsscores[levidx] = parseFloat(levelsscores[levidx - 1]) + 1;
-        }
-
-        let levelsstr = '';
-        for (levidx = 0; levidx < levelsscores.length; levidx++) {
-            levelsstr += this.templates.level
-                .replace(/\{LEVEL-id\}/g, `NEWID${newlevid + levidx}`)
-                .replace(/\{LEVEL-score\}/g, levelsscores[levidx])
-                .replace(/\{LEVEL-index\}/g, levidx + 1);
-        }
-        const newcriterion = this.templates.criterion.replace(/\{LEVELS\}/, levelsstr);
-        parentel.insertAdjacentHTML('beforeend',
-            newcriterion.replace(/\{CRITERION-id\}/g, `NEWID${newid}`).replace(/\{.+?\}/g, ''));
-
-        this.assignClasses(`#${IDS.levels(name, `NEWID${newid}`)} ${SELECTORS.LEVEL}`);
-        this.disableAllEditors();
-        this.assignClasses(elementsStr);
-        this.editMode(document.getElementById(IDS.descriptionCell(name, `NEWID${newid}`)), true);
+        this.insertCriterion(newid, newlevid, '', scores.map((score) => ({score, definition: ''})), elementsStr);
     }
 
     /**
@@ -414,21 +401,13 @@ class MatrixEditor {
      * @param {String} elementsStr
      */
     addLevel(criterionid, newlevid, elementsStr) {
-        const name = this.name;
-        const parent = document.getElementById(IDS.levels(name, criterionid));
+        const parent = document.getElementById(IDS.levels(this.name, criterionid));
+        const existing = parent.querySelectorAll(SELECTORS.LEVEL);
         let newscore = 0;
-        let levelIndex = 1;
-        parent.querySelectorAll(SELECTORS.LEVEL).forEach((node) => {
+        existing.forEach((node) => {
             newscore = Math.max(newscore, parseFloat(node.querySelector(SELECTORS.SCORE_INPUT).value) + 1);
-            levelIndex++;
         });
-        const newlevel = this.templates.level
-            .replace(/\{CRITERION-id\}/g, criterionid)
-            .replace(/\{LEVEL-id\}/g, `NEWID${newlevid}`)
-            .replace(/\{LEVEL-score\}/g, newscore)
-            .replace(/\{LEVEL-index\}/g, levelIndex)
-            .replace(/\{.+?\}/g, '');
-        parent.insertAdjacentHTML('beforeend', newlevel);
+        parent.insertAdjacentHTML('beforeend', this.levelHtml(criterionid, newlevid, existing.length + 1, newscore, ''));
 
         this.disableAllEditors();
         this.assignClasses(elementsStr);
@@ -437,7 +416,7 @@ class MatrixEditor {
     }
 
     /**
-     * Duplicate an existing criterion, copying descriptions, definitions and scores.
+     * Duplicate an existing criterion, copying its description and its levels' definitions and scores.
      *
      * @param {String} criterionid
      * @param {Number} newid
@@ -445,46 +424,68 @@ class MatrixEditor {
      * @param {String} elementsStr
      */
     duplicateCriterion(criterionid, newid, newlevid, elementsStr) {
-        const name = this.name;
-        const levelsdef = [];
-        const levelsscores = [0];
-        let levidx = 0;
-        let parentel = document.getElementById(IDS.criteria(name));
-        const tbody = parentel.querySelector(':scope > tbody');
-        if (tbody) {
-            parentel = tbody;
-        }
+        const source = document.getElementById(IDS.criterion(this.name, criterionid));
+        const levels = [...source.querySelectorAll(SELECTORS.LEVEL)].map((level) => ({
+            score: level.querySelector(SELECTORS.SCORE_INPUT).value,
+            definition: level.querySelector('.definition textarea').value,
+        }));
+        const description = source.querySelector('.description textarea').value;
+        this.insertCriterion(newid, newlevid, description, levels, elementsStr);
+    }
 
-        const source = document.getElementById(IDS.criterion(name, criterionid));
-        const sourceLevels = source.querySelectorAll(SELECTORS.LEVEL);
-        for (levidx = 0; levidx < sourceLevels.length; levidx++) {
-            levelsdef[levidx] = escapeHTML(sourceLevels[levidx].querySelector('.definition textarea').value);
-        }
-        for (levidx = 0; levidx < sourceLevels.length; levidx++) {
-            levelsscores[levidx] = sourceLevels[levidx].querySelector(SELECTORS.SCORE_INPUT).value;
-        }
-        for (levidx; levidx < 3; levidx++) {
-            levelsscores[levidx] = parseFloat(levelsscores[levidx - 1]) + 1;
-        }
+    /**
+     * Adds a criterion at the end of the form and opens its description for editing.
+     *
+     * @param {Number} newid NEWID number of the criterion
+     * @param {Number} newlevid NEWID number of its first level
+     * @param {String} description
+     * @param {Object[]} levels each {score, definition}
+     * @param {String} elementsStr CSS selector for the criteria, to renumber them
+     */
+    insertCriterion(newid, newlevid, description, levels, elementsStr) {
+        const criterionid = `NEWID${newid}`;
+        const levelshtml = levels.map((level, i) =>
+            this.levelHtml(criterionid, newlevid + i, i + 1, level.score, level.definition)).join('');
+        this.criteriaBody().insertAdjacentHTML('beforeend', fillTemplate(this.templates.criterion, {
+            'CRITERION-id': criterionid,
+            'CRITERION-description': escapeHTML(description),
+            'LEVELS': levelshtml,
+        }));
 
-        let levelsstr = '';
-        for (levidx = 0; levidx < levelsscores.length; levidx++) {
-            levelsstr += this.templates.level
-                .replace(/\{LEVEL-id\}/g, `NEWID${newlevid + levidx}`)
-                .replace(/\{LEVEL-score\}/g, levelsscores[levidx])
-                .replace(/\{LEVEL-definition\}/g, levelsdef[levidx]);
-        }
-        const description = escapeHTML(source.querySelector('.description textarea').value);
-        const newcriterion = this.templates.criterion
-            .replace(/\{LEVELS\}/, levelsstr)
-            .replace(/\{CRITERION-description\}/, description);
-        parentel.insertAdjacentHTML('beforeend',
-            newcriterion.replace(/\{CRITERION-id\}/g, `NEWID${newid}`).replace(/\{.+?\}/g, ''));
-
-        this.assignClasses(`#${IDS.levels(name, `NEWID${newid}`)} ${SELECTORS.LEVEL}`);
+        this.assignClasses(`#${IDS.levels(this.name, criterionid)} ${SELECTORS.LEVEL}`);
         this.disableAllEditors();
         this.assignClasses(elementsStr);
-        this.editMode(document.getElementById(IDS.descriptionCell(name, `NEWID${newid}`)), true);
+        this.editMode(document.getElementById(IDS.descriptionCell(this.name, criterionid)), true);
+    }
+
+    /**
+     * Returns the HTML of a new level, from the level template.
+     *
+     * @param {String} criterionid
+     * @param {Number} levid NEWID number of the level
+     * @param {Number} index position of the level in its criterion, from 1
+     * @param {Number|String} score
+     * @param {String} definition
+     * @returns {String}
+     */
+    levelHtml(criterionid, levid, index, score, definition) {
+        return fillTemplate(this.templates.level, {
+            'CRITERION-id': criterionid,
+            'LEVEL-id': `NEWID${levid}`,
+            'LEVEL-index': index,
+            'LEVEL-score': score,
+            'LEVEL-definition': escapeHTML(definition),
+        });
+    }
+
+    /**
+     * Returns the element that criteria rows are added to.
+     *
+     * @returns {HTMLElement}
+     */
+    criteriaBody() {
+        const table = document.getElementById(IDS.criteria(this.name));
+        return table.querySelector(':scope > tbody') || table;
     }
 
     /**
