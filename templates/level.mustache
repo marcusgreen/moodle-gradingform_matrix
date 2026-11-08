@@ -1,0 +1,91 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template gradingform_matrix/level
+
+    One level of a criterion: a table cell in the criterion's levels row.
+
+    Also rendered with placeholders such as {LEVEL-id} as the template matrixeditor.js clones
+    for new levels, so ids and names are passed in whole.
+
+    Classes required for JS:
+    * level, definition, score, scorevalue, delete, radio
+
+    Context variables required for this template:
+    * id, class, role: the cell
+    * focusable: whether the cell is a tab stop
+    * style, arialabel, ariachecked: optional attributes of the cell
+    * hiddeninputs: list of {name, value} for frozen modes
+    * radio: optional {id, name, value, checked} when evaluating
+    * definition: {id, class, html} or {id, class, textarea: {id, name, arialabel, text} }
+    * score: optional {class, before, after, spanid} and {value} or {input: {id, name, arialabel, value} }
+    * delete: optional {name, id, value}
+
+    Example context (json):
+    {
+        "id": "advancedgrading-criteria-1-levels-2",
+        "class": "text-break level first even",
+        "role": "radio",
+        "focusable": true,
+        "arialabel": "Level Good, 2 points.",
+        "ariachecked": "false",
+        "hiddeninputs": [],
+        "radio": {"id": "advancedgrading-criteria-1-levels-2-definition",
+            "name": "advancedgrading[criteria][1][levelid]", "value": 2, "checked": false},
+        "definition": {"id": "advancedgrading-criteria-1-levels-2-definition-container", "class": "definition",
+            "html": "<p>Good</p>"},
+        "score": {"class": "score d-inline", "before": "", "after": " points",
+            "spanid": "advancedgrading-criteria-1-levels-2-score", "value": 2}
+    }
+}}
+<td id="{{id}}" class="{{class}}" role="{{role}}"
+    {{#style}} style="{{.}}"{{/style}}
+    {{#focusable}} tabindex="0"{{/focusable}}
+    {{#arialabel}} aria-label="{{.}}"{{/arialabel}}
+    {{#ariachecked}} aria-checked="{{.}}"{{/ariachecked}}>
+    <div class="level-wrapper">
+        {{#hiddeninputs}}
+            <input type="hidden" name="{{name}}" value="{{value}}">
+        {{/hiddeninputs}}
+        {{#radio}}
+            <div class="radio">
+                <input type="radio" id="{{id}}" name="{{name}}" value="{{value}}"{{#checked}} checked="checked"{{/checked}}>
+            </div>
+        {{/radio}}
+        {{#definition}}
+            <div class="{{class}}" id="{{id}}">
+                {{#textarea}}
+                    <textarea id="{{id}}" name="{{name}}" aria-label="{{arialabel}}" cols="10" rows="4">{{text}}</textarea>
+                {{/textarea}}
+                {{^textarea}}
+                    {{{html}}}
+                {{/textarea}}
+            </div>
+        {{/definition}}
+        {{#score}}
+            {{! No whitespace inside the span: its text is the score, which tests and scripts read. }}
+            <div class="{{class}}">{{before}}<span id="{{spanid}}" class="scorevalue">{{!
+                }}{{#input}}<input type="text" id="{{id}}" name="{{name}}" aria-label="{{arialabel}}" size="3" value="{{value}}">{{/input}}{{!
+                }}{{^input}}{{value}}{{/input}}</span>{{after}}</div>
+        {{/score}}
+        {{#delete}}
+            <div class="delete">
+                <input type="submit" name="{{name}}" id="{{id}}" value="{{value}}">
+            </div>
+        {{/delete}}
+    </div>
+</td>
