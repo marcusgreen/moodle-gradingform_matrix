@@ -1,10 +1,12 @@
 # Matrix grading method: user guide
 
 This guide is for teachers. It explains how the **Matrix** grading method differs from
-Moodle's standard **Rubric**.
+Moodle's standard **Rubric**. In the list of grading methods it's called **Rubric (Matrix)**.
 
 > **Status:** Matrix is in development (alpha). Its main purpose is to serve as the base for
 > other grading methods, so don't use it for real assessment on a production site yet.
+>
+> It needs Moodle 5.1 or later.
 
 ## Same as Rubric
 
@@ -13,6 +15,8 @@ way:
 
 - **The grid:** criteria are rows, and each criterion has a set of levels. Each level has a
   definition and a number of points.
+- **Editing:** you can add, delete, move and duplicate criteria, and add and delete levels.
+  Duplicating a criterion copies its description and all its levels and points.
 - **Grading:** for each criterion, you click the level the student reached. You can add a
   remark (feedback) for each criterion.
 - **Calculating the grade:** the points for the selected levels are added up and scaled to
@@ -40,11 +44,17 @@ they're written in **Markdown**, so you can format them:
 | You type | Students and graders see |
 |---|---|
 | `**must** include a bibliography` | **must** include a bibliography |
-| `- clear aim`<br>`- method described` | a bulleted list |
+| `*italic*` | *italic* |
+| `* clear aim`<br>`* method described` | a bulleted list |
+| `1. first step` | a numbered list |
 | `[marking notes](https://example.org)` | a link |
 
+A blank line starts a new paragraph. The help icon next to **Grading form** on the editing
+page lists all the formatting you can use.
+
 The formatting is shown wherever the form is displayed: the preview, while grading, and when
-students view their feedback. While you edit, you see the raw text you typed.
+students view their feedback. On the editing page, too, criteria and levels you aren't
+editing show the formatting. Click one to edit it, and you see the text you typed.
 
 ### 2. Wide forms scroll instead of breaking the page
 
@@ -52,12 +62,34 @@ A rubric with many levels can be wider than the screen, and then it pushes the r
 page out of shape. In Matrix the grid scrolls left and right inside its own box, and the rest
 of the page stays in place.
 
-### 3. Works better in the pop-out grading panel
+### 3. A resizable pop-out grading panel
 
-When you grade in the grading panel and pop it out into a larger view, the Matrix grid
-resizes to fit the new space. In Rubric it can stay at its old size.
+When you grade an assignment, you can pop the grading form out of the panel into its own
+box. In Matrix, that box can be changed to suit you:
 
-### 4. Import and export grading forms
+- **Resize it** by dragging the **Resize grading form** handle in its bottom-right corner.
+  The grid rearranges itself to fit.
+- **Resize it with the keyboard:** Tab to the same handle, then use the arrow keys. Hold
+  Shift for bigger steps. Home makes it as small as possible and End as large as possible.
+  Screen readers announce the new size.
+- **Maximise it** with the **Maximise grading form** button, to use the whole window.
+- The size you choose is kept while you move between students.
+
+On a small screen, the popped-out form fills the screen.
+
+### 4. Choosing levels with the keyboard and screen readers
+
+Each criterion's levels work as a group of radio buttons:
+
+- Tab moves to the selected level of a criterion, or to its first level if none is selected.
+- The arrow keys move the selection between that criterion's levels. Home and End go to the
+  first and last level.
+- Space or Enter selects the level you're on.
+
+Screen readers announce each criterion's name with its levels, and say which level is
+selected.
+
+### 5. Import and export grading forms
 
 The editing page has **Export** and **Import** buttons. Rubric has neither.
 
@@ -74,10 +106,52 @@ The editing page has **Export** and **Import** buttons. Rubric has neither.
 Rubric's only way to reuse a form is the template system, and that works only within one
 site. Export and import also work between sites.
 
+### 6. An AI assistant for writing grading forms
+
+The editing page can have an **AI assistant** button. The assistant reads course material
+you choose and drafts a grading form with you in a conversation.
+
+1. Select **AI assistant**.
+2. Under **Course material to read**, tick the material the assistant should base the form
+   on. It can read pages, labels, books, lessons, and folders and files that contain plain
+   text, HTML or CSV. It can't read PDFs or images.
+3. In **Instruction**, say what you want, for example "Draft a form with 4 criteria and 3
+   levels", then select **Send** (or press Ctrl+Enter).
+4. The proposed form appears under **Proposed grading form**. Ask for changes, for example
+   "Make the presentation criterion stricter", as many times as you like. **Start again**
+   clears the conversation.
+5. When you're happy, select **Apply as draft**. This replaces the current form with the
+   proposal and saves it as a draft. Check it, then save it to make it ready.
+
+Things to know:
+
+- The material you select is sent to the site's AI provider. AI can make mistakes, so check
+  the form before you use it.
+- Like import, applying a proposal isn't possible once the form has been used for grading.
+- The first time you use AI on the site, you're asked to accept its AI policy.
+- If the button is missing, the assistant is turned off for the site, or you don't have
+  permission to use it.
+- If the assistant says it isn't available, AI tools may be turned off for the course or
+  activity, or no AI provider may be set up for generating text. Ask your site
+  administrator.
+
 ## Choosing Matrix for an activity
 
 1. Open the activity (for example an assignment), then go to **Advanced grading**.
-2. Under **Change active grading method to**, choose **Matrix**.
+2. Under **Change active grading method to**, choose **Rubric (Matrix)**.
 3. Choose **Define new grading form from scratch**, or start from a template.
 4. Add criteria and levels, set the options, then select **Save grading form and make it
    ready**.
+
+## For site administrators
+
+Grading methods have no page in **Site administration**, so Matrix's settings are linked from
+the grading form editing page instead: site administrators see a **Matrix grading method
+settings** link there.
+
+- **Enable the AI assistant** is off by default, because the assistant sends course material
+  to the site's AI provider. AI providers themselves are set up in **Site administration >
+  AI**, and generating text must be enabled there too.
+- Who may use the assistant is controlled by the capability **Use the AI assistant to write
+  grading forms** (`gradingform/matrix:useaiassistant`). By default, editing teachers and
+  managers have it.
