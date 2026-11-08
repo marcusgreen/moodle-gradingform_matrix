@@ -60,7 +60,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
      * @param string $elementLabel
      * @param array $attributes
      */
-    public function __construct($elementName=null, $elementLabel=null, $attributes=null) {
+    public function __construct($elementName = null, $elementLabel = null, $attributes = null) {
         parent::__construct($elementName, $elementLabel, $attributes);
     }
 
@@ -108,13 +108,17 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             // The criterion/level templates are too long to pass as JS arguments, so they are
             // rendered into hidden <script> holders and read from the DOM by the AMD module.
             $name = $this->getName();
-            $html .= html_writer::tag('script',
+            $html .= html_writer::tag(
+                'script',
                 $renderer->criterion_template($mode, $data['options'], $name),
-                array('type' => 'text/template', 'id' => 'matrix-'.$name.'-criterion-template'));
-            $html .= html_writer::tag('script',
+                ['type' => 'text/template', 'id' => 'matrix-' . $name . '-criterion-template']
+            );
+            $html .= html_writer::tag(
+                'script',
                 $renderer->level_template($mode, $data['options'], $name),
-                array('type' => 'text/template', 'id' => 'matrix-'.$name.'-level-template'));
-            $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', array($name));
+                ['type' => 'text/template', 'id' => 'matrix-' . $name . '-level-template']
+            );
+            $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', [$name]);
         } else {
             // Matrix is frozen, no javascript needed
             if ($this->_persistantFreeze) {
@@ -157,10 +161,10 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             $this->nonjsbuttonpressed = false;
         }
         $totalscore = 0;
-        $errors = array();
-        $return = array('criteria' => array(), 'options' => gradingform_matrix_controller::get_default_options());
+        $errors = [];
+        $return = ['criteria' => [], 'options' => gradingform_matrix_controller::get_default_options()];
         if (!isset($value['criteria'])) {
-            $value['criteria'] = array();
+            $value['criteria'] = [];
             $errors['err_nocriteria'] = 1;
         }
         // If options are present in $value, replace default values with submitted values
@@ -190,19 +194,19 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
         foreach ($value['criteria'] as $id => $criterion) {
             if ($id == 'addcriterion') {
                 $id = $this->get_next_id(array_keys($value['criteria']));
-                $criterion = array('description' => '', 'levels' => array());
+                $criterion = ['description' => '', 'levels' => []];
                 $i = 0;
                 // when adding new criterion copy the number of levels and their scores from the last criterion
                 if (!empty($value['criteria'][$lastid]['levels'])) {
                     foreach ($value['criteria'][$lastid]['levels'] as $lastlevel) {
-                        $criterion['levels']['NEWID'.($i++)]['score'] = $lastlevel['score'];
+                        $criterion['levels']['NEWID' . ($i++)]['score'] = $lastlevel['score'];
                     }
                 } else {
-                    $criterion['levels']['NEWID'.($i++)]['score'] = 0;
+                    $criterion['levels']['NEWID' . ($i++)]['score'] = 0;
                 }
                 // add more levels so there are at least 3 in the new criterion. Increment by 1 the score for each next one
-                for ($i=$i; $i<3; $i++) {
-                    $criterion['levels']['NEWID'.$i]['score'] = $criterion['levels']['NEWID'.($i-1)]['score'] + 1;
+                for ($i = $i; $i < 3; $i++) {
+                    $criterion['levels']['NEWID' . $i]['score'] = $criterion['levels']['NEWID' . ($i - 1)]['score'] + 1;
                 }
                 // set other necessary fields (definition) for the levels in the new criterion
                 foreach (array_keys($criterion['levels']) as $i) {
@@ -210,16 +214,16 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 }
                 $this->nonjsbuttonpressed = true;
             }
-            $levels = array();
+            $levels = [];
             $minscore = $maxscore = null;
             if (array_key_exists('levels', $criterion)) {
                 foreach ($criterion['levels'] as $levelid => $level) {
                     if ($levelid == 'addlevel') {
                         $levelid = $this->get_next_id(array_keys($criterion['levels']));
-                        $level = array(
+                        $level = [
                             'definition' => '',
                             'score' => 0,
-                        );
+                        ];
                         foreach ($criterion['levels'] as $lastlevel) {
                             if (isset($lastlevel['score'])) {
                                 $level['score'] = max($level['score'], ceil(unformat_float($lastlevel['score'])) + 1);
@@ -254,7 +258,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             $totalscore += (float)$maxscore;
             $criterion['levels'] = $levels;
             if ($withvalidation && !array_key_exists('delete', $criterion)) {
-                if (count($levels)<2) {
+                if (count($levels) < 2) {
                     $errors['err_mintwolevels'] = 1;
                     $criterion['error_levels'] = true;
                 }
@@ -309,7 +313,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 }
             }
             if (count($errors)) {
-                $rv = array();
+                $rv = [];
                 foreach ($errors as $error => $v) {
                     $rv[] = get_string($error, 'gradingform_matrix');
                 }
@@ -335,7 +339,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 $maxid = (int)$matches[1];
             }
         }
-        return 'NEWID'.($maxid+1);
+        return 'NEWID' . ($maxid + 1);
     }
 
     /**
@@ -378,7 +382,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
      * @return array
      */
     public function exportValue(&$submitValues, $assoc = false) {
-        $value =  $this->prepare_data($this->_findValue($submitValues));
+        $value = $this->prepare_data($this->_findValue($submitValues));
         return $this->_prepareValue($value, $assoc);
     }
 }

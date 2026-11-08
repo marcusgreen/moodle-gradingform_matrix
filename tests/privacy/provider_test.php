@@ -37,7 +37,6 @@ use context_module;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class provider_test extends provider_testcase {
-
     /**
      * Test the export of matrix data.
      */
@@ -60,8 +59,10 @@ final class provider_test extends provider_testcase {
         $data = $this->get_test_form_data(
             $controller,
             $itemid,
-            1, 'This user made several mistakes.',
-            0, 'Please add more pictures.'
+            1,
+            'This user made several mistakes.',
+            0,
+            'Please add more pictures.'
         );
 
         // Update this instance with data.
@@ -100,8 +101,10 @@ final class provider_test extends provider_testcase {
         $data = $this->get_test_form_data(
             $controller,
             $itemid,
-            1, 'This user made several mistakes.',
-            0, 'Please add more pictures.'
+            1,
+            'This user made several mistakes.',
+            0,
+            'Please add more pictures.'
         );
 
         // Update this instance with data.
@@ -114,8 +117,10 @@ final class provider_test extends provider_testcase {
         $data = $this->get_test_form_data(
             $controller,
             $itemid,
-            0, 'Too many mistakes. Please try again.',
-            2, 'Great number of pictures. Well done.'
+            0,
+            'Too many mistakes. Please try again.',
+            2,
+            'Great number of pictures. Well done.'
         );
 
         // Update this instance with data.

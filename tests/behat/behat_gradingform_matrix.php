@@ -40,7 +40,6 @@ use Behat\Mink\Exception\ExpectationException;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_gradingform_matrix extends behat_base {
-
     /**
      * @var The number of levels added by default when a matrix is created.
      */
@@ -103,7 +102,7 @@ class behat_gradingform_matrix extends behat_base {
                 }
 
                 // Remove empty criterion, as TableNode might contain them to make table rows equal size.
-                $newcriterion = array();
+                $newcriterion = [];
                 foreach ($criterion as $k => $c) {
                     if (!empty($c)) {
                         $newcriterion[$k] = $c;
@@ -126,7 +125,6 @@ class behat_gradingform_matrix extends behat_base {
                         get_string('err_mintwolevels', 'gradingform_matrix'),
                         $this->getSession()
                     );
-
                 }
 
                 // Add new criterion.
@@ -148,13 +146,11 @@ class behat_gradingform_matrix extends behat_base {
                 // Setting the correct number of levels.
                 $nlevels = count($criterion) / 2;
                 if ($nlevels < $defaultnumberoflevels) {
-
                     // Removing levels if there are too much levels.
                     // When we add a new level the NEWID$N is increased from the last criterion.
                     $lastcriteriondefaultlevel = $defaultnumberoflevels + $levelnumber - 1;
                     $lastcriterionlevel = $nlevels + $levelnumber - 1;
                     for ($i = $lastcriteriondefaultlevel; $i > $lastcriterionlevel; $i--) {
-
                         // If JS is disabled seems that new levels are not added.
                         if ($this->running_javascript()) {
                             $deletelevel = $this->find_button($criterionroot . '[levels][NEWID' . $i . '][delete]');
@@ -191,14 +187,12 @@ class behat_gradingform_matrix extends behat_base {
                 }
 
                 foreach ($criterion as $i => $value) {
-
                     $levelroot = $criterionroot . '[levels][NEWID' . $levelnumber . ']';
 
                     if ($i % 2 === 0) {
                         // Pairs are the definitions.
                         $fieldname = $levelroot . '[definition]';
                         $this->set_matrix_field_value($fieldname, $value);
-
                     } else {
                         // Odds are the points.
 
@@ -216,7 +210,6 @@ class behat_gradingform_matrix extends behat_base {
                         // Increase the level by one every 2 cells.
                         $levelnumber++;
                     }
-
                 }
             }
         }
@@ -311,20 +304,18 @@ class behat_gradingform_matrix extends behat_base {
             // When JS is disabled there are radio options, with JS enabled divs.
             $selectedlevelxpath = $this->get_level_xpath($points);
             if ($this->running_javascript()) {
-
                 // Only clicking on the selected level if it was not already selected.
                 $levelnode = $this->find('xpath', $selectedlevelxpath);
 
                 // Using in_array() as there are only a few elements.
                 if (!$levelnode->hasClass('checked')) {
                     $levelnodexpath = $selectedlevelxpath . "//div[contains(concat(' ', normalize-space(@class), ' '), ' score ')]";
-                    $this->execute('behat_general::i_click_on_in_the',
-                        array($levelnodexpath, "xpath_element", $this->escape($name), "table_row")
+                    $this->execute(
+                        'behat_general::i_click_on_in_the',
+                        [$levelnodexpath, "xpath_element", $this->escape($name), "table_row"]
                     );
                 }
-
             } else {
-
                 // Getting the name of the field.
                 $radioxpath = $this->get_criterion_xpath($name) .
                     $selectedlevelxpath . "/descendant::input[@type='radio']";
@@ -337,7 +328,7 @@ class behat_gradingform_matrix extends behat_base {
 
             // First we need to get the textarea name, then we can set the value.
             $textarea = $this->get_node_in_container('css_element', 'textarea', 'table_row', $name);
-            $this->execute('behat_forms::i_set_the_field_to', array($textarea->getAttribute('name'), $criterion[1]));
+            $this->execute('behat_forms::i_set_the_field_to', [$textarea->getAttribute('name'), $criterion[1]]);
         }
 
         // If running Javascript, then ensure to close zoomed matrix.
@@ -363,7 +354,7 @@ class behat_gradingform_matrix extends behat_base {
         // Works both for JS and non-JS.
         // - JS: Class -> checked is there when is marked as green.
         // - Non-JS: When editing a matrix definition, there are radio inputs and when viewing a
-        //   grade @class contains checked.
+        // grade @class contains checked.
         $levelxpath .= "[not(contains(concat(' ', normalize-space(@class), ' '), ' checked '))]" .
             "[not(/descendant::input[@type='radio'][@checked!='checked'])]";
 
@@ -390,7 +381,7 @@ class behat_gradingform_matrix extends behat_base {
         // Works both for JS and non-JS.
         // - JS: Class -> checked is there when is marked as green.
         // - Non-JS: When editing a matrix definition, there are radio inputs and when viewing a
-        //   grade @class contains checked.
+        // grade @class contains checked.
         $levelxpath .= "[" .
             "contains(concat(' ', normalize-space(@class), ' '), ' checked ')" .
             " or " .
@@ -420,7 +411,7 @@ class behat_gradingform_matrix extends behat_base {
         // Works both for JS and non-JS.
         // - JS: Class -> checked is there when is marked as green.
         // - Non-JS: When editing a matrix definition, there are radio inputs and when viewing a
-        //   grade @class contains checked.
+        // grade @class contains checked.
         $levelxpath .= "[not(contains(concat(' ', normalize-space(@class), ' '), ' checked '))]" .
             "[./descendant::input[@type='radio'][@checked!='checked'] or not(./descendant::input[@type='radio'])]";
 

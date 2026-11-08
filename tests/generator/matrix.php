@@ -37,7 +37,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class matrix {
-
     /** @var array $criteria The criteria for this matrix. */
     protected $criteria = [];
 
@@ -79,7 +78,7 @@ class matrix {
             'description_editor' => [
                 'text' => $this->description,
                 'format' => FORMAT_HTML,
-                'itemid' => 1
+                'itemid' => 1,
             ],
             'matrix' => [
                 'criteria' => $this->get_all_criterion_values(),
@@ -128,6 +127,5 @@ class matrix {
         }
 
         return $result;
-
     }
 }

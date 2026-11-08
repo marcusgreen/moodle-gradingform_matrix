@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/lib/formslib.php');
-require_once(__DIR__.'/matrixeditor.php');
-MoodleQuickForm::registerElementType('matrixeditor', $CFG->dirroot.'/grade/grading/form/matrix/matrixeditor.php', 'MoodleQuickForm_matrixeditor');
+require_once($CFG->dirroot . '/lib/formslib.php');
+require_once(__DIR__ . '/matrixeditor.php');
+MoodleQuickForm::registerElementType('matrixeditor', $CFG->dirroot . '/grade/grading/form/matrix/matrixeditor.php', 'MoodleQuickForm_matrixeditor');
 
 /**
  * Defines the matrix edit form
@@ -36,7 +36,6 @@ MoodleQuickForm::registerElementType('matrixeditor', $CFG->dirroot.'/grade/gradi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class gradingform_matrix_editmatrix extends moodleform {
-
     /**
      * Form element definition
      */
@@ -50,7 +49,7 @@ class gradingform_matrix_editmatrix extends moodleform {
         $form->setType('returnurl', PARAM_LOCALURL);
 
         // name
-        $form->addElement('text', 'name', get_string('name', 'gradingform_matrix'), array('size' => 52, 'aria-required' => 'true'));
+        $form->addElement('text', 'name', get_string('name', 'gradingform_matrix'), ['size' => 52, 'aria-required' => 'true']);
         $form->addRule('name', get_string('required'), 'required', null, 'client');
         $form->setType('name', PARAM_TEXT);
 
@@ -60,9 +59,9 @@ class gradingform_matrix_editmatrix extends moodleform {
         $form->setType('description_editor', PARAM_RAW);
 
         // matrix completion status
-        $choices = array();
-        $choices[gradingform_controller::DEFINITION_STATUS_DRAFT]    = html_writer::tag('span', get_string('statusdraft', 'core_grading'), array('class' => 'status draft'));
-        $choices[gradingform_controller::DEFINITION_STATUS_READY]    = html_writer::tag('span', get_string('statusready', 'core_grading'), array('class' => 'status ready'));
+        $choices = [];
+        $choices[gradingform_controller::DEFINITION_STATUS_DRAFT]    = html_writer::tag('span', get_string('statusdraft', 'core_grading'), ['class' => 'status draft']);
+        $choices[gradingform_controller::DEFINITION_STATUS_READY]    = html_writer::tag('span', get_string('statusready', 'core_grading'), ['class' => 'status ready']);
         $form->addElement('select', 'status', get_string('formstatus', 'gradingform_matrix'), $choices)->freeze();
 
         // matrix editor
@@ -70,7 +69,7 @@ class gradingform_matrix_editmatrix extends moodleform {
         $form->addHelpButton('matrix', 'gradingform', 'gradingform_matrix');
         $form->setType('matrix', PARAM_RAW);
 
-        $buttonarray = array();
+        $buttonarray = [];
         $buttonarray[] = &$form->createElement('submit', 'saveform', get_string('saveform', 'gradingform_matrix'));
         if ($this->_customdata['allowdraft']) {
             $buttonarray[] = &$form->createElement('submit', 'saveformdraft', get_string('saveformdraft', 'gradingform_matrix'));
@@ -79,7 +78,7 @@ class gradingform_matrix_editmatrix extends moodleform {
         $editbutton->freeze();
         $buttonarray[] = &$editbutton;
         $buttonarray[] = &$form->createElement('cancel');
-        $form->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $form->addGroup($buttonarray, 'buttonar', '', [' '], false);
         $form->closeHeaderBefore('buttonar');
     }
 
@@ -116,7 +115,7 @@ class gradingform_matrix_editmatrix extends moodleform {
      */
     public function validation($data, $files) {
         $err = parent::validation($data, $files);
-        $err = array();
+        $err = [];
         $form = $this->_form;
         $matrixel = $form->getElement('matrix');
         if ($matrixel->non_js_button_pressed($data['matrix'])) {

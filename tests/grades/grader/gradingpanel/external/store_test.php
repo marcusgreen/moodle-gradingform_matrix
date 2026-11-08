@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace gradingform_matrix\grades\grader\gradingpanel\external;
 
@@ -121,9 +121,13 @@ final class store_test extends advanced_testcase {
         $grade = $gradeitem->get_grade_for_user($student, $teacher);
         $instance = $gradeitem->get_advanced_grading_instance($teacher, $grade);
 
-        $submissiondata = $matrixgenerator->get_test_form_data($controller, (int) $student->id,
-            0, 'Too many mistakes. Please try again.',
-            2, 'Great number of pictures. Well done.'
+        $submissiondata = $matrixgenerator->get_test_form_data(
+            $controller,
+            (int) $student->id,
+            0,
+            'Too many mistakes. Please try again.',
+            2,
+            'Great number of pictures. Well done.'
         );
 
         $formdata = http_build_query((object) [
@@ -195,7 +199,6 @@ final class store_test extends advanced_testcase {
                 $this->assertArrayHasKey('score', $level);
                 $this->assertEquals($sourcelevel['score'], $level['score']);
             }
-
         }
 
         $this->assertEquals(1, $criteria[0]['levels'][1]['checked']);

@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace gradingform_matrix\grades\grader\gradingpanel\external;
 
@@ -40,7 +40,7 @@ use core_external\external_value;
 use core_external\external_warnings;
 use stdClass;
 use moodle_exception;
-require_once($CFG->dirroot.'/grade/grading/form/matrix/lib.php');
+require_once($CFG->dirroot . '/grade/grading/form/matrix/lib.php');
 
 /**
  * Web services relating to fetching of a matrix for the grading panel.
@@ -50,7 +50,6 @@ require_once($CFG->dirroot.'/grade/grading/form/matrix/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class fetch extends external_api {
-
     /**
      * Describes the parameters for fetching the grading panel for a simple grade.
      *
@@ -58,7 +57,7 @@ class fetch extends external_api {
      * @since Moodle 3.8
      */
     public static function execute_parameters(): external_function_parameters {
-        return new external_function_parameters ([
+        return new external_function_parameters([
             'component' => new external_value(
                 PARAM_ALPHANUMEXT,
                 'The name of the component',
@@ -175,7 +174,7 @@ class fetch extends external_api {
         $criterion = [];
         if ($definition->matrix_criteria) {
             // Iterate over the defined criterion in the matrix and map out what we need to render each item.
-            $criterion = array_map(function($criterion) use ($definitionid, $fillings, $context, $hasgrade) {
+            $criterion = array_map(function ($criterion) use ($definitionid, $fillings, $context, $hasgrade) {
                 // The general structure we'll be returning, we still need to get the remark (if any) and the levels associated.
                 $result = [
                     'id' => $criterion['id'],
@@ -192,7 +191,8 @@ class fetch extends external_api {
                 $filling = [];
                 if (array_key_exists($criterion['id'], $fillings['criteria'])) {
                     $filling = $fillings['criteria'][$criterion['id']];
-                    $result['remark'] = self::get_formatted_text($context,
+                    $result['remark'] = self::get_formatted_text(
+                        $context,
                         $definitionid,
                         'remark',
                         $filling['remark'],
@@ -201,7 +201,7 @@ class fetch extends external_api {
                 }
 
                 // Lets build the levels within a criteria and figure out what needs to go where.
-                $result['levels'] = array_map(function($level) use ($criterion, $filling, $context, $definitionid) {
+                $result['levels'] = array_map(function ($level) use ($criterion, $filling, $context, $definitionid) {
                     // The bulk of what'll be returned can be defined easily we'll add to this further down.
                     $result = [
                         'id' => $level['id'],

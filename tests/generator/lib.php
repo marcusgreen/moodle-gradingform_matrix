@@ -40,7 +40,6 @@ use tests\gradingform_matrix\generator\criterion;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class gradingform_matrix_generator extends component_generator_base {
-
     /**
      * Create an instance of a matrix.
      *
@@ -127,7 +126,7 @@ class gradingform_matrix_generator extends component_generator_base {
 
         $criterion = $level = null;
 
-        $criterion = array_reduce($criteria, function($carry, $criterion) use ($description) {
+        $criterion = array_reduce($criteria, function ($carry, $criterion) use ($description) {
             if ($criterion['description'] === $description) {
                 $carry = $criterion;
             }
@@ -137,7 +136,7 @@ class gradingform_matrix_generator extends component_generator_base {
 
         if ($criterion) {
             $criterion = (object) $criterion;
-            $level = array_reduce($criterion->levels, function($carry, $level) use ($score) {
+            $level = array_reduce($criterion->levels, function ($carry, $level) use ($score) {
                 if ($level['score'] == $score) {
                     $carry = $level;
                 }

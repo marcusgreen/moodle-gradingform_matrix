@@ -32,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
-
     /**
      * Declares the matrix XML paths attached to the form definition element
      *
@@ -40,13 +39,17 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
      */
     protected function define_definition_plugin_structure() {
 
-        $paths = array();
+        $paths = [];
 
-        $paths[] = new restore_path_element('gradingform_matrix_criterion',
-            $this->get_pathfor('/matrixcriteria/matrixcriterion'));
+        $paths[] = new restore_path_element(
+            'gradingform_matrix_criterion',
+            $this->get_pathfor('/matrixcriteria/matrixcriterion')
+        );
 
-        $paths[] = new restore_path_element('gradingform_matrix_level',
-            $this->get_pathfor('/matrixcriteria/matrixcriterion/matrixlevels/matrixlevel'));
+        $paths[] = new restore_path_element(
+            'gradingform_matrix_level',
+            $this->get_pathfor('/matrixcriteria/matrixcriterion/matrixlevels/matrixlevel')
+        );
 
         return $paths;
     }
@@ -58,10 +61,12 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
      */
     protected function define_instance_plugin_structure() {
 
-        $paths = array();
+        $paths = [];
 
-        $paths[] = new restore_path_element('gradingform_matrix_filling',
-            $this->get_pathfor('/fillings/filling'));
+        $paths[] = new restore_path_element(
+            'gradingform_matrix_filling',
+            $this->get_pathfor('/fillings/filling')
+        );
 
         return $paths;
     }
@@ -120,6 +125,5 @@ class restore_gradingform_matrix_plugin extends restore_gradingform_plugin {
         if (!empty($data->criterionid)) {
             $DB->insert_record('gradingform_matrix_fillings', $data);
         }
-
     }
 }

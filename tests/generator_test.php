@@ -39,7 +39,6 @@ use gradingform_controller;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class generator_test extends advanced_testcase {
-
     /**
      * Test matrix creation.
      */
@@ -255,7 +254,7 @@ final class generator_test extends advanced_testcase {
             'Pictures' => [
                 'score' => 2,
                 'remark' => 'Lots of nice pictures!',
-            ]
+            ],
         ]);
 
         $this->assertIsArray($result);
@@ -297,8 +296,10 @@ final class generator_test extends advanced_testcase {
         $result = $matrixgenerator->get_test_form_data(
             $controller,
             1839,
-            1, 'Propper good speling',
-            0, 'ASCII art is not a picture'
+            1,
+            'Propper good speling',
+            0,
+            'ASCII art is not a picture'
         );
 
         $this->assertIsArray($result);

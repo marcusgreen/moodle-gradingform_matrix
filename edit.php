@@ -22,16 +22,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__.'/../../../../config.php');
-require_once(__DIR__.'/lib.php');
-require_once(__DIR__.'/edit_form.php');
-require_once($CFG->dirroot.'/grade/grading/lib.php');
+require_once(__DIR__ . '/../../../../config.php');
+require_once(__DIR__ . '/lib.php');
+require_once(__DIR__ . '/edit_form.php');
+require_once($CFG->dirroot . '/grade/grading/lib.php');
 
 $areaid = required_param('areaid', PARAM_INT);
 
 $manager = get_grading_manager($areaid);
 
-list($context, $course, $cm) = get_context_info_array($manager->get_context()->id);
+[$context, $course, $cm] = get_context_info_array($manager->get_context()->id);
 
 require_login($course, true, $cm);
 require_capability('moodle/grade:managegradingforms', $context);
@@ -42,11 +42,11 @@ $controller = $manager->get_controller('matrix');
 if (method_exists($PAGE, 'set_show_navigation_footer')) {
     $PAGE->set_show_navigation_footer(false);
 }
-$PAGE->set_url(new moodle_url('/grade/grading/form/matrix/edit.php', array('areaid' => $areaid)));
+$PAGE->set_url(new moodle_url('/grade/grading/form/matrix/edit.php', ['areaid' => $areaid]));
 $PAGE->set_title(get_string('defineform', 'gradingform_matrix'));
 $PAGE->set_heading(get_string('defineform', 'gradingform_matrix'));
 
-$mform = new gradingform_matrix_editmatrix(null, array('areaid' => $areaid, 'context' => $context, 'allowdraft' => !$controller->has_active_instances()), 'post', '', array('class' => 'gradingform_matrix_editform'));
+$mform = new gradingform_matrix_editmatrix(null, ['areaid' => $areaid, 'context' => $context, 'allowdraft' => !$controller->has_active_instances()], 'post', '', ['class' => 'gradingform_matrix_editform']);
 $data = $controller->get_definition_for_editing(true);
 $returnurl = optional_param('returnurl', $manager->get_management_url(), PARAM_LOCALURL);
 $data->returnurl = $returnurl;
@@ -62,7 +62,7 @@ if ($mform->is_cancelled()) {
     $warning = null;
     if (!empty($data->returnurl) && $data->returnurl !== $manager->get_management_url()->out(false)) {
         if (empty($data->matrix['options']['lockzeropoints']) && ($scores = $controller->get_min_max_score()) && $scores['minscore'] <> 0) {
-            $warning = get_string('zerolevelsabsent', 'gradingform_matrix').'<br>'.
+            $warning = get_string('zerolevelsabsent', 'gradingform_matrix') . '<br>' .
                 html_writer::link($manager->get_management_url(), get_string('back'));
         }
     }

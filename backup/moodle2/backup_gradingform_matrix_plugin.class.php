@@ -32,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
-
     /**
      * Declares matrix structures to append to the grading form definition
      */
@@ -51,13 +50,13 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
 
         $criteria = new backup_nested_element('matrixcriteria');
 
-        $criterion = new backup_nested_element('matrixcriterion', array('id'), array(
-            'sortorder', 'description', 'descriptionformat'));
+        $criterion = new backup_nested_element('matrixcriterion', ['id'], [
+            'sortorder', 'description', 'descriptionformat']);
 
         $levels = new backup_nested_element('matrixlevels');
 
-        $level = new backup_nested_element('matrixlevel', array('id'), array(
-            'score', 'definition', 'definitionformat'));
+        $level = new backup_nested_element('matrixlevel', ['id'], [
+            'score', 'definition', 'definitionformat']);
 
         // Build elements hierarchy
 
@@ -68,11 +67,15 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
 
         // Set sources to populate the data
 
-        $criterion->set_source_table('gradingform_matrix_criteria',
-                array('definitionid' => backup::VAR_PARENTID));
+        $criterion->set_source_table(
+            'gradingform_matrix_criteria',
+            ['definitionid' => backup::VAR_PARENTID]
+        );
 
-        $level->set_source_table('gradingform_matrix_levels',
-                array('criterionid' => backup::VAR_PARENTID));
+        $level->set_source_table(
+            'gradingform_matrix_levels',
+            ['criterionid' => backup::VAR_PARENTID]
+        );
 
         // no need to annotate ids or files yet (one day when criterion definition supports
         // embedded files, they must be annotated here)
@@ -98,8 +101,8 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
 
         $fillings = new backup_nested_element('fillings');
 
-        $filling = new backup_nested_element('filling', array('id'), array(
-            'criterionid', 'levelid', 'remark', 'remarkformat'));
+        $filling = new backup_nested_element('filling', ['id'], [
+            'criterionid', 'levelid', 'remark', 'remarkformat']);
 
         // Build elements hierarchy
 
@@ -109,12 +112,14 @@ class backup_gradingform_matrix_plugin extends backup_gradingform_plugin {
         // Set sources to populate the data
 
         // Binding criterionid to ensure it's existence
-        $filling->set_source_sql('SELECT rf.*
+        $filling->set_source_sql(
+            'SELECT rf.*
                 FROM {gradingform_matrix_fillings} rf
                 JOIN {grading_instances} gi ON gi.id = rf.instanceid
                 JOIN {gradingform_matrix_criteria} rc ON rc.id = rf.criterionid AND gi.definitionid = rc.definitionid
                 WHERE rf.instanceid = :instanceid',
-                array('instanceid' => backup::VAR_PARENTID));
+            ['instanceid' => backup::VAR_PARENTID]
+        );
 
         // no need to annotate ids or files yet (one day when remark field supports
         // embedded fileds, they must be annotated here)

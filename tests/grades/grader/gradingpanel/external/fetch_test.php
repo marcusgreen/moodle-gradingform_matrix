@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace gradingform_matrix\grades\grader\gradingpanel\external;
 
@@ -234,9 +234,13 @@ final class fetch_test extends advanced_testcase {
         $grade = $gradeitem->get_grade_for_user($gradeduser, $grader);
         $instance = $gradeitem->get_advanced_grading_instance($grader, $grade);
 
-        $submissiondata = $matrixgenerator->get_test_form_data($controller, (int) $gradeduser->id,
-            0, 'Too many mistakes. Please try again.',
-            2, 'Great number of pictures. Well done.'
+        $submissiondata = $matrixgenerator->get_test_form_data(
+            $controller,
+            (int) $gradeduser->id,
+            0,
+            'Too many mistakes. Please try again.',
+            2,
+            'Great number of pictures. Well done.'
         );
 
         $gradeitem->store_grade_from_formdata($gradeduser, $grader, (object) [
@@ -310,7 +314,6 @@ final class fetch_test extends advanced_testcase {
                 $this->assertArrayHasKey('score', $level);
                 $this->assertEquals($sourcelevel['score'], $level['score']);
             }
-
         }
 
         $this->assertEquals(1, $criteria[0]['levels'][1]['checked']);
@@ -368,8 +371,10 @@ final class fetch_test extends advanced_testcase {
         $data = $this->get_test_form_data(
             $controller,
             $itemid,
-            1, 'This user made several mistakes.',
-            0, 'Please add more pictures.'
+            1,
+            'This user made several mistakes.',
+            0,
+            'Please add more pictures.'
         );
 
         // Update this instance with data.
