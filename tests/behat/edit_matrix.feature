@@ -24,7 +24,7 @@ Feature: Matrices can be created and edited
       | name                              | Test assignment 1 name      |
       | intro                             | Test assignment description |
       | assignfeedback_comments_enabled   | 1                           |
-      | assignfeedback_editpdf_enabled    | 1                           |
+      | assignfeedback_editpdf_enabled    | 0                           |
       | advancedgradingmethod_submissions | matrix                      |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
