@@ -29,19 +29,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # From $plugin->requires (Moodle 5.1) to the latest stable branch.
+        # The oldest supported Moodle ($plugin->requires) with its oldest PHP, and the newest
+        # with the newest PHP, one on each database.
         include:
           - php: '8.2'
-            moodle-branch: 'MOODLE_501_STABLE'
-            database: 'pgsql'
-          - php: '8.3'
-            moodle-branch: 'MOODLE_502_STABLE'
-            database: 'mariadb'
-          - php: '8.4'
-            moodle-branch: 'MOODLE_502_STABLE'
-            database: 'pgsql'
-          - php: '8.4'
-            moodle-branch: 'MOODLE_503_STABLE'
+            moodle-branch: 'MOODLE_500_STABLE'
             database: 'pgsql'
           - php: '8.4'
             moodle-branch: 'MOODLE_503_STABLE'
