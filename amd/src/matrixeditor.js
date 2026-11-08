@@ -47,6 +47,14 @@ const escapeHTML = (text) => {
 };
 
 /**
+ * Show or hide an element with the hiddenelement class.
+ *
+ * @param {HTMLElement} el
+ * @param {Boolean} hidden
+ */
+const setHidden = (el, hidden) => el.classList.toggle('hiddenelement', hidden);
+
+/**
  * A single matrix editor instance, scoped to one form element.
  */
 class MatrixEditor {
@@ -138,90 +146,93 @@ class MatrixEditor {
      */
     editMode(el, editmode, focusScore) {
         const ta = el.querySelector('textarea');
-        if (!ta) {
+        // The textarea is hidden in plain mode, so there is nothing to do when it is already in the requested mode.
+        if (!ta || editmode !== ta.classList.contains('hiddenelement')) {
             return;
         }
-        if (!editmode && ta.classList.contains('hiddenelement')) {
-            return;
-        }
-        if (editmode && !ta.classList.contains('hiddenelement')) {
-            return;
-        }
-
-        const pseudotablink = '<span class="pseudotablink" tabindex="0"></span>';
-        let taplain = ta.parentNode.querySelector('.plainvalue');
-        let tbplain = null;
         const tb = el.querySelector(SELECTORS.SCORE_INPUT);
-
-        // Lazily create the .plainvalue holders next to the textarea (and score input).
-        if (!taplain) {
-            ta.parentNode.insertAdjacentHTML('beforeend',
-                `<div class="plainvalue">${pseudotablink}<span class="textvalue">&nbsp;</span></div>`);
-            taplain = ta.parentNode.querySelector('.plainvalue');
-            taplain.querySelector('.pseudotablink').addEventListener('focus', (e) => this.clickAnywhere(e));
-            if (tb) {
-                tb.parentNode.insertAdjacentHTML('beforeend',
-                    `<span class="plainvalue">${pseudotablink}<span class="textvalue">&nbsp;</span></span>`);
-                tbplain = tb.parentNode.querySelector('.plainvalue');
-                tbplain.querySelector('.pseudotablink').addEventListener('focus', (e) => this.clickAnywhere(e));
-            }
-        }
-        if (tb && !tbplain) {
-            tbplain = tb.parentNode.querySelector('.plainvalue');
-        }
-
-        if (!editmode) {
-            // Copy the input contents into the plain holders. Show placeholder text when empty.
-            let value = ta.value;
-            if (value.length) {
-                taplain.classList.remove('empty');
-            } else {
-                value = el.classList.contains('level') ? this.strings.levelempty : this.strings.criterionempty;
-                taplain.classList.add('empty');
-            }
-            taplain.querySelector('.textvalue').innerHTML = escapeHTML(value);
-            if (!taplain.classList.contains('empty')) {
-                this.queueRender(taplain.querySelector('.textvalue'), value);
-            }
-            if (tb) {
-                tbplain.querySelector('.textvalue').innerHTML = escapeHTML(tb.value);
-            }
-            taplain.classList.remove('hiddenelement');
-            ta.classList.add('hiddenelement');
-            if (tb) {
-                tbplain.classList.remove('hiddenelement');
-                tb.classList.add('hiddenelement');
-            }
-        } else {
-            // Size the textarea so it fills the cell.
-            try {
-                const width = parseFloat(getComputedStyle(ta.parentNode).width);
-                let height;
-                if (el.classList.contains('level')) {
-                    height = parseFloat(getComputedStyle(el).height)
-                        - parseFloat(getComputedStyle(el.querySelector('.score')).height);
-                } else {
-                    height = parseFloat(getComputedStyle(ta.parentNode).height);
-                }
-                ta.style.width = `${Math.max(width - 16, 50)}px`;
-                ta.style.height = `${Math.max(height, 20)}px`;
-            } catch (err) {
-                // Leave the default size of the textbox.
-            }
-            taplain.classList.add('hiddenelement');
-            ta.classList.remove('hiddenelement');
-            if (tb) {
-                tbplain.classList.add('hiddenelement');
-                tb.classList.remove('hiddenelement');
-            }
-        }
+        const taplain = this.plainHolder(ta, 'div');
+        const tbplain = tb ? this.plainHolder(tb, 'span') : null;
 
         if (editmode) {
-            if (tb && focusScore) {
-                tb.focus();
+            this.sizeTextarea(el, ta);
+        } else {
+            this.showPlainValues(el, ta, taplain, tb, tbplain);
+        }
+        setHidden(taplain, editmode);
+        setHidden(ta, !editmode);
+        if (tb) {
+            setHidden(tbplain, editmode);
+            setHidden(tb, !editmode);
+        }
+        if (editmode) {
+            (tb && focusScore ? tb : ta).focus();
+        }
+    }
+
+    /**
+     * Returns the element showing an input's value in plain mode, creating it the first time.
+     *
+     * @param {HTMLElement} input the textarea or score input
+     * @param {String} tag element to create: div for the text, span for the score
+     * @returns {HTMLElement}
+     */
+    plainHolder(input, tag) {
+        let plain = input.parentNode.querySelector('.plainvalue');
+        if (!plain) {
+            input.parentNode.insertAdjacentHTML('beforeend', `<${tag} class="plainvalue">` +
+                `<span class="pseudotablink" tabindex="0"></span><span class="textvalue">&nbsp;</span></${tag}>`);
+            plain = input.parentNode.querySelector('.plainvalue');
+            plain.querySelector('.pseudotablink').addEventListener('focus', (e) => this.clickAnywhere(e));
+        }
+        return plain;
+    }
+
+    /**
+     * Copies the inputs' contents into their plain holders, with placeholder text when the text is empty.
+     *
+     * @param {HTMLElement} el The .level or .description cell.
+     * @param {HTMLElement} ta the cell's textarea
+     * @param {HTMLElement} taplain its plain holder
+     * @param {HTMLElement|null} tb the cell's score input, if it has one
+     * @param {HTMLElement|null} tbplain its plain holder
+     */
+    showPlainValues(el, ta, taplain, tb, tbplain) {
+        const empty = !ta.value.length;
+        let value = ta.value;
+        if (empty) {
+            value = el.classList.contains('level') ? this.strings.levelempty : this.strings.criterionempty;
+        }
+        taplain.classList.toggle('empty', empty);
+        taplain.querySelector('.textvalue').innerHTML = escapeHTML(value);
+        if (!empty) {
+            this.queueRender(taplain.querySelector('.textvalue'), value);
+        }
+        if (tb) {
+            tbplain.querySelector('.textvalue').innerHTML = escapeHTML(tb.value);
+        }
+    }
+
+    /**
+     * Sizes a textarea so it fills its cell.
+     *
+     * @param {HTMLElement} el The .level or .description cell.
+     * @param {HTMLElement} ta the cell's textarea
+     */
+    sizeTextarea(el, ta) {
+        try {
+            const width = parseFloat(getComputedStyle(ta.parentNode).width);
+            let height;
+            if (el.classList.contains('level')) {
+                height = parseFloat(getComputedStyle(el).height)
+                    - parseFloat(getComputedStyle(el.querySelector('.score')).height);
             } else {
-                ta.focus();
+                height = parseFloat(getComputedStyle(ta.parentNode).height);
             }
+            ta.style.width = `${Math.max(width - 16, 50)}px`;
+            ta.style.height = `${Math.max(height, 20)}px`;
+        } catch (err) {
+            // Leave the default size of the textbox.
         }
     }
 
@@ -233,83 +244,91 @@ class MatrixEditor {
      * @param {Boolean} [confirmed] Set after the user confirms a delete.
      */
     buttonClick(e, confirmed) {
-        const name = this.name;
         const target = e.target;
         if (target.type !== 'submit') {
             return;
         }
         this.disableAllEditors();
 
+        // Button ids are {name}-criteria-{criterionid}[-levels-{levelid}]-{action}.
         const chunks = target.id.split('-');
-        const action = chunks[chunks.length - 1];
-        if (chunks[0] !== name || chunks[1] !== 'criteria') {
+        if (chunks[0] !== this.name || chunks[1] !== 'criteria') {
             return;
         }
-
-        let elementsStr;
-        if (chunks.length > 4 || action === 'addlevel') {
-            elementsStr = `#${IDS.levels(name, chunks[2])} ${SELECTORS.LEVEL}`;
-        } else {
-            elementsStr = `#${IDS.root(name)} ${SELECTORS.CRITERION}`;
-        }
-
-        // Prepare the ids of the next inserted level/criterion.
-        let newlevid = 0;
-        let newid = 0;
-        if (action === 'addcriterion' || action === 'addlevel' || action === 'duplicate') {
-            newid = this.calculateNewId(`#${IDS.root(name)} ${SELECTORS.CRITERION}`);
-            newlevid = this.calculateNewId(`#${IDS.root(name)} ${SELECTORS.LEVEL}`);
-        }
-
-        if (chunks.length === 3 && action === 'addcriterion') {
-            this.addCriterion(newid, newlevid, elementsStr);
-        } else if (chunks.length === 5 && action === 'addlevel') {
-            this.addLevel(chunks[2], newlevid, elementsStr);
-        } else if (chunks.length === 4 && action === 'moveup') {
-            const el = document.getElementById(IDS.criterion(name, chunks[2]));
-            if (el && el.previousElementSibling) {
-                el.parentNode.insertBefore(el, el.previousElementSibling);
-            }
-            this.assignClasses(elementsStr);
-        } else if (chunks.length === 4 && action === 'movedown') {
-            const el = document.getElementById(IDS.criterion(name, chunks[2]));
-            if (el && el.nextElementSibling) {
-                el.parentNode.insertBefore(el.nextElementSibling, el);
-            }
-            this.assignClasses(elementsStr);
-        } else if (chunks.length === 4 && action === 'delete') {
-            if (confirmed) {
-                const el = document.getElementById(IDS.criterion(name, chunks[2]));
-                if (el) {
-                    el.remove();
-                }
-                this.assignClasses(elementsStr);
-            } else {
-                // Stop the form submitting while the delete waits for confirmation.
-                e.preventDefault();
-                this.confirmDelete(e, 'confirmdeletecriterion', 'gradingform_matrixeditor:deleteConfirmation');
-                return;
-            }
-        } else if (chunks.length === 4 && action === 'duplicate') {
-            this.duplicateCriterion(chunks[2], newid, newlevid, elementsStr);
-        } else if (chunks.length === 6 && action === 'delete') {
-            if (confirmed) {
-                const el = document.getElementById(IDS.level(name, chunks[2], chunks[4]));
-                if (el) {
-                    el.remove();
-                }
-                this.assignClasses(elementsStr);
-            } else {
-                // Stop the form submitting while the delete waits for confirmation.
-                e.preventDefault();
-                this.confirmDelete(e, 'confirmdeletelevel', 'gradingform_matrixeditor:deleteLevelConfirmation');
-                return;
-            }
-        } else {
-            // Unknown action.
+        const button = this.buttonActions(chunks)[`${chunks.length}-${chunks[chunks.length - 1]}`];
+        if (!button) {
             return;
         }
+        // Stop the form submitting, including while a delete waits for confirmation.
         e.preventDefault();
+        if (button.confirm && !confirmed) {
+            this.confirmDelete(e, ...button.confirm);
+            return;
+        }
+        button.run();
+    }
+
+    /**
+     * The actions of the editor buttons, keyed by the number of parts in the button id and the action.
+     *
+     * @param {String[]} chunks the parts of the button id
+     * @returns {Object} for each action, run() and, for deletes, confirm: [message string key, pending key]
+     */
+    buttonActions(chunks) {
+        const name = this.name;
+        const criterionid = chunks[2];
+        const criteria = `#${IDS.root(name)} ${SELECTORS.CRITERION}`;
+        const levels = `#${IDS.levels(name, criterionid)} ${SELECTORS.LEVEL}`;
+        const criterion = () => document.getElementById(IDS.criterion(name, criterionid));
+        return {
+            '3-addcriterion': {run: () => this.addCriterion(...this.newIds(), criteria)},
+            '5-addlevel': {run: () => this.addLevel(criterionid, this.newIds()[1], levels)},
+            '4-duplicate': {run: () => this.duplicateCriterion(criterionid, ...this.newIds(), criteria)},
+            '4-moveup': {
+                run: () => {
+                    const el = criterion();
+                    if (el && el.previousElementSibling) {
+                        el.parentNode.insertBefore(el, el.previousElementSibling);
+                    }
+                    this.assignClasses(criteria);
+                },
+            },
+            '4-movedown': {
+                run: () => {
+                    const el = criterion();
+                    if (el && el.nextElementSibling) {
+                        el.parentNode.insertBefore(el.nextElementSibling, el);
+                    }
+                    this.assignClasses(criteria);
+                },
+            },
+            '4-delete': {
+                confirm: ['confirmdeletecriterion', 'gradingform_matrixeditor:deleteConfirmation'],
+                run: () => {
+                    criterion()?.remove();
+                    this.assignClasses(criteria);
+                },
+            },
+            '6-delete': {
+                confirm: ['confirmdeletelevel', 'gradingform_matrixeditor:deleteLevelConfirmation'],
+                run: () => {
+                    document.getElementById(IDS.level(name, criterionid, chunks[4]))?.remove();
+                    this.assignClasses(levels);
+                },
+            },
+        };
+    }
+
+    /**
+     * The ids for the next criterion and level to be added.
+     *
+     * @returns {Number[]} [criterion id, level id]
+     */
+    newIds() {
+        return [
+            this.calculateNewId(`#${IDS.root(this.name)} ${SELECTORS.CRITERION}`),
+            this.calculateNewId(`#${IDS.root(this.name)} ${SELECTORS.LEVEL}`),
+        ];
     }
 
     /**
@@ -319,20 +338,26 @@ class MatrixEditor {
      * @param {String} messagekey Language string key for the confirmation body.
      * @param {String} pendingkey Pending-promise key.
      */
-    confirmDelete(e, messagekey, pendingkey) {
+    async confirmDelete(e, messagekey, pendingkey) {
         const pendingPromise = new Pending(pendingkey);
-        getStrings([
-            {key: 'confirmation', component: 'admin'},
-            {key: messagekey, component: 'gradingform_matrix'},
-            {key: 'yes', component: 'moodle'},
-        ]).then(([title, question, yes]) => {
-            return Notification.saveCancelPromise(title, question, yes).then(() => {
-                this.buttonClick(e, true);
-                return;
-            }).catch(() => {
-                // User cancelled.
+        try {
+            const [title, question, yes] = await getStrings([
+                {key: 'confirmation', component: 'admin'},
+                {key: messagekey, component: 'gradingform_matrix'},
+                {key: 'yes', component: 'moodle'},
+            ]);
+            let confirmed = true;
+            await Notification.saveCancelPromise(title, question, yes).catch(() => {
+                confirmed = false;
             });
-        }).then(() => pendingPromise.resolve()).catch(Notification.exception);
+            if (confirmed) {
+                this.buttonClick(e, true);
+            }
+        } catch (error) {
+            Notification.exception(error);
+        } finally {
+            pendingPromise.resolve();
+        }
     }
 
     /**
