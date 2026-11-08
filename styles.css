@@ -457,7 +457,9 @@
 .fitem.popout .gradingform_matrix .criterion .levels .level {
     display: block;
     flex: 1 1 100px;
-    width: auto !important; /* override inline width: N% set by renderer */
+    /* The renderer sets an inline width: N%, which only !important can override. */
+    /* stylelint-disable-next-line declaration-no-important */
+    width: auto !important;
     min-width: 100px;
 }
 
