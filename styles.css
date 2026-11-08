@@ -503,3 +503,10 @@
     }
 }
 /* stylelint-enable csstree/validator */
+
+/* Formatted text in editor cells that are not being edited. */
+.gradingform_matrix .plainvalue .textvalue p:last-child,
+.gradingform_matrix .plainvalue .textvalue ul:last-child,
+.gradingform_matrix .plainvalue .textvalue ol:last-child {
+    margin-bottom: 0;
+}

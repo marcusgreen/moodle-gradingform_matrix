@@ -64,3 +64,15 @@ export const storeGrade = (component, contextid, itemname, gradeduserid, notifyu
         formdata,
     },
 }])[0];
+
+/**
+ * Render criterion and level texts as Markdown.
+ *
+ * @param {Number} contextid context of the grading form
+ * @param {String[]} texts
+ * @returns {Promise} HTML for each text, in the same order
+ */
+export const renderTexts = (contextid, texts) => fetchMany([{
+    methodname: 'gradingform_matrix_render_text',
+    args: {contextid, texts},
+}])[0];

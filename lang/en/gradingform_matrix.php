@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['addcriterion'] = 'Add criterion';
 $string['additionalfeedback'] = 'Additional feedback';
+$string['aiinvalidrequest'] = 'The request to the AI assistant is not valid.';
 $string['alwaysshowdefinition'] = 'Allow users to preview the grading form (otherwise it will only be displayed after grading)';
 $string['backtoediting'] = 'Back to editing';
 $string['confirmdeletecriterion'] = 'Are you sure you want to delete this criterion?';
@@ -56,11 +57,24 @@ $string['formstatus'] = 'Current grading form status';
 $string['gradingform'] = 'Grading form';
 $string['gradingform_help'] = 'Define the grading form used to grade this activity. Add one or more criteria, each with a set of levels and scores.
 
-Criterion descriptions and level definitions support **Markdown**, so you can use formatting such as `**bold**`, `*italic*`, lists and links.
+Criterion descriptions and level definitions support **Markdown**:
 
-For example, a criterion description could be:
+* `**bold**` gives **bold**
+* `*italic*` gives *italic*
+* `***both***` gives ***both***
+* A blank line starts a new paragraph
+* Lines starting with `* ` make a bulleted list, and lines starting with `1. ` a numbered list
+* `[Marking guide](https://example.org)` gives a link: [Marking guide](https://example.org)
+* `` `code` `` gives `code`
 
-* **Structure** - is the report *well organised* with a clear introduction, body and conclusion?';
+For example, a level definition could be:
+
+    **Competent**
+
+    Explains the *main* ideas, with:
+
+    * relevant detail
+    * at least two sources';
 $string['gradingof'] = '{$a} grading';
 $string['import'] = 'Import';
 $string['importerrorfile'] = 'The file contains an embedded file that can\'t be read: {$a}.';

@@ -32,6 +32,7 @@ import {get_strings as getStrings} from 'core/str';
 import Notification from 'core/notification';
 import Pending from 'core/pending';
 import {SELECTORS, IDS} from 'gradingform_matrix/local/selectors';
+import {renderTexts} from 'gradingform_matrix/repository';
 
 /**
  * Escape a string for safe insertion as text/HTML content.
@@ -59,6 +60,9 @@ class MatrixEditor {
         this.name = name;
         this.templates = {criterion: criterionTemplate, level: levelTemplate};
         this.strings = strings;
+        /** @type {Map<HTMLElement, String>} cells waiting to be shown as formatted text, with their text */
+        this.toRender = new Map();
+        this.renderTimer = null;
         this.root = document.getElementById(IDS.root(name));
         if (!this.root) {
             return;
@@ -176,6 +180,9 @@ class MatrixEditor {
                 taplain.classList.add('empty');
             }
             taplain.querySelector('.textvalue').innerHTML = escapeHTML(value);
+            if (!taplain.classList.contains('empty')) {
+                this.queueRender(taplain.querySelector('.textvalue'), value);
+            }
             if (tb) {
                 tbplain.querySelector('.textvalue').innerHTML = escapeHTML(tb.value);
             }
@@ -420,7 +427,7 @@ class MatrixEditor {
         const source = document.getElementById(IDS.criterion(name, criterionid));
         const sourceLevels = source.querySelectorAll(SELECTORS.LEVEL);
         for (levidx = 0; levidx < sourceLevels.length; levidx++) {
-            levelsdef[levidx] = sourceLevels[levidx].querySelector('.definition .textvalue').innerHTML;
+            levelsdef[levidx] = escapeHTML(sourceLevels[levidx].querySelector('.definition textarea').value);
         }
         for (levidx = 0; levidx < sourceLevels.length; levidx++) {
             levelsscores[levidx] = sourceLevels[levidx].querySelector(SELECTORS.SCORE_INPUT).value;
@@ -436,10 +443,10 @@ class MatrixEditor {
                 .replace(/\{LEVEL-score\}/g, levelsscores[levidx])
                 .replace(/\{LEVEL-definition\}/g, levelsdef[levidx]);
         }
-        const description = source.querySelector('.description .textvalue');
+        const description = escapeHTML(source.querySelector('.description textarea').value);
         const newcriterion = this.templates.criterion
             .replace(/\{LEVELS\}/, levelsstr)
-            .replace(/\{CRITERION-description\}/, description.innerHTML);
+            .replace(/\{CRITERION-description\}/, description);
         parentel.insertAdjacentHTML('beforeend',
             newcriterion.replace(/\{CRITERION-id\}/g, `NEWID${newid}`).replace(/\{.+?\}/g, ''));
 
@@ -447,6 +454,46 @@ class MatrixEditor {
         this.disableAllEditors();
         this.assignClasses(elementsStr);
         this.editMode(document.getElementById(IDS.descriptionCell(name, `NEWID${newid}`)), true);
+    }
+
+    /**
+     * Shows a cell's text formatted as Markdown, as graders and students will see it.
+     *
+     * Cells are collected and sent in one request, so opening the editor makes a single call.
+     *
+     * @param {HTMLElement} target the element showing the text
+     * @param {String} text the cell's Markdown
+     */
+    queueRender(target, text) {
+        this.toRender.set(target, text);
+        if (this.renderTimer === null) {
+            this.renderTimer = setTimeout(() => this.renderQueued(), 0);
+        }
+    }
+
+    /**
+     * Renders the collected cells.
+     */
+    async renderQueued() {
+        const queued = [...this.toRender];
+        this.toRender.clear();
+        this.renderTimer = null;
+        const pending = new Pending('gradingform_matrix/matrixeditor:render');
+        try {
+            const html = await renderTexts(M.cfg.contextid, queued.map(([, text]) => text));
+            queued.forEach(([target, text], i) => {
+                // Skip cells that were edited again while the request ran.
+                const textarea = target.closest(SELECTORS.EDITABLE_CELL)?.querySelector('textarea');
+                if (textarea && textarea.value === text) {
+                    target.innerHTML = html[i];
+                }
+            });
+        } catch (error) {
+            // The plain text stays on show, which is still correct.
+            window.console.warn(error);
+        } finally {
+            pending.resolve();
+        }
     }
 
     /**

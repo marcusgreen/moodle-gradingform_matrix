@@ -38,6 +38,11 @@ $functions = [
         'type' => 'write',
         'ajax' => true,
     ],
+    'gradingform_matrix_render_text' => [
+        'classname' => 'gradingform_matrix\\external\\render_text',
+        'description' => 'Render criterion and level texts as Markdown for the grading form editor.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'moodle/grade:managegradingforms',
+    ],
 ];
-
-
