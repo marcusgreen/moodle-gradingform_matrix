@@ -28,7 +28,7 @@
     Context variables required for this template:
     * id, class, role: the cell
     * focusable: whether the cell is a tab stop
-    * style, arialabel, ariachecked: optional attributes of the cell
+    * arialabel, ariachecked: optional attributes of the cell
     * datascore: optional {value}, the score in display modes (an object, because a score of 0 is falsy)
     * hiddeninputs: list of {name, value} for frozen modes
     * radio: optional {id, name, value, checked} when evaluating
@@ -54,7 +54,6 @@
     }
 }}
 <td id="{{id}}" class="{{class}}" role="{{role}}"
-    {{#style}} style="{{.}}"{{/style}}
     {{#focusable}} tabindex="0"{{/focusable}}
     {{#arialabel}} aria-label="{{.}}"{{/arialabel}}
     {{#ariachecked}} aria-checked="{{.}}"{{/ariachecked}}

@@ -549,9 +549,6 @@ class MatrixEditor {
                     node.value = i;
                 }
             });
-            if (el.classList.contains('level')) {
-                el.style.width = `${Math.round(100 / elements.length)}%`;
-            }
         });
     }
 

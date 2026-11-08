@@ -262,9 +262,6 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
             'role' => 'listitem',
             'hiddeninputs' => [],
         ];
-        if (isset($level['tdwidth'])) {
-            $context['style'] = 'width: ' . round($level['tdwidth']) . '%;';
-        }
         $definition = [
             'id' => "{$prefix}-definition-container",
             'class' => 'definition' . (isset($level['error_definition']) ? ' error' : ''),
@@ -475,7 +472,6 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 if (isset($criterionvalue['savedlevelid']) && ((int)$criterionvalue['savedlevelid'] === $levelid)) {
                     $level['class'] .= ' currentchecked';
                 }
-                $level['tdwidth'] = 100 / count($criterion['levels']);
                 $level['index'] = $index;
                 $levelsstr .= $this->level_template($mode, $options, $elementname, $id, $level);
                 $index++;
