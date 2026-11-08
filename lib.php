@@ -26,6 +26,10 @@ use core_external\external_format_value;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use gradingform_matrix\local\framework\ai\assistant;
+use gradingform_matrix\local\framework\ai\backend;
+use gradingform_matrix\local\framework\ai\prompt_builder;
+use gradingform_matrix\local\framework\ai\reply_parser;
 use gradingform_matrix\local\framework\change_level;
 use gradingform_matrix\local\framework\criteria_repository;
 use gradingform_matrix\local\framework\definition_diff;
@@ -250,6 +254,32 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
+     * Returns the AI assistant for this method, which proposes forms with scored levels and Markdown definitions.
+     *
+     * @param backend $backend
+     * @return assistant
+     */
+    public function ai_assistant(backend $backend): assistant {
+        $rules = implode("\n", [
+            '- Give each criterion between 2 and 6 levels. The lowest level usually scores 0.',
+            '- Scores are numbers, and higher levels score more.',
+            '- Level definitions may use Markdown. Start each one with the name of the level in bold, for example',
+            '  "**Competent**", then a blank line, then one or two sentences.',
+            '- Criterion descriptions are short headings, such as "Use of evidence".',
+        ]);
+        return new assistant($backend, new prompt_builder($rules), $this->ai_reply_parser());
+    }
+
+    /**
+     * Returns the reader for the AI assistant's replies and proposals.
+     *
+     * @return reply_parser
+     */
+    public function ai_reply_parser(): reply_parser {
+        return new reply_parser($this->definition_importer());
+    }
+
+    /**
      * Exports the current definition.
      *
      * @return string JSON
@@ -328,10 +358,18 @@ class gradingform_matrix_controller extends gradingform_controller {
         $new = new stdClass();
         $new->name = $data['name'] ?? (($current && $current->name !== '') ? $current->name : $fallbackname);
         if (isset($data['description'])) {
+            // The text editor can only edit HTML; with any other format the editor falls back to a plain text
+            // area. AI proposals use Markdown, so convert it.
+            $text = $data['description'];
+            $format = $data['descriptionformat'];
+            if ((int)$format === (int)FORMAT_MARKDOWN) {
+                $text = markdown_to_html($text);
+                $format = FORMAT_HTML;
+            }
             // Saving through a draft area replaces the description's files and applies the editor's size limits.
             $new->description_editor = [
-                'text' => $data['description'],
-                'format' => $data['descriptionformat'],
+                'text' => $text,
+                'format' => $format,
                 'itemid' => self::create_draft_area($data['files'] ?? []),
             ];
         } else {

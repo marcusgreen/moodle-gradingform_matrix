@@ -66,6 +66,44 @@ export const storeGrade = (component, contextid, itemname, gradeduserid, notifyu
 }])[0];
 
 /**
+ * List the course material the AI assistant can read, and whether it can be used.
+ *
+ * @param {Number} areaid
+ * @returns {Promise}
+ */
+export const aiSources = (areaid) => fetchMany([{
+    methodname: 'gradingform_matrix_ai_sources',
+    args: {areaid},
+}])[0];
+
+/**
+ * Run one turn of the AI assistant's conversation.
+ *
+ * @param {Number} areaid
+ * @param {String} instruction the teacher's new instruction
+ * @param {Number[]} cmids course modules to read
+ * @param {Object[]} history earlier turns, oldest first, each {instruction, reply}
+ * @param {String} proposal the current proposal as JSON, or empty
+ * @returns {Promise}
+ */
+export const aiTurn = (areaid, instruction, cmids, history, proposal) => fetchMany([{
+    methodname: 'gradingform_matrix_ai_turn',
+    args: {areaid, instruction, cmids, history, proposal},
+}])[0];
+
+/**
+ * Replace the grading form with a proposal, saved as a draft.
+ *
+ * @param {Number} areaid
+ * @param {String} proposal the proposal as JSON
+ * @returns {Promise}
+ */
+export const aiApply = (areaid, proposal) => fetchMany([{
+    methodname: 'gradingform_matrix_ai_apply',
+    args: {areaid, proposal},
+}])[0];
+
+/**
  * Render criterion and level texts as Markdown.
  *
  * @param {Number} contextid context of the grading form

@@ -90,6 +90,14 @@ if ($controller->is_form_defined()) {
         ['class' => 'btn btn-secondary']
     );
 }
+if (\gradingform_matrix\local\ai_settings::enabled() && has_capability('gradingform/matrix:useaiassistant', $context)) {
+    $actions[] = html_writer::tag('button', get_string('aiassistant', 'gradingform_matrix'), [
+        'type' => 'button',
+        'class' => 'btn btn-secondary',
+        'data-action' => 'gradingform_matrix-aiassistant',
+    ]);
+    $PAGE->requires->js_call_amd('gradingform_matrix/local/aiassistant', 'init', [$areaid]);
+}
 if (has_capability('moodle/site:config', context_system::instance())) {
     // Grading methods have no place in the site administration tree, so link the settings from here.
     $actions[] = html_writer::link(

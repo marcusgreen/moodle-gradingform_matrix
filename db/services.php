@@ -45,4 +45,25 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'moodle/grade:managegradingforms',
     ],
+    'gradingform_matrix_ai_sources' => [
+        'classname' => 'gradingform_matrix\\external\\ai_sources',
+        'description' => 'List the course content the AI assistant can read, and whether it can be used.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'moodle/grade:managegradingforms, gradingform/matrix:useaiassistant',
+    ],
+    'gradingform_matrix_ai_turn' => [
+        'classname' => 'gradingform_matrix\\external\\ai_turn',
+        'description' => 'Run one turn of the AI assistant conversation about a grading form.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'moodle/grade:managegradingforms, gradingform/matrix:useaiassistant',
+    ],
+    'gradingform_matrix_ai_apply' => [
+        'classname' => 'gradingform_matrix\\external\\ai_apply',
+        'description' => 'Replace the grading form with a proposal from the AI assistant, saved as a draft.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'moodle/grade:managegradingforms, gradingform/matrix:useaiassistant',
+    ],
 ];

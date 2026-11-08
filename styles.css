@@ -504,6 +504,36 @@
 }
 /* stylelint-enable csstree/validator */
 
+/* AI assistant dialogue, see amd/src/local/aiassistant.js. */
+.gradingform_matrix-ai-log {
+    max-height: 18rem;
+    overflow-y: auto;
+}
+
+.gradingform_matrix-ai-message {
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--bs-border-radius);
+}
+
+.gradingform_matrix-ai-message p {
+    white-space: pre-wrap;
+}
+
+.gradingform_matrix-ai-you {
+    background: var(--bs-tertiary-bg);
+}
+
+.gradingform_matrix-ai-error {
+    background: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger-text-emphasis);
+}
+
+.gradingform_matrix-ai-preview {
+    max-height: 60vh;
+    overflow: auto;
+}
+
 /* Formatted text in editor cells that are not being edited. */
 .gradingform_matrix .plainvalue .textvalue p:last-child,
 .gradingform_matrix .plainvalue .textvalue ul:last-child,
