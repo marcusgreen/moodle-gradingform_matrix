@@ -68,7 +68,7 @@ Feature: Converting matrix score to grades
     And I set the following fields to these values:
       | Whole forum grading > Type   | Scale                     |
       | Whole forum grading > Scale  | Default competence scale  |
-      | Grading method               | Matrix                    |
+      | Grading method               | Rubric (Matrix)           |
     And I press "Save and display"
     And I go to "Test forum 1" advanced grading definition page
     # Defining a matrix.
