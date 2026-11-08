@@ -285,6 +285,8 @@ class MatrixEditor {
                 }
                 this.assignClasses(elementsStr);
             } else {
+                // Stop the form submitting while the delete waits for confirmation.
+                e.preventDefault();
                 this.confirmDelete(e, 'confirmdeletecriterion', 'gradingform_matrixeditor:deleteConfirmation');
                 return;
             }
@@ -298,6 +300,8 @@ class MatrixEditor {
                 }
                 this.assignClasses(elementsStr);
             } else {
+                // Stop the form submitting while the delete waits for confirmation.
+                e.preventDefault();
                 this.confirmDelete(e, 'confirmdeletelevel', 'gradingform_matrixeditor:deleteLevelConfirmation');
                 return;
             }
