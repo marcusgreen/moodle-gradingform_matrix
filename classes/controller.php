@@ -22,10 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use core_external\external_format_value;
-use core_external\external_multiple_structure;
-use core_external\external_single_structure;
-use core_external\external_value;
 use gradingform_matrix\local\framework\ai\assistant;
 use gradingform_matrix\local\framework\ai\backend;
 use gradingform_matrix\local\framework\ai\prompt_builder;
@@ -36,6 +32,7 @@ use gradingform_matrix\local\framework\definition_diff;
 use gradingform_matrix\local\framework\definition_exporter;
 use gradingform_matrix\local\framework\definition_importer;
 use gradingform_matrix\local\framework\definition_transfer;
+use gradingform_matrix\local\framework\external_structures;
 use gradingform_matrix\local\framework\filling_repository;
 use gradingform_matrix\local\framework\filling_validator;
 use gradingform_matrix\local\framework\grade_calculator;
@@ -712,51 +709,18 @@ class gradingform_matrix_controller extends gradingform_controller {
      * @since Moodle 2.5
      */
     public static function get_external_definition_details() {
-        $criteria = new external_multiple_structure(
-            new external_single_structure([
-                'id' => new external_value(PARAM_INT, 'criterion id', VALUE_OPTIONAL),
-                'sortorder' => new external_value(PARAM_INT, 'sortorder', VALUE_OPTIONAL),
-                'description' => new external_value(PARAM_RAW, 'description', VALUE_OPTIONAL),
-                'descriptionformat' => new external_format_value('description', VALUE_OPTIONAL),
-                'levels' => new external_multiple_structure(
-                    new external_single_structure([
-                        'id' => new external_value(PARAM_INT, 'level id', VALUE_OPTIONAL),
-                        'score' => new external_value(PARAM_FLOAT, 'score', VALUE_OPTIONAL),
-                        'definition' => new external_value(PARAM_RAW, 'definition', VALUE_OPTIONAL),
-                        'definitionformat' => new external_format_value('definition', VALUE_OPTIONAL),
-                    ]),
-                    'levels',
-                    VALUE_OPTIONAL
-                ),
-            ]),
-            'definition details',
-            VALUE_OPTIONAL
-        );
-        return ['matrix_criteria' => $criteria];
+        return external_structures::definition(self::METHOD);
     }
 
     /**
      * Returns an array that defines the structure of the matrix's filling. This function is used by
      * the web service function core_grading_external::get_gradingform_instances().
      *
-     * @return An array containing a single key/value pair with the 'criteria' external_multiple_structure
+     * @return array An array containing a single key/value pair with the 'criteria' external_multiple_structure
      * @see gradingform_controller::get_external_instance_filling_details()
      * @since Moodle 2.6
      */
     public static function get_external_instance_filling_details() {
-        $criteria = new external_multiple_structure(
-            new external_single_structure(
-                [
-                    'id' => new external_value(PARAM_INT, 'filling id'),
-                    'criterionid' => new external_value(PARAM_INT, 'criterion id'),
-                    'levelid' => new external_value(PARAM_INT, 'level id', VALUE_OPTIONAL),
-                    'remark' => new external_value(PARAM_RAW, 'remark', VALUE_OPTIONAL),
-                    'remarkformat' => new external_format_value('remark', VALUE_OPTIONAL),
-                ]
-            ),
-            'filling',
-            VALUE_OPTIONAL
-        );
-        return  ['criteria' => $criteria];
+        return external_structures::filling();
     }
 }
