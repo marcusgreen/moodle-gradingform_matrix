@@ -84,41 +84,38 @@ echo $OUTPUT->header();
 
 $actions = [];
 if ($controller->can_import()) {
-    $actions[] = html_writer::link(
-        new moodle_url('/grade/grading/form/matrix/import.php', ['areaid' => $areaid, 'returnurl' => $returnurl]),
-        get_string('import', 'gradingform_matrix'),
-        ['class' => 'btn btn-secondary']
-    );
+    $actions[] = [
+        'label' => get_string('import', 'gradingform_matrix'),
+        'style' => 'btn-secondary',
+        'url' => (new moodle_url('/grade/grading/form/matrix/import.php', ['areaid' => $areaid, 'returnurl' => $returnurl]))
+            ->out(false),
+    ];
 }
 if ($controller->is_form_defined()) {
-    $actions[] = html_writer::link(
-        new moodle_url('/grade/grading/form/matrix/export.php', ['areaid' => $areaid]),
-        get_string('export', 'gradingform_matrix'),
-        ['class' => 'btn btn-secondary']
-    );
+    $actions[] = [
+        'label' => get_string('export', 'gradingform_matrix'),
+        'style' => 'btn-secondary',
+        'url' => (new moodle_url('/grade/grading/form/matrix/export.php', ['areaid' => $areaid]))->out(false),
+    ];
 }
 if (\gradingform_matrix\local\ai_settings::enabled() && has_capability('gradingform/matrix:useaiassistant', $context)) {
-    $actions[] = html_writer::tag('button', get_string('aiassistant', 'gradingform_matrix'), [
-        'type' => 'button',
-        'class' => 'btn btn-secondary',
-        'data-action' => 'gradingform_matrix-aiassistant',
-    ]);
+    $actions[] = [
+        'label' => get_string('aiassistant', 'gradingform_matrix'),
+        'style' => 'btn-secondary',
+        'action' => 'gradingform_matrix-aiassistant',
+    ];
     $PAGE->requires->js_call_amd('gradingform_matrix/local/aiassistant', 'init', [$areaid]);
 }
 if (has_capability('moodle/site:config', context_system::instance())) {
     // Grading methods have no place in the site administration tree, so link the settings from here.
-    $actions[] = html_writer::link(
-        \gradingform_matrix\local\plugin_settings::url($PAGE->url),
-        get_string('pluginsettings', 'gradingform_matrix'),
-        ['class' => 'btn btn-link']
-    );
+    $actions[] = [
+        'label' => get_string('pluginsettings', 'gradingform_matrix'),
+        'style' => 'btn-link',
+        'url' => \gradingform_matrix\local\plugin_settings::url($PAGE->url)->out(false),
+    ];
 }
 if ($actions) {
-    // Line the buttons up with the form fields below, in the second column of the form layout.
-    echo html_writer::div(
-        html_writer::div(implode('', $actions), 'col-md-9 offset-md-3 d-flex flex-wrap gap-2 gradingform_matrix-importexport'),
-        'row mb-3'
-    );
+    echo $OUTPUT->render_from_template('gradingform_matrix/edit_actions', ['actions' => $actions]);
 }
 
 $mform->display();
