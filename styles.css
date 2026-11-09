@@ -124,17 +124,46 @@
 }
 
 .gradingform_matrix .criterion .levels .level {
-    border-left: 1px solid #ddd;
     min-width: 100px;
+}
+
+/* Each criterion's levels share its row equally: a flex row rather than table cells with set widths. */
+.gradingform_matrix .criterion .levels > table,
+.gradingform_matrix .criterion .levels > table > tbody {
+    display: block;
+}
+
+.gradingform_matrix .criterion .levels > table > tbody > tr {
+    display: flex;
+    height: 100%;
+}
+
+.gradingform_matrix .criterion .levels .level {
+    display: block;
+    flex: 1 1 0;
+}
+
+/* The theme borders every part of a table, this nested one included, and in a flex row those borders
+ * no longer collapse into single lines. So draw each line once instead: the row outlines the levels,
+ * and each level draws the line before it. The selectors need five classes to outrank the theme's
+ * table:not(.table):not(...) rule. */
+.gradingform_matrix .criteria .criterion .levels .levels-table > tbody,
+.gradingform_matrix .criteria .criterion .levels .levels-table .level {
+    border: 0;
+}
+
+.gradingform_matrix .criteria .criterion .levels .levels-table > tbody > tr {
+    border: 1px solid var(--bs-border-color);
+}
+
+.gradingform_matrix .criteria .criterion .levels .levels-table .level + .level {
+    border-left: 1px solid var(--bs-border-color);
 }
 
 .gradingform_matrix .criterion .levels .level .level-wrapper {
     position: relative;
 }
 
-.gradingform_matrix .criterion .levels .level.last {
-    border-right: 1px solid #ddd;
-}
 
 .gradingform_matrix .plainvalue.empty {
     font-style: italic;
@@ -455,12 +484,7 @@
 }
 
 .fitem.popout .gradingform_matrix .criterion .levels .level {
-    display: block;
     flex: 1 1 100px;
-    /* The renderer sets an inline width: N%, which only !important can override. */
-    /* stylelint-disable-next-line declaration-no-important */
-    width: auto !important;
-    min-width: 100px;
 }
 
 .fitem.popout .gradingform_matrix .criterion > .remark {

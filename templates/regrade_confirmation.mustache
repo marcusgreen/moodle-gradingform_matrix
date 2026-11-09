@@ -1,0 +1,36 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template gradingform_matrix/regrade_confirmation
+
+    Asks whether to mark existing grades for regrading when a used grading form changes.
+
+    Context variables required for this template:
+    * choice: optional {selectid, menu}, when the teacher may choose; menu is the context of
+      gradingform_matrix/select
+    * forced: optional {name}, when the change always needs regrading
+
+    Example context (json):
+    {
+        "forced": {"name": "advancedgrading[regrade]"}
+    }
+}}
+{{! The message is the div's own text, so keep whitespace out of it. }}
+<div class="gradingform_matrix-regrade" role="alert">{{!
+    }}{{#choice}}<label for="{{selectid}}">{{#str}} regrademessage1, gradingform_matrix {{/str}}</label>{{#menu}}{{> gradingform_matrix/select }}{{/menu}}{{/choice}}{{!
+    }}{{#forced}}{{#str}} regrademessage5, gradingform_matrix {{/str}}<input name="{{name}}" value="1" type="hidden">{{/forced}}{{!
+}}</div>

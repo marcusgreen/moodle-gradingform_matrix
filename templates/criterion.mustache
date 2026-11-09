@@ -1,0 +1,105 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template gradingform_matrix/criterion
+
+    One criterion: a table row with its description, its levels and optionally a remark.
+
+    Also rendered with placeholders such as {CRITERION-id} as the template matrixeditor.js clones
+    for new criteria, so ids and names are passed in whole.
+
+    Classes required for JS:
+    * criterion, controls, description, levels, addlevel, remark, moveup, delete, movedown, duplicate
+
+    Context variables required for this template:
+    * id, class: the row
+    * datacriterion: optional plain text of the description, in display modes
+    * controls: optional {buttons: [{key, name, id, value}], sortorder: {name, value} } when editing
+    * hiddeninputs: list of {name, hasvalue, value} placed before the description
+    * description: {id, class, focusable, arialabel, html} or the same with textarea: {id, name, arialabel, text}
+    * levels: {class, tableid, rowid, role, arialabelledby, arialabel, html}
+    * addlevel: optional {name, id, value}
+    * remark: optional {textarea: {name, id, arialabel, text} } or {hidden: {name, value} }
+      or {cell: {id, arialabel, text} }
+
+    Example context (json):
+    {
+        "id": "advancedgrading-criteria-1",
+        "class": "criterion first last even",
+        "hiddeninputs": [],
+        "description": {"id": "advancedgrading-criteria-1-description-cell", "class": "description",
+            "focusable": true, "arialabel": "Criterion Spelling", "html": "<p>Spelling</p>"},
+        "levels": {"class": "levels", "tableid": "advancedgrading-criteria-1-levels-table",
+            "rowid": "advancedgrading-criteria-1-levels", "role": "radiogroup",
+            "arialabelledby": "advancedgrading-criteria-1-description-cell", "html": ""},
+        "remark": {"cell": {"id": "advancedgrading-criteria-1-remark", "arialabel": "Remark", "text": "Good"} }
+    }
+}}
+<tr class="{{class}}" id="{{id}}"{{#datacriterion}} data-criterion="{{.}}"{{/datacriterion}}>
+    {{#controls}}
+        <td class="controls">
+            {{#buttons}}
+                <div class="{{key}}">
+                    <input type="submit" name="{{name}}" id="{{id}}" value="{{value}}">
+                </div>
+            {{/buttons}}
+            {{#sortorder}}
+                <input type="hidden" name="{{name}}" value="{{value}}">
+            {{/sortorder}}
+        </td>
+    {{/controls}}
+    {{#hiddeninputs}}
+        <input type="hidden" name="{{name}}"{{#hasvalue}} value="{{value}}"{{/hasvalue}}>
+    {{/hiddeninputs}}
+    {{#description}}
+        <td class="{{class}}" id="{{id}}"{{#focusable}} tabindex="0"{{/focusable}}{{#arialabel}} aria-label="{{.}}"{{/arialabel}}>
+            {{#textarea}}
+                <textarea name="{{name}}" id="{{id}}" aria-label="{{arialabel}}" cols="10" rows="5">{{text}}</textarea>
+            {{/textarea}}
+            {{^textarea}}
+                {{{html}}}
+            {{/textarea}}
+        </td>
+    {{/description}}
+    {{#levels}}
+        <td class="{{class}}">
+            <table id="{{tableid}}" class="levels-table" role="none">
+                <tr id="{{rowid}}" role="{{role}}"
+                    {{#arialabelledby}} aria-labelledby="{{.}}"{{/arialabelledby}}
+                    {{#arialabel}} aria-label="{{.}}"{{/arialabel}}>{{{html}}}</tr>
+            </table>
+        </td>
+    {{/levels}}
+    {{#addlevel}}
+        <td class="addlevel">
+            <input type="submit" name="{{name}}" id="{{id}}" value="{{value}}" class="btn btn-secondary">
+        </td>
+    {{/addlevel}}
+    {{#remark}}
+        {{#textarea}}
+            <td class="remark">
+                <textarea name="{{name}}" id="{{id}}" cols="10" rows="5" aria-label="{{arialabel}}">{{text}}</textarea>
+            </td>
+        {{/textarea}}
+        {{#hidden}}
+            <input type="hidden" name="{{name}}" value="{{value}}">
+        {{/hidden}}
+        {{#cell}}
+            <td class="remark" tabindex="0" id="{{id}}" aria-label="{{arialabel}}">{{text}}</td>
+        {{/cell}}
+    {{/remark}}
+</tr>

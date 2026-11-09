@@ -1,0 +1,62 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template gradingform_matrix/options
+
+    The grading form options, shown to people who can manage the form.
+
+    Context variables required for this template:
+    * items: list of options, each with
+      * class
+      * select: optional {id, label, menu} or {id, label, valuetext}, for a choice; menu is
+        the context of gradingform_matrix/select
+      * checkbox: optional {id, name, checked, disabled, label}, for a yes/no option
+      * hidden: optional {name, id, value}, the value to submit while the option is frozen
+      * helphtml: optional help icon
+
+    Example context (json):
+    {
+        "items": [
+            {"class": "option enableremarks",
+                "checkbox": {"id": "advancedgrading-options-enableremarks",
+                    "name": "advancedgrading[options][enableremarks]", "checked": true,
+                    "label": "Allow grader to add text remarks for each criterion"} }
+        ]
+    }
+}}
+<div class="options">
+    <div class="optionsheading">{{#str}} formoptions, gradingform_matrix {{/str}}</div>
+    {{#items}}
+        <div class="{{class}}">
+            {{#select}}
+                <label for="{{id}}">{{label}}</label>
+                <span class="value">{{#menu}}{{> gradingform_matrix/select }}{{/menu}}{{^menu}}{{valuetext}}{{/menu}}</span>
+                {{#hidden}}
+                    <input name="{{name}}" id="{{id}}" type="hidden" value="{{value}}">
+                {{/hidden}}
+            {{/select}}
+            {{#checkbox}}
+                {{#hidden}}
+                    <input name="{{name}}" id="{{id}}" type="hidden" value="{{value}}">
+                {{/hidden}}
+                <input{{#name}} name="{{.}}"{{/name}} id="{{id}}" type="checkbox" value="1"{{#checked}} checked="checked"{{/checked}}{{#disabled}} disabled="disabled"{{/disabled}}>
+                <label for="{{id}}">{{label}}</label>
+            {{/checkbox}}
+            {{{helphtml}}}
+        </div>
+    {{/items}}
+</div>

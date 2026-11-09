@@ -32,6 +32,7 @@ use gradingform_matrix\local\framework\definition_diff;
 use gradingform_matrix\local\framework\definition_exporter;
 use gradingform_matrix\local\framework\definition_importer;
 use gradingform_matrix\local\framework\definition_transfer;
+use gradingform_matrix\local\framework\display_mode;
 use gradingform_matrix\local\framework\external_structures;
 use gradingform_matrix\local\framework\filling_repository;
 use gradingform_matrix\local\framework\filling_validator;
@@ -56,23 +57,23 @@ class gradingform_matrix_controller extends gradingform_controller {
     /** Grading method name, used to compare against a grade item's advanced grading method. */
     const METHOD = 'matrix';
 
-    // Modes of displaying the matrix (used in gradingform_matrix_renderer).
-    /** Matrix display mode: For editing (moderator or teacher creates a matrix) */
-    const DISPLAY_EDIT_FULL     = 1;
-    /** Matrix display mode: Preview the matrix design with hidden fields */
-    const DISPLAY_EDIT_FROZEN   = 2;
-    /** Matrix display mode: Preview the matrix design (for person with manage permission) */
-    const DISPLAY_PREVIEW       = 3;
-    /** Matrix display mode: Preview the matrix (for people being graded) */
-    const DISPLAY_PREVIEW_GRADED = 8;
-    /** Matrix display mode: For evaluation, enabled (teacher grades a student) */
-    const DISPLAY_EVAL          = 4;
-    /** Matrix display mode: For evaluation, with hidden fields */
-    const DISPLAY_EVAL_FROZEN   = 5;
-    /** Matrix display mode: Teacher reviews filled matrix */
-    const DISPLAY_REVIEW        = 6;
-    /** Matrix display mode: Dispaly filled matrix (i.e. students see their grades) */
-    const DISPLAY_VIEW          = 7;
+    // Modes of displaying the matrix, kept as integers for existing callers. See display_mode for what each means.
+    /** Display mode: editing the definition. */
+    const DISPLAY_EDIT_FULL = display_mode::EDIT_FULL->value;
+    /** Display mode: confirming changes to the definition. */
+    const DISPLAY_EDIT_FROZEN = display_mode::EDIT_FROZEN->value;
+    /** Display mode: previewing the definition, for people who can manage it. */
+    const DISPLAY_PREVIEW = display_mode::PREVIEW->value;
+    /** Display mode: the person graded previewing the form. */
+    const DISPLAY_PREVIEW_GRADED = display_mode::PREVIEW_GRADED->value;
+    /** Display mode: grading. */
+    const DISPLAY_EVAL = display_mode::EVAL->value;
+    /** Display mode: confirming a grade. */
+    const DISPLAY_EVAL_FROZEN = display_mode::EVAL_FROZEN->value;
+    /** Display mode: a grader reviewing a grade. */
+    const DISPLAY_REVIEW = display_mode::REVIEW->value;
+    /** Display mode: the person graded viewing their grade. */
+    const DISPLAY_VIEW = display_mode::VIEW->value;
 
     /**
      * Extends the module settings navigation with the matrix grading settings
