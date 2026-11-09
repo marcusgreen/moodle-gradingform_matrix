@@ -138,7 +138,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 $context['hiddeninputs'][] = ['name' => "{$field}[description]", 'hasvalue' => true,
                     'value' => $criterion['description']];
             }
-            $description['html'] = format_text($criterion['description'], FORMAT_MARKDOWN);
+            $description['html'] = format_text($criterion['description'], FORMAT_MARKDOWN, ['context' => $this->page->context]);
         }
         if (!$editing) {
             $plaindescription = $this->plain_text($criterion['description']);
@@ -285,7 +285,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
                 $context['hiddeninputs'][] = ['name' => "{$field}[definition]", 'value' => $level['definition']];
                 $context['hiddeninputs'][] = ['name' => "{$field}[score]", 'value' => $level['score']];
             }
-            $definition['html'] = format_text($level['definition'], FORMAT_MARKDOWN);
+            $definition['html'] = format_text($level['definition'], FORMAT_MARKDOWN, ['context' => $this->page->context]);
             $score['value'] = $level['score'];
         }
         if ($mode === display_mode::EVAL) {

@@ -110,4 +110,15 @@ final class content_source_test extends \advanced_testcase {
         $source = new content_source(get_fast_modinfo($course));
         $this->assertSame([], $source->extract_many([$page->cmid]));
     }
+
+    public function test_modules_without_view_capability_are_skipped(): void {
+        global $DB;
+        [$course, $teacher, $cms] = $this->create_course();
+        $roleid = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
+        assign_capability('mod/page:view', CAP_PROHIBIT, $roleid, \context_module::instance($cms['page']->cmid));
+
+        $source = new content_source(get_fast_modinfo($course, $teacher->id));
+        $this->assertNotContains((int)$cms['page']->cmid, array_column($source->list(), 'cmid'));
+        $this->assertSame([], $source->extract_many([$cms['page']->cmid]));
+    }
 }

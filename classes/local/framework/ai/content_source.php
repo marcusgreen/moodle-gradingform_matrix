@@ -89,6 +89,11 @@ class content_source {
         if (!$cm->uservisible || $cm->deletioninprogress) {
             return false;
         }
+        // Visible is not the same as allowed to view: also check the module's own view capability, where it has one.
+        $viewcap = "mod/{$cm->modname}:view";
+        if (get_capability_info($viewcap) && !has_capability($viewcap, $cm->context, $this->modinfo->get_user_id())) {
+            return false;
+        }
         if ((int)$cm->id === $this->gradedcmid) {
             return true;
         }

@@ -28,6 +28,9 @@ require_once($CFG->libdir . '/formslib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class import_form extends \moodleform {
+    /** @var int largest file accepted; exports embed the description's files base64 encoded */
+    const MAXBYTES = 20 * 1024 * 1024;
+
     /**
      * Form element definition.
      */
@@ -54,7 +57,7 @@ class import_form extends \moodleform {
             'importfile',
             get_string('importfile', 'gradingform_matrix'),
             null,
-            ['accepted_types' => ['.json']]
+            ['accepted_types' => ['.json'], 'maxbytes' => self::MAXBYTES]
         );
         $form->addHelpButton('importfile', 'importfile', 'gradingform_matrix');
         $form->addRule('importfile', null, 'required');

@@ -46,6 +46,10 @@ class provider implements \core_grading\privacy\gradingform_provider_v2, \core_p
             'levelid' => 'privacy:metadata:levelid',
             'remark' => 'privacy:metadata:remark',
         ], 'privacy:metadata:fillingssummary');
+        // With the core AI subsystem, core_ai declares what it sends; the other backends send the prompt themselves.
+        $collection->add_external_location_link('aiprovider', [
+            'prompt' => 'privacy:metadata:aiprovider:prompt',
+        ], 'privacy:metadata:aiprovider');
         return $collection;
     }
 

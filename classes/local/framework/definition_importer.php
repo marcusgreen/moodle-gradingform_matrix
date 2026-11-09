@@ -43,6 +43,9 @@ class definition_importer {
     /** Formats accepted for the description, as integers (the FORMAT_ constants are strings). */
     private const DESCRIPTION_FORMATS = [0, 1, 2, 4];
 
+    /** @var int deepest nesting accepted; an export nests about six levels */
+    private const MAXDEPTH = 32;
+
     /**
      * Constructor.
      *
@@ -65,7 +68,7 @@ class definition_importer {
      * @throws moodle_exception if the file is not a valid export
      */
     public function from_json(string $content): array {
-        $data = json_decode(self::strip_bom($content), true);
+        $data = json_decode(self::strip_bom($content), true, self::MAXDEPTH);
         if (!is_array($data)) {
             throw new moodle_exception('importerrorjson', $this->component);
         }

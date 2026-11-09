@@ -193,13 +193,8 @@ class fetch extends external_api {
                 $filling = [];
                 if (array_key_exists($criterion['id'], $fillings['criteria'])) {
                     $filling = $fillings['criteria'][$criterion['id']];
-                    $result['remark'] = self::get_formatted_text(
-                        $context,
-                        $definitionid,
-                        'remark',
-                        $filling['remark'],
-                        (int) FORMAT_HTML
-                    );
+                    // The remark is edited in a textarea, so it is sent as entered and escaped by the template.
+                    $result['remark'] = (string)$filling['remark'];
                 }
 
                 // Lets build the levels within a criteria and figure out what needs to go where.

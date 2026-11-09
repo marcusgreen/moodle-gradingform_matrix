@@ -128,6 +128,7 @@ final class definition_importer_test extends \basic_testcase {
     public function test_errors(): void {
         $importer = $this->importer();
         $this->assert_import_error('importerrorjson', fn() => $importer->from_json('{nope'));
+        $this->assert_import_error('importerrorjson', fn() => $importer->from_json(str_repeat('[', 40) . str_repeat(']', 40)));
         $this->assert_import_error('importerrorversion', fn() => $importer->from_json('{"criteria": []}'));
         $this->assert_import_error('importerrorversion', fn() => $importer->from_json('{"formatversion": 2, "criteria": []}'));
         $this->assert_import_error('importerrorstructure', fn() => $importer->from_json('{"formatversion": 1}'));

@@ -473,7 +473,7 @@ class MatrixEditor {
             'CRITERION-id': criterionid,
             'LEVEL-id': `NEWID${levid}`,
             'LEVEL-index': index,
-            'LEVEL-score': score,
+            'LEVEL-score': escapeHTML(String(score)),
             'LEVEL-definition': escapeHTML(definition),
         });
     }
