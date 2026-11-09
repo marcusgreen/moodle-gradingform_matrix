@@ -51,10 +51,14 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
     protected $validationerrors = null;
     /** @var bool if element has already been validated **/
     protected $wasvalidated = false;
-    /** @var bool If non-submit (JS) button was pressed: null - unknown, true/false - button was/wasn't pressed */
-    protected $nonjsbuttonpressed = false;
+    /** @var bool|null If non-submit (JS) button was pressed: null - unknown, true/false - button was/wasn't pressed */
+    protected $nonjsbuttonpressed = null;
     /** @var bool Message to display in front of the editor (that there exist grades on this matrix being edited) */
     protected $regradeconfirmation = false;
+    /** @var array|null data from the last validation, with error flags for display; null - not validated */
+    protected $validateddata = null;
+    /** @var bool if the editor JavaScript has been requested, so it is initialised only once */
+    protected $jsrequested = false;
 
     /**
      * get html for help button
@@ -94,7 +98,9 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
         global $PAGE;
         $html = $this->_getTabs();
         $renderer = $PAGE->get_renderer('gradingform_matrix');
-        $data = $this->prepare_data(null, $this->wasvalidated);
+        // Render what was validated, if anything, so the fields with errors are marked.
+        // Rendering itself never validates, so it does not change the validation errors.
+        $data = $this->validateddata ?? $this->prepare_data();
         if (!$this->_flagFrozen) {
             $mode = gradingform_matrix_controller::DISPLAY_EDIT_FULL;
             // The criterion/level templates are too long to pass as JS arguments, so they are
@@ -110,7 +116,11 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 $renderer->level_template($mode, $data['options'], $name),
                 ['type' => 'text/template', 'id' => 'matrix-' . $name . '-level-template']
             );
-            $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', [$name]);
+            // Initialising twice would attach every editor handler twice.
+            if (!$this->jsrequested) {
+                $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', [$name]);
+                $this->jsrequested = true;
+            }
         } else {
             // Matrix is frozen, no javascript needed.
             if ($this->_persistantFreeze) {
@@ -139,7 +149,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
      * - if options not passed (i.e. we create a new matrix) fills the options array with the default values
      * - if options are passed completes the options array with unchecked checkboxes
      * - if $withvalidation is set, adds 'error_xxx' attributes to elements that contain errors and creates an error string
-     *   and stores it in $this->validationerrors
+     *   and stores it in $this->validationerrors, see {@see \gradingform_matrix\local\framework\definition_validator}
      *
      * @param array $value
      * @param boolean $withvalidation whether to enable data validation
@@ -152,12 +162,9 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
         if ($this->nonjsbuttonpressed === null) {
             $this->nonjsbuttonpressed = false;
         }
-        $totalscore = 0;
-        $errors = [];
         $return = ['criteria' => [], 'options' => gradingform_matrix_controller::get_default_options()];
         if (!isset($value['criteria'])) {
             $value['criteria'] = [];
-            $errors['err_nocriteria'] = 1;
         }
         // If options are present in $value, replace default values with submitted values.
         if (!empty($value['options'])) {
@@ -182,7 +189,6 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
         // Iterate through criteria.
         $lastaction = null;
         $lastid = null;
-        $overallminscore = $overallmaxscore = 0;
         foreach ($value['criteria'] as $id => $criterion) {
             if ($id == 'addcriterion') {
                 $id = $this->get_next_id(array_keys($value['criteria']));
@@ -207,7 +213,6 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 $this->nonjsbuttonpressed = true;
             }
             $levels = [];
-            $minscore = $maxscore = null;
             if (array_key_exists('levels', $criterion)) {
                 foreach ($criterion['levels'] as $levelid => $level) {
                     if ($levelid == 'addlevel') {
@@ -224,43 +229,13 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                         $this->nonjsbuttonpressed = true;
                     }
                     if (!array_key_exists('delete', $level)) {
-                        $score = unformat_float($level['score'], true);
-                        if ($withvalidation) {
-                            if (!strlen(trim($level['definition']))) {
-                                $errors['err_nodefinition'] = 1;
-                                $level['error_definition'] = true;
-                            }
-                            if ($score === null || $score === false) {
-                                $errors['err_scoreformat'] = 1;
-                                $level['error_score'] = true;
-                            }
-                        }
                         $levels[$levelid] = $level;
-                        if ($minscore === null || $score < $minscore) {
-                            $minscore = $score;
-                        }
-                        if ($maxscore === null || $score > $maxscore) {
-                            $maxscore = $score;
-                        }
                     } else {
                         $this->nonjsbuttonpressed = true;
                     }
                 }
             }
-            $totalscore += (float)$maxscore;
             $criterion['levels'] = $levels;
-            if ($withvalidation && !array_key_exists('delete', $criterion)) {
-                if (count($levels) < 2) {
-                    $errors['err_mintwolevels'] = 1;
-                    $criterion['error_levels'] = true;
-                }
-                if (!strlen(trim($criterion['description']))) {
-                    $errors['err_nodescription'] = 1;
-                    $criterion['error_description'] = true;
-                }
-                $overallmaxscore += $maxscore;
-                $overallminscore += $minscore;
-            }
             if (array_key_exists('moveup', $criterion) || $lastaction == 'movedown') {
                 unset($criterion['moveup']);
                 if ($lastid !== null) {
@@ -287,10 +262,6 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             }
         }
 
-        if ($totalscore <= 0) {
-            $errors['err_totalscore'] = 1;
-        }
-
         // Add sort order field to criteria.
         $csortorder = 1;
         foreach (array_keys($return['criteria']) as $id) {
@@ -299,14 +270,12 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
 
         // Create validation error string (if needed).
         if ($withvalidation) {
-            if (!$return['options']['lockzeropoints']) {
-                if ($overallminscore == $overallmaxscore) {
-                    $errors['err_novariations'] = 1;
-                }
-            }
-            if (count($errors)) {
+            $validator = new \gradingform_matrix\local\framework\definition_validator();
+            $result = $validator->validate($return['criteria'], $return['options']);
+            $return['criteria'] = $result['criteria'];
+            if ($result['errors']) {
                 $rv = [];
-                foreach ($errors as $error => $v) {
+                foreach ($result['errors'] as $error) {
                     $rv[] = get_string($error, 'gradingform_matrix');
                 }
                 $this->validationerrors = join('<br/ >', $rv);
@@ -314,6 +283,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
                 $this->validationerrors = false;
             }
             $this->wasvalidated = true;
+            $this->validateddata = $return;
         }
         return $return;
     }
