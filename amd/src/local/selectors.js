@@ -34,7 +34,6 @@ export const SELECTORS = {
     RADIO_INPUT: 'input[type=radio]',
     RADIOGROUP: '[role="radiogroup"]',
     RADIO_LEVEL: '.level[role="radio"]',
-    FITEM: '.fitem',
 };
 
 export const IDS = {

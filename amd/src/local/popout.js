@@ -23,6 +23,10 @@
  *
  * The size is kept for the rest of the page, so it survives moving between students.
  *
+ * Not specific to the matrix: any grading method can call {@see watch()} with its grading form.
+ * While popped out the .fitem has the class gradingform_matrix-popout, which the popout rules in
+ * styles.css apply to.
+ *
  * @module     gradingform_matrix/local/popout
  * @copyright  2026 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -42,6 +46,7 @@ const SMALL_SCREEN = '(max-width: 575.98px)';
 
 const CLASSES = {
     POPOUT: 'popout',
+    SIZED: 'gradingform_matrix-popout',
     MAXIMISED: 'gradingform_matrix-maximised',
     MAXIMISE: 'gradingform_matrix-maximise',
     GRIP: 'gradingform_matrix-resizegrip',
@@ -307,7 +312,9 @@ const addControls = (fitem) => {
  * @param {HTMLElement} fitem
  */
 export const sync = (fitem) => {
-    if (!fitem.classList.contains(CLASSES.POPOUT)) {
+    const popout = fitem.classList.contains(CLASSES.POPOUT);
+    setClass(fitem, CLASSES.SIZED, popout);
+    if (!popout) {
         clearSize(fitem);
         setClass(fitem, CLASSES.MAXIMISED, false);
         maximised = false;
@@ -323,4 +330,21 @@ export const sync = (fitem) => {
     if (!maximised && savedSize && !fitem.style.width) {
         setSize(fitem, savedSize.width, savedSize.height);
     }
+};
+
+/**
+ * Keeps the popout controls of the .fitem holding a grading form in step with mod_assign's popout.
+ *
+ * @param {HTMLElement} root the grading form
+ */
+export const watch = (root) => {
+    const fitem = root.closest('.fitem');
+    if (!fitem) {
+        return;
+    }
+    new MutationObserver(() => sync(fitem)).observe(fitem, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+    sync(fitem);
 };
