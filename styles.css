@@ -84,6 +84,19 @@
     padding: 3px;
 }
 
+/* The remark fills the height of its row. A table cell only resolves a
+   percentage height for its content when it has a height of its own; the
+   cell still grows to the row, so 1px acts as a minimum. */
+.gradingform_matrix .criterion > .remark {
+    height: 1px;
+}
+
+.gradingform_matrix .criterion > .remark textarea {
+    height: 100%;
+    min-height: 4rem;
+    box-sizing: border-box;
+}
+
 .gradingform_matrix .criteria-wrapper {
     overflow-x: auto;
     width: 100%;
@@ -498,6 +511,7 @@
     flex-direction: column;
     flex: 0 0 200px;
     min-width: 150px;
+    height: auto;
 }
 
 /* The remark fills the height of its row, which the levels decide. */
