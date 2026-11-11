@@ -188,4 +188,64 @@ final class definition_importer_test extends \basic_testcase {
             $this->assertStringContainsString('criterion 1, level 2', $e->getMessage());
         }
     }
+
+    public function test_rows_with_header(): void {
+        $result = $this->importer()->from_rows([
+            ['Criterion', 'Level 1', 'Points', 'Level 2', 'Points'],
+            ['Spelling', 'Many errors', 0, 'Some, "minor" errors', '1.5'],
+            [],
+            ['  Grammar ', 'Poor', '0', 'Good', 3.0],
+        ]);
+        $this->assertSame(self::CRITERIA, $result['criteria']);
+        $this->assertSame(
+            ['name' => null, 'description' => null, 'descriptionformat' => null, 'options' => null, 'files' => []],
+            array_diff_key($result, ['criteria' => 1])
+        );
+    }
+
+    public function test_rows_without_header_and_uneven_levels(): void {
+        $result = $this->importer()->from_rows([
+            ['Spelling', 'Many errors', 0, 'Some', 1, 'None', 2],
+            ['Grammar', 'Poor', 0, '', '', 'Good', 3],
+        ]);
+        $this->assertCount(3, $result['criteria'][0]['levels']);
+        // An empty pair of cells is skipped.
+        $this->assertSame(
+            [['score' => 0.0, 'definition' => 'Poor'], ['score' => 3.0, 'definition' => 'Good']],
+            $result['criteria'][1]['levels']
+        );
+    }
+
+    public function test_rows_keep_levels_without_text(): void {
+        // Content rules are left to the editor: a level with points but no text is imported.
+        $result = $this->importer()->from_rows([['Spelling', '', 0, 'Good', 2]]);
+        $this->assertSame(
+            [['score' => 0.0, 'definition' => ''], ['score' => 2.0, 'definition' => 'Good']],
+            $result['criteria'][0]['levels']
+        );
+    }
+
+    public function test_rows_errors(): void {
+        $this->assert_import_error('err_nocriteria', fn() => $this->importer()->from_rows([]));
+        $this->assert_import_error('err_nocriteria', fn() => $this->importer()->from_rows([['Criterion', 'Level', 'Points'], []]));
+        $this->assert_import_error('importerrornoscore', fn() => $this->importer()->from_rows([['Spelling', 'Poor', 0, 'Good']]));
+        $this->assert_import_error('importerrorscore', fn() => $this->importer()->from_rows([
+            ['Spelling', 'Poor', 0, 'Good', 2],
+            ['Grammar', 'Poor', 0, 'Good', 'two'],
+        ]));
+    }
+
+    public function test_rows_error_names_location(): void {
+        try {
+            $this->importer()->from_rows([
+                ['Criterion', 'Level', 'Points'],
+                ['Spelling', 'Poor', 0, 'Good', 2],
+                [],
+                ['Grammar', 'Poor', 0, 'Good', ''],
+            ]);
+            $this->fail('Expected moodle_exception');
+        } catch (moodle_exception $e) {
+            $this->assertStringContainsString('row 4, level 2', $e->getMessage());
+        }
+    }
 }

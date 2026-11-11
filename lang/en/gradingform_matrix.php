@@ -111,16 +111,27 @@ $string['gradingof'] = '{$a} grading';
 $string['import'] = 'Import';
 $string['importerrorfile'] = 'The file contains an embedded file that can\'t be read: {$a}.';
 $string['importerrorjson'] = 'The file is not valid JSON.';
+$string['importerrornoscore'] = 'A level has text but no points ({$a}).';
 $string['importerrorscore'] = '"{$a->score}" is not a valid number of points ({$a->where}).';
+$string['importerrorsize'] = 'The file is too big. It can have at most {$a->rows} rows and {$a->columns} columns.';
+$string['importerrorspreadsheet'] = 'The file can\'t be read as a spreadsheet. Save it again as .csv, .xlsx or .ods and try again.';
 $string['importerrorstructure'] = 'The file is not a grading form export: each criterion needs a description and a list of levels, and each level a definition and a score.';
+$string['importerrortype'] = 'Files of this type can\'t be imported. Use a grading form export (.json) or a spreadsheet (.csv, .xlsx or .ods).';
 $string['importerrorused'] = 'This grading form has already been used for grading, so it can\'t be replaced by an import.';
 $string['importerrorversion'] = 'The file has an unsupported format version ({$a}).';
 $string['importfile'] = 'File to import';
-$string['importfile_help'] = 'A JSON file made by "Export" on this or another site. It holds the whole grading form: name, description with its images, options, criteria and levels.';
+$string['importfile_help'] = 'Either a grading form exported with "Export" on this or another site (.json), or a spreadsheet (.csv, .xlsx or .ods).
+
+An export holds the whole grading form: name, description with its images, options, criteria and levels.
+
+In a spreadsheet, each row is a criterion. The first column is the criterion\'s description. Then each level takes two columns: its definition, then its points. A criterion can have fewer levels than the others. A first row of headings, such as "Criterion, Level 1, Points, Level 2, Points", is skipped. Only the first sheet is read. The name, description and options are kept from the current form.
+
+Old Excel files (.xls) can\'t be read: save them as .xlsx first.';
 $string['importform'] = 'Import grading form';
-$string['importreplaces'] = 'Importing replaces the current grading form: its name, description, options, criteria and levels.';
+$string['importreplaces'] = 'Importing replaces the current grading form\'s criteria and levels. An export (.json) also replaces its name, description and options; a spreadsheet keeps them.';
 $string['importsuccess'] = 'Imported {$a} criteria. The grading form is saved as a draft: check it, then save it to make it ready.';
 $string['importwherelevel'] = 'criterion {$a->criterion}, level {$a->level}';
+$string['importwhererow'] = 'row {$a->row}, level {$a->level}';
 $string['level'] = 'Level {$a->definition}, {$a->score} points.';
 $string['leveldefinition'] = 'Level {$a} definition';
 $string['leveldelete'] = 'Delete level {$a}';

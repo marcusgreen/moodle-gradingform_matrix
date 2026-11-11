@@ -222,4 +222,28 @@ final class import_export_test extends \advanced_testcase {
 
         $this->assertTrue($controller->can_import());
     }
+
+    public function test_csv_into_new_area_keeps_name_and_options(): void {
+        $target = $this->empty_controller();
+        $path = make_request_directory() . '/My form.csv';
+        file_put_contents($path, "Criterion;Level 1;Points;Level 2;Points;Level 3;Points\n" .
+            "Spelling;Many errors;0;Few errors;1;No errors;2\n" .
+            "Grammar;Poor;0;Good;3\n");
+        $rows = $target->spreadsheet_reader()->read($path, 'My form.csv');
+        $target->import_definition($target->definition_importer()->from_rows($rows), 'My form');
+
+        $definition = $target->get_definition(true);
+        $this->assertSame('My form', $definition->name);
+        $this->assertEquals(gradingform_controller::DEFINITION_STATUS_DRAFT, $definition->status);
+        $this->assertSame(self::CRITERIA, $this->criteria_of($target));
+        $this->assertEquals(gradingform_matrix_controller::get_default_options(), $target->get_options());
+
+        // Importing over an existing form keeps its name, description and options.
+        $source = $this->create_matrix();
+        $source->import_definition($source->definition_importer()->from_rows([['Only', 'Low', 0, 'High', 1]]), 'other');
+        $definition = $source->get_definition(true);
+        $this->assertSame('Essay', $definition->name);
+        $this->assertSame('Essay description', $definition->description);
+        $this->assertSame(['Only' => ['Low' => 0, 'High' => 1]], $this->criteria_of($source));
+    }
 }

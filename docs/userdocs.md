@@ -106,6 +106,28 @@ The editing page has **Export** and **Import** buttons. Rubric has neither.
 Rubric's only way to reuse a form is the template system, and that works only within one
 site. Export and import also work between sites.
 
+**Import from a spreadsheet.** Import also accepts a CSV file, an Excel workbook (.xlsx) or an
+OpenDocument spreadsheet (.ods), so you can write the criteria in a spreadsheet and bring them
+in. Lay it out like this:
+
+| Criterion | Level 1 | Points | Level 2 | Points | Level 3 | Points |
+|---|---|---|---|---|---|---|
+| Clear position | Absent | 0 | Partial | 2 | Explicit | 4 |
+| Use of evidence | None | 0 | Limited | 2 | Strong | 4 |
+
+- Each row is a criterion. The first column is its description, then each level takes two
+  columns: its definition, then its points.
+- A criterion can have fewer levels than the others; leave the extra cells empty.
+- A first row of headings is optional and is skipped.
+- Only the first sheet is read. Formulas are fine: the result your spreadsheet program saved
+  is used.
+- CSV files can use commas, semicolons or tabs.
+- The form's name, description and options stay as they are. A new form is named after the
+  file.
+- Old Excel files (.xls) can't be read. Save them as .xlsx first.
+- A level with text but no points, or points that aren't a number, stops the import with a
+  message naming the row and level.
+
 ### 6. An AI assistant for writing grading forms
 
 The editing page can have an **AI assistant** button. The assistant reads course material

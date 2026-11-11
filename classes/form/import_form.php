@@ -57,7 +57,7 @@ class import_form extends \moodleform {
             'importfile',
             get_string('importfile', 'gradingform_matrix'),
             null,
-            ['accepted_types' => ['.json'], 'maxbytes' => self::MAXBYTES]
+            ['accepted_types' => ['.json', '.csv', '.xlsx', '.ods'], 'maxbytes' => self::MAXBYTES]
         );
         $form->addHelpButton('importfile', 'importfile', 'gradingform_matrix');
         $form->addRule('importfile', null, 'required');

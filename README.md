@@ -67,7 +67,14 @@ grade exports hold only the final grade (see `docs/complaints.md`, item 11).
 - `classes/local/framework/item_resolver.php` — item id → user (assign, forum)
 - `classes/local/framework/filling_repository.php` — `load_for_instances()`
 
-### 6. Naming / packaging
+### 6. Import criteria from a spreadsheet
+The Import page also takes `.csv`, `.xlsx` and `.ods`: one row per criterion, then a definition
+and points column for each level, with an optional header row. Addresses complaints 9 and 10 in
+`docs/complaints.md`.
+- `classes/local/framework/spreadsheet_reader.php` — reads CSV, or the first sheet with core's PhpSpreadsheet (values only)
+- `classes/local/framework/definition_importer.php` — `from_rows()`
+
+### 7. Naming / packaging
 All identifiers, language strings, tests and backup classes are renamed
 `rubric` → `matrix` (e.g. `gradingform_matrix_controller`,
 `backup_gradingform_matrix_plugin`, `edit_matrix.feature`).

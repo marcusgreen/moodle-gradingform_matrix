@@ -79,7 +79,8 @@ The logic that used to live in `lib.php` has been moved into classes with one jo
 | `definition_exporter` | Writes a level-based definition as JSON, with description images embedded as base64 | Works for any method; nothing matrix-specific |
 | `results_exporter` | Builds the per-criterion results download: one row per graded item with the level, points and remark for each criterion, the total and the grade as a % of the maximum | Level-based; text goes through a closure, so a method picks its own text format. Score-based methods override `columns()` and `criteria_cells()` |
 | `item_resolver` | Matches graded items to users. Core stores an item id whose meaning depends on the activity (`assign_grades.id`, `forum_grades.id`) | Add an activity by extending `TABLES` in a subclass. Unknown areas are listed by item id |
-| `definition_importer` | Reads that JSON back and checks its structure only | Content rules are left to the method's own editor, so each method keeps its own rules |
+| `definition_importer` | Reads that JSON back, or criteria from spreadsheet rows (`from_rows()`), and checks their structure only | Content rules are left to the method's own editor, so each method keeps its own rules |
+| `spreadsheet_reader` | Reads the cells of a CSV file (comma, semicolon or tab; UTF-8 or Windows-1252) or the first sheet of an .xlsx or .ods file, with core's PhpSpreadsheet | Values only: formulas aren't calculated, their saved results are used. Size limits are constructor arguments. No `.xls`: Moodle's PhpSpreadsheet has no reader for it |
 
 Your plugin can usually reuse a class as it is. Where your method works differently, replace
 only that one class. For example, a BTEC-style method would provide its own
@@ -150,6 +151,10 @@ Teachers can export a definition as JSON and import it on the same site or anoth
 - An import is refused once the form has been used for grading, including grades waiting
   for a regrade, because those fillings point at the levels an import replaces.
 - Images go through a draft file area, so the editor's file size limits apply.
+- The same page imports criteria from a spreadsheet: `import.php` sends `.csv`, `.xlsx` and
+  `.ods` files through `spreadsheet_reader::read()` and `definition_importer::from_rows()`, and
+  JSON through `from_json()`. Both give the same structure to `definition_transfer::import()`,
+  which keeps the current name, description and options when the import has none.
 
 ## Building a new grading method on this code
 

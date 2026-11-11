@@ -20,14 +20,15 @@ use core_text;
 use moodle_exception;
 
 /**
- * Reads a level-based definition written by {@see definition_exporter}.
+ * Reads a level-based definition written by {@see definition_exporter}, or criteria from a spreadsheet.
  *
  * Only the structure is checked here: that the file parses, has criteria and that every score is a number.
  * Content rules (two levels per criterion, non-empty texts, ...) are left to the editor, because an
  * import is saved as a draft and the teacher makes it ready from there.
  *
  * Error messages come from the lang component passed in, which must define the strings importerrorjson,
- * importerrorversion, importerrorstructure, importerrorfile, importerrorscore, importwherelevel and err_nocriteria.
+ * importerrorversion, importerrorstructure, importerrorfile, importerrorscore, importerrornoscore, importwherelevel,
+ * importwhererow and err_nocriteria.
  *
  * {@see from_json()} returns:
  * - 'name', 'description', 'descriptionformat', 'options': values from the file, or null when absent
@@ -116,6 +117,62 @@ class definition_importer {
             'options' => is_array($data['options'] ?? null) ? $this->clean_options($data['options']) : null,
             'criteria' => $criteria,
             'files' => $description === null ? [] : $this->parse_files($data['files'] ?? []),
+        ];
+    }
+
+    /**
+     * Reads criteria from spreadsheet rows, as {@see spreadsheet_reader::read()} returns them.
+     *
+     * Each row is a criterion: its description, then a pair of cells for each level, the level's
+     * definition and its points. A first row whose first points cell is not a number is a header and is
+     * skipped. Empty rows, and empty pairs, are skipped too.
+     *
+     * Returns the same structure as {@see from_json()}, with no name, description, options or files.
+     *
+     * @param array $rows list of rows, each a list of cells
+     * @return array
+     * @throws moodle_exception if a level has text but no points, a score is not a number, or there are no criteria
+     */
+    public function from_rows(array $rows): array {
+        $criteria = [];
+        $first = true;
+        foreach ($rows as $r => $row) {
+            $row = array_map(fn($cell) => is_string($cell) ? trim($cell) : $cell, array_values($row));
+            if (!array_filter($row, fn($cell) => $cell !== '' && $cell !== null)) {
+                continue;
+            }
+            if ($first) {
+                $first = false;
+                $points = $row[2] ?? '';
+                if ($points !== '' && unformat_float((string)$points, true) === false) {
+                    continue;
+                }
+            }
+            $levels = [];
+            $l = 0;
+            for ($i = 1; $i < count($row); $i += 2) {
+                $definition = (string)($row[$i] ?? '');
+                $score = $row[$i + 1] ?? '';
+                if ($definition === '' && $score === '') {
+                    continue;
+                }
+                $l++;
+                $where = get_string('importwhererow', $this->component, ['row' => $r + 1, 'level' => $l]);
+                if ($score === '') {
+                    throw new moodle_exception('importerrornoscore', $this->component, '', $where);
+                }
+                $levels[] = ['score' => $this->parse_score($score, $where), 'definition' => $definition];
+            }
+            $criteria[] = ['description' => (string)($row[0] ?? ''), 'levels' => $levels];
+        }
+        $this->require_criteria($criteria);
+        return [
+            'name' => null,
+            'description' => null,
+            'descriptionformat' => null,
+            'options' => null,
+            'criteria' => $criteria,
+            'files' => [],
         ];
     }
 

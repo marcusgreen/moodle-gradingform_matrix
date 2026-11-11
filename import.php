@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Imports a grading form definition from a JSON file made by export.php.
+ * Imports a grading form definition from a JSON file made by export.php, or its criteria from a spreadsheet.
  *
  * The import replaces the criteria and levels and is saved as a draft, then the editor opens.
  *
@@ -66,7 +66,20 @@ if ($mform->is_cancelled()) {
 } else if ($data = $mform->get_data()) {
     $filename = $mform->get_new_filename('importfile');
     try {
-        $imported = $controller->definition_importer()->from_json((string)$mform->get_file_content('importfile'));
+        $importer = $controller->definition_importer();
+        if (\gradingform_matrix\local\framework\spreadsheet_reader::supports($filename)) {
+            $path = $mform->save_temp_file('importfile');
+            if ($path === false) {
+                throw new moodle_exception('importerrorspreadsheet', 'gradingform_matrix');
+            }
+            try {
+                $imported = $importer->from_rows($controller->spreadsheet_reader()->read($path, $filename));
+            } finally {
+                unlink($path);
+            }
+        } else {
+            $imported = $importer->from_json((string)$mform->get_file_content('importfile'));
+        }
         $controller->import_definition($imported, pathinfo($filename, PATHINFO_FILENAME));
         redirect(
             $editurl,

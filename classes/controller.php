@@ -40,6 +40,7 @@ use gradingform_matrix\local\framework\grade_calculator;
 use gradingform_matrix\local\framework\item_resolver;
 use gradingform_matrix\local\framework\level_sum_calculator;
 use gradingform_matrix\local\framework\results_exporter;
+use gradingform_matrix\local\framework\spreadsheet_reader;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -333,6 +334,15 @@ class gradingform_matrix_controller extends gradingform_controller {
      */
     public function ai_reply_parser(): reply_parser {
         return new reply_parser($this->definition_importer());
+    }
+
+    /**
+     * Returns the reader for spreadsheets imported as definitions.
+     *
+     * @return spreadsheet_reader
+     */
+    public function spreadsheet_reader(): spreadsheet_reader {
+        return new spreadsheet_reader('gradingform_matrix');
     }
 
     /**
