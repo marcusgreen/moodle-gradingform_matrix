@@ -37,7 +37,9 @@ use gradingform_matrix\local\framework\external_structures;
 use gradingform_matrix\local\framework\filling_repository;
 use gradingform_matrix\local\framework\filling_validator;
 use gradingform_matrix\local\framework\grade_calculator;
+use gradingform_matrix\local\framework\item_resolver;
 use gradingform_matrix\local\framework\level_sum_calculator;
+use gradingform_matrix\local\framework\results_exporter;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -248,6 +250,36 @@ class gradingform_matrix_controller extends gradingform_controller {
      */
     public function grade_calculator(): grade_calculator {
         return new level_sum_calculator();
+    }
+
+    /**
+     * Returns the exporter for the per-criterion grading results.
+     *
+     * The form must be defined.
+     *
+     * @return results_exporter
+     */
+    public function results_exporter(): results_exporter {
+        global $PAGE;
+        $renderer = $PAGE->get_renderer('gradingform_matrix');
+        $totext = fn(string $text, int $format = FORMAT_MARKDOWN): string => $renderer->plain_text($text, $format);
+        return new results_exporter(
+            $this->get_definition()->matrix_criteria,
+            $this->get_options(),
+            $this->grade_calculator(),
+            $this->filling_repository(),
+            $totext,
+            'gradingform_matrix'
+        );
+    }
+
+    /**
+     * Returns the resolver that matches this area's graded items to users.
+     *
+     * @return item_resolver
+     */
+    public function item_resolver(): item_resolver {
+        return new item_resolver($this->get_component(), $this->get_area());
     }
 
     /**

@@ -157,6 +157,22 @@ change after the form is made. With a scale, the result is rounded to a scale it
 summary is hidden while it can't be worked out, for example while every level has the same
 points.
 
+### 8. Download each criterion's results
+
+The editing page has a **Download results** button. Choose a file format (for example CSV
+or Excel) and select **Download**. You get one row for each person graded with the form:
+
+- their name and the identity fields your site shows, such as email address
+- who graded them, when, and whether the grade needs regrading after a change to the form
+- for each criterion: the level chosen, its points and the remark
+- the total points, and the grade as a percentage of the activity's maximum grade
+
+Only each person's current grade is included, not drafts or earlier grades. Rubric has no
+way to do this: Moodle's grade export gives only the final grade.
+
+You need permission to view all grades (`moodle/grade:viewall`). This works for assignments
+and forums. In other activities, people are listed by item ID instead of by name.
+
 ## Choosing Matrix for an activity
 
 1. Open the activity (for example an assignment), then go to **Advanced grading**.

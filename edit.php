@@ -98,6 +98,13 @@ if ($controller->is_form_defined()) {
         'url' => (new moodle_url('/grade/grading/form/matrix/export.php', ['areaid' => $areaid]))->out(false),
     ];
 }
+if ($controller->is_form_defined() && has_capability('moodle/grade:viewall', $context)) {
+    $actions[] = [
+        'label' => get_string('resultsdownload', 'gradingform_matrix'),
+        'style' => 'btn-secondary',
+        'url' => (new moodle_url('/grade/grading/form/matrix/results.php', ['areaid' => $areaid]))->out(false),
+    ];
+}
 if (\gradingform_matrix\local\ai_settings::enabled() && has_capability('gradingform/matrix:useaiassistant', $context)) {
     $actions[] = [
         'label' => get_string('aiassistant', 'gradingform_matrix'),

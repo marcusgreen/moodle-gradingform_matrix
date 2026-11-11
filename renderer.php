@@ -655,17 +655,18 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Converts criterion or level text to plain text for an accessible name.
+     * Converts criterion or level text to plain text, for an accessible name or a download.
      *
      * The text is Markdown, so the raw value would make screen readers read the markup
      * ("star star"). Blocks such as paragraphs are joined with commas. The result is not
      * escaped, because the templates escape it.
      *
      * @param string $text
+     * @param int $format text format, Markdown for criteria and levels
      * @return string
      */
-    protected function plain_text(string $text): string {
-        $html = format_text($text, FORMAT_MARKDOWN, ['context' => $this->page->context]);
+    public function plain_text(string $text, int $format = FORMAT_MARKDOWN): string {
+        $html = format_text($text, $format, ['context' => $this->page->context]);
         $html = preg_replace('~</(p|li|h[1-6]|div|tr|td|th)>|<br\s*/?>~i', "\n", $html);
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $lines = array_filter(array_map(fn($line) => trim(preg_replace('/\s+/u', ' ', $line)), explode("\n", $text)));

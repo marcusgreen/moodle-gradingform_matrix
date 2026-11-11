@@ -59,7 +59,15 @@ levels are worth points (see `docs/complaints.md`, item 1).
 - `classes/local/framework/level_sum_calculator.php` — `lowest_grade_fraction()`
 - `amd/src/local/scoremapping.js` — live updates (repeats the calculation)
 
-### 5. Naming / packaging
+### 5. Per-criterion results download
+`results.php`, linked from the editor as **Download results**, downloads one row per graded
+item with the level, points and remark for each criterion, through core `dataformat`. Core
+grade exports hold only the final grade (see `docs/complaints.md`, item 11).
+- `classes/local/framework/results_exporter.php` — columns and rows
+- `classes/local/framework/item_resolver.php` — item id → user (assign, forum)
+- `classes/local/framework/filling_repository.php` — `load_for_instances()`
+
+### 6. Naming / packaging
 All identifiers, language strings, tests and backup classes are renamed
 `rubric` → `matrix` (e.g. `gradingform_matrix_controller`,
 `backup_gradingform_matrix_plugin`, `edit_matrix.feature`).

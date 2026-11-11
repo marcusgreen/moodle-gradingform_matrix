@@ -57,6 +57,27 @@ class filling_repository {
     }
 
     /**
+     * Returns the fillings of several instances in one query.
+     *
+     * @param int[] $instanceids
+     * @return array instance id => criterion id => filling, as {@see load()} returns
+     */
+    public function load_for_instances(array $instanceids): array {
+        global $DB;
+        if (!$instanceids) {
+            return [];
+        }
+        [$insql, $params] = $DB->get_in_or_equal($instanceids);
+        $result = [];
+        $records = $DB->get_recordset_select($this->table, "instanceid $insql", $params);
+        foreach ($records as $record) {
+            $result[$record->instanceid][$record->criterionid] = (array)$record;
+        }
+        $records->close();
+        return $result;
+    }
+
+    /**
      * Copies fillings to another instance.
      *
      * @param array $fillings as returned by {@see load()}

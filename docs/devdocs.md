@@ -70,13 +70,15 @@ The logic that used to live in `lib.php` has been moved into classes with one jo
 | Class | Job | Reuse notes |
 |---|---|---|
 | `criteria_repository` | Loads and saves a definition's criteria and levels | Table names are passed to the constructor, so it works with any method's tables, including short names such as `gradingform_rubric_ranges_c` |
-| `filling_repository` | Loads, saves, copies and deletes fillings (one per criterion) | Same: you pass the table name |
+| `filling_repository` | Loads, saves, copies and deletes fillings (one per criterion). `load_for_instances()` loads many instances in one query | Same: you pass the table name |
 | `grade_calculator` (interface) | Turns a set of fillings into a grade | Must be pure: no database access, formatting or plugin lookups |
 | `level_sum_calculator` | The rubric calculation: sums level scores and scales the total, with `lockzeropoints`. `lowest_grade_fraction()` gives the share of the maximum grade the lowest possible total earns, for the editor's summary | Default `grade_calculator` for level-based methods |
 | `definition_diff` | Compares a stored definition with editor data and reports how much it changed | Pure: no database access |
 | `change_summary`, `change_level` | The result of `definition_diff`: which kinds of change were found (none, minor, major…) | `change_level` uses the integers the editor and regrade confirmation already use |
 | `filling_validator` | Checks a submission on the server for both the form and the web services (`is_complete()`, `is_empty()`) | Use one validator for both paths so the UI can't be bypassed |
 | `definition_exporter` | Writes a level-based definition as JSON, with description images embedded as base64 | Works for any method; nothing matrix-specific |
+| `results_exporter` | Builds the per-criterion results download: one row per graded item with the level, points and remark for each criterion, the total and the grade as a % of the maximum | Level-based; text goes through a closure, so a method picks its own text format. Score-based methods override `columns()` and `criteria_cells()` |
+| `item_resolver` | Matches graded items to users. Core stores an item id whose meaning depends on the activity (`assign_grades.id`, `forum_grades.id`) | Add an activity by extending `TABLES` in a subclass. Unknown areas are listed by item id |
 | `definition_importer` | Reads that JSON back and checks its structure only | Content rules are left to the method's own editor, so each method keeps its own rules |
 
 Your plugin can usually reuse a class as it is. Where your method works differently, replace
@@ -122,6 +124,22 @@ Fixes made to core rubric in later Moodle versions are ported here, for example 
 footer from MDL-87575 (guarded with `method_exists()` so it still runs on 5.2) and the
 dark-mode row colour from MDL-68037. A method built on this code gets those fixes without
 having to find them itself.
+
+### Per-criterion results download
+
+`results.php` (needs `moodle/grade:viewall`) downloads the results through core
+`\core\dataformat`, so every installed format (CSV, Excel, ODS, …) works. The editing page links
+to it. Core grade exports hold only the final grade, which is complaint #11 in
+`docs/complaints.md`.
+
+- Only the instance that counts is listed: active, or waiting for a regrade. Drafts and
+  history are left out.
+- The grade is a percentage of the maximum grade, because core doesn't store the grade a
+  form gave (`grading_instances.rawgrade` is never written, MDL-31087) and the grade range is
+  only set while grading.
+- Identity columns follow the site's `showuseridentity` setting (standard user fields only).
+- The controller wires it up in `results_exporter()` and `item_resolver()`. Criterion, level
+  and remark text go through the renderer's `plain_text()`.
 
 ### Import and export
 
@@ -188,6 +206,7 @@ lib.php                    Controller and instance (adapters over core)
 renderer.php               HTML for all display modes
 edit.php, edit_form.php, matrixeditor.php  Editor
 import.php, export.php     JSON import and export
+results.php                Per-criterion results download
 amd/src/                   matrix.js (grading), matrixeditor.js (editor),
                            local/scoremapping.js (editor's score-to-grade summary)
 backup/moodle2/            Backup and restore
