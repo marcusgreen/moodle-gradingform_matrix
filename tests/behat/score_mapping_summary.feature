@@ -29,6 +29,10 @@ Feature: Score to grade summary in the matrix editor
       | Criterion 1 | Level 11 | 1 | Level 12 | 2 | Level 13 | 5 |
       | Criterion 2 | Level 21 | 2 | Level 22 | 5 |          |   |
     Then I should see "Lowest possible total: 3 points, which gives 30% of the maximum grade. Highest possible total: 10 points, which gives the maximum grade."
+    # Levels can only be found by their text once the form has been saved and reopened.
+    And I press "Save as draft"
+    And I go to "Test assignment 1" advanced grading definition page
+    And I should see "Lowest possible total: 3 points, which gives 30% of the maximum grade."
     And I replace "5" matrix level with "15" in "Criterion 1" criterion
     And I should see "Lowest possible total: 3 points, which gives 15% of the maximum grade. Highest possible total: 20 points"
     And I set the field "Calculate grade having a minimum score of the minimum achievable grade for the grading form" to "0"
