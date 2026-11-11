@@ -135,6 +135,28 @@ Things to know:
   activity, or no AI provider may be set up for generating text. Ask your site
   administrator.
 
+### 7. A live summary of how points become a grade
+
+Above the criteria, the editing page shows what grade the lowest and highest possible totals
+give, for example:
+
+> Lowest possible total: 3 points, which gives 30% of the maximum grade. Highest possible
+> total: 10 points, which gives the maximum grade.
+
+The summary updates as you change points, add or delete levels and criteria, or tick and
+untick **Calculate grade having a minimum score of the minimum achievable grade for the
+grading form**. The lowest total is the sum of each criterion's lowest level.
+
+This is there because Rubric's most common complaint is grades that look wrong when no level
+is worth 0. With that option unticked, a student who gets the lowest level everywhere gets
+**0**, even if those levels are worth points. The summary shows **0%** in that case, so you
+see it before grading starts. The option is ticked by default for new forms.
+
+The summary gives a percentage rather than a grade, because the activity's maximum grade can
+change after the form is made. With a scale, the result is rounded to a scale item. The
+summary is hidden while it can't be worked out, for example while every level has the same
+points.
+
 ## Choosing Matrix for an activity
 
 1. Open the activity (for example an assignment), then go to **Advanced grading**.

@@ -56,6 +56,48 @@ final class level_sum_calculator_test extends \basic_testcase {
     }
 
     /**
+     * Lowest grade fraction cases.
+     *
+     * @return array
+     */
+    public static function lowest_grade_fraction_provider(): array {
+        return [
+            'locked, lowest levels worth points' => [1, 4, true, 0.25],
+            'locked, zero levels' => [0, 4, true, 0.0],
+            'locked, negative minimum clamped' => [-2, 4, true, 0.0],
+            'locked, no positive maximum' => [-4, 0, true, null],
+            'unlocked, lowest levels worth points' => [1, 4, false, 0.0],
+            'unlocked, negative scores only' => [-4, -1, false, 0.0],
+            'no spread' => [2, 2, true, null],
+            'no spread, unlocked' => [2, 2, false, null],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('lowest_grade_fraction_provider')]
+    public function test_lowest_grade_fraction(float $min, float $max, bool $lockzero, ?float $expected): void {
+        $bounds = ['minscore' => $min, 'maxscore' => $max];
+        $this->assertSame($expected, level_sum_calculator::lowest_grade_fraction($bounds, $lockzero));
+    }
+
+    /**
+     * The fraction matches the grade calculate() gives the lowest levels.
+     */
+    public function test_lowest_grade_fraction_matches_calculate(): void {
+        $criteria = $this->criteria([1, 2, 3], [0, 1, 2]);
+        $fillings = [1 => ['levelid' => 10], 2 => ['levelid' => 20]];
+        $bounds = level_sum_calculator::score_bounds($criteria);
+        foreach ([0, 1] as $lockzero) {
+            $options = ['lockzeropoints' => $lockzero];
+            $grade = (new level_sum_calculator())->calculate($criteria, $fillings, range(0, 100), $options, true);
+            $this->assertEqualsWithDelta(
+                level_sum_calculator::lowest_grade_fraction($bounds, (bool)$lockzero) * 100,
+                $grade,
+                0.0001
+            );
+        }
+    }
+
+    /**
      * Calculation cases.
      *
      * @return array

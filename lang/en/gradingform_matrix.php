@@ -162,6 +162,7 @@ $string['scoremappingexplained'] = 'The minimum possible score for this grading 
 If a scale is used for grading, the score will be rounded and converted to the scale elements as if they were consecutive integers.
 
 This grade calculation may be changed by editing the form and ticking the box \'Calculate grade having a minimum score of the minimum achievable grade for the grading form\'.';
+$string['scoremappingsummary'] = 'Lowest possible total: {$a->minscore} points, which gives {$a->minpercent}% of the maximum grade. Highest possible total: {$a->maxscore} points, which gives the maximum grade.';
 $string['scorepostfix'] = '{$a} points';
 $string['showdescriptionstudent'] = 'Display grading form description to those being graded';
 $string['showdescriptionteacher'] = 'Display grading form description during evaluation';

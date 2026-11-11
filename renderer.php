@@ -23,6 +23,7 @@
  */
 
 use gradingform_matrix\local\framework\display_mode;
+use gradingform_matrix\local\framework\level_sum_calculator;
 
 /**
  * Grading method plugin renderer
@@ -607,6 +608,50 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         }
         $html .= $this->output->notification(get_string('scoremappingexplained', 'gradingform_matrix', (object)$scores), 'info');
         return $html;
+    }
+
+    /**
+     * Returns the editor's summary of what grade the lowest and highest possible totals give.
+     *
+     * The JavaScript in gradingform_matrix/local/scoremapping updates it while the form is
+     * edited. It is hidden when no grade can be calculated, for example while every level
+     * scores the same.
+     *
+     * @param array $criteria criteria as submitted from the editor; scores may be unvalidated
+     * @param array $options definition options
+     * @param string $elementname the form element name
+     * @return string
+     */
+    public function score_mapping_summary(array $criteria, array $options, string $elementname): string {
+        // Leave out scores that are not numbers yet; validation reports them.
+        $numeric = [];
+        foreach ($criteria as $id => $criterion) {
+            foreach ($criterion['levels'] ?? [] as $levelid => $level) {
+                $score = unformat_float($level['score'] ?? '', true);
+                if (is_float($score)) {
+                    $numeric[$id]['levels'][$levelid]['score'] = $score;
+                }
+            }
+        }
+        $bounds = level_sum_calculator::score_bounds($numeric);
+        $fraction = level_sum_calculator::lowest_grade_fraction($bounds, !empty($options['lockzeropoints']));
+        $text = '';
+        if ($fraction !== null) {
+            $text = get_string('scoremappingsummary', 'gradingform_matrix', (object)[
+                'minscore' => round($bounds['minscore'], 2),
+                'maxscore' => round($bounds['maxscore'], 2),
+                'minpercent' => round($fraction * 100, 1),
+            ]);
+        }
+        $attributes = [
+            'id' => 'matrix-' . $elementname . '-scoremapping',
+            'class' => 'alert alert-info gradingform_matrix-scoremapping',
+            'aria-live' => 'polite',
+        ];
+        if ($text === '') {
+            $attributes['hidden'] = 'hidden';
+        }
+        return html_writer::div($text, '', $attributes);
     }
 
     /**

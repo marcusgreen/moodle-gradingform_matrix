@@ -119,6 +119,7 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
             // Initialising twice would attach every editor handler twice.
             if (!$this->jsrequested) {
                 $PAGE->requires->js_call_amd('gradingform_matrix/matrixeditor', 'init', [$name]);
+                $PAGE->requires->js_call_amd('gradingform_matrix/local/scoremapping', 'init', [$name]);
                 $this->jsrequested = true;
             }
         } else {
@@ -137,6 +138,9 @@ class MoodleQuickForm_matrixeditor extends HTML_QuickForm_input {
         }
         if ($this->validationerrors) {
             $html .= html_writer::div($renderer->notification($this->validationerrors));
+        }
+        if (!$this->_flagFrozen) {
+            $html .= $renderer->score_mapping_summary($data['criteria'], $data['options'], $this->getName());
         }
         $html .= $renderer->display_matrix($data['criteria'], $data['options'], $mode, $this->getName());
         return $html;

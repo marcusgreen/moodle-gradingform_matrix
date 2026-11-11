@@ -50,7 +50,16 @@ The criteria table is wrapped in a `.criteria-wrapper` `<div>` (`renderer.php`,
 horizontally instead of overflowing the page. `styles.css` carries the extra rules
 (~380 lines vs ~270 in core).
 
-### 4. Naming / packaging
+### 4. Live score-to-grade summary in the editor
+Above the criteria, the editor shows what share of the maximum grade the lowest and highest
+possible totals give, and updates it as scores, levels, criteria or `lockzeropoints` change.
+It addresses Rubric's most common complaint: a grade of 0 for the lowest levels when those
+levels are worth points (see `docs/complaints.md`, item 1).
+- `renderer.php` — `score_mapping_summary()` (first render, no-JS)
+- `classes/local/framework/level_sum_calculator.php` — `lowest_grade_fraction()`
+- `amd/src/local/scoremapping.js` — live updates (repeats the calculation)
+
+### 5. Naming / packaging
 All identifiers, language strings, tests and backup classes are renamed
 `rubric` → `matrix` (e.g. `gradingform_matrix_controller`,
 `backup_gradingform_matrix_plugin`, `edit_matrix.feature`).

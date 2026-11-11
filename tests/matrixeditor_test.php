@@ -74,6 +74,42 @@ final class matrixeditor_test extends \advanced_testcase {
         $this->assertSame(get_string('err_totalscore', 'gradingform_matrix'), $errors);
     }
 
+    /**
+     * Score mapping summary cases.
+     *
+     * @return array
+     */
+    public static function score_mapping_summary_provider(): array {
+        return [
+            'locked' => [[[1, 2], [1, 3]], 1, 'Lowest possible total: 2 points, which gives 40% of the maximum grade.'],
+            'unlocked' => [[[1, 2], [1, 3]], 0, 'Lowest possible total: 2 points, which gives 0% of the maximum grade.'],
+            'non-numeric score left out' => [[[0, 'abc'], [0.5, 2]], 1,
+                'Lowest possible total: 0.5 points, which gives 25% of the maximum grade.'],
+            'no spread' => [[[1, 1]], 1, null],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('score_mapping_summary_provider')]
+    public function test_score_mapping_summary(array $scores, int $lockzero, ?string $expected): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        $PAGE->set_url('/');
+        $criteria = [];
+        foreach ($scores as $i => $levels) {
+            $criteria['NEWID' . $i] = self::criterion($levels);
+        }
+        $html = $PAGE->get_renderer('gradingform_matrix')
+            ->score_mapping_summary($criteria, ['lockzeropoints' => $lockzero], 'matrix');
+        $this->assertStringContainsString('id="matrix-matrix-scoremapping"', $html);
+        if ($expected === null) {
+            $this->assertStringContainsString('hidden="hidden"', $html);
+            $this->assertStringNotContainsString('Lowest possible total', $html);
+        } else {
+            $this->assertStringContainsString($expected, $html);
+            $this->assertStringNotContainsString('hidden', $html);
+        }
+    }
+
     public function test_to_html_requests_javascript_once(): void {
         global $PAGE;
         $this->resetAfterTest();

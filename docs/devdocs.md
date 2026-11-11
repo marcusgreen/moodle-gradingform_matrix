@@ -72,7 +72,7 @@ The logic that used to live in `lib.php` has been moved into classes with one jo
 | `criteria_repository` | Loads and saves a definition's criteria and levels | Table names are passed to the constructor, so it works with any method's tables, including short names such as `gradingform_rubric_ranges_c` |
 | `filling_repository` | Loads, saves, copies and deletes fillings (one per criterion) | Same: you pass the table name |
 | `grade_calculator` (interface) | Turns a set of fillings into a grade | Must be pure: no database access, formatting or plugin lookups |
-| `level_sum_calculator` | The rubric calculation: sums level scores and scales the total, with `lockzeropoints` | Default `grade_calculator` for level-based methods |
+| `level_sum_calculator` | The rubric calculation: sums level scores and scales the total, with `lockzeropoints`. `lowest_grade_fraction()` gives the share of the maximum grade the lowest possible total earns, for the editor's summary | Default `grade_calculator` for level-based methods |
 | `definition_diff` | Compares a stored definition with editor data and reports how much it changed | Pure: no database access |
 | `change_summary`, `change_level` | The result of `definition_diff`: which kinds of change were found (none, minor, major…) | `change_level` uses the integers the editor and regrade confirmation already use |
 | `filling_validator` | Checks a submission on the server for both the form and the web services (`is_complete()`, `is_empty()`) | Use one validator for both paths so the UI can't be bypassed |
@@ -108,6 +108,13 @@ the UI for the word "rubric".
   `.popout` / `.felement` container).
 - Wide definitions scroll horizontally inside `.criteria-wrapper` instead of overflowing the
   page.
+- The editor shows a live score-to-grade summary (`#matrix-<name>-scoremapping`). The
+  renderer's `score_mapping_summary()` prints it for the first page load and for browsers
+  without JavaScript, using `level_sum_calculator::lowest_grade_fraction()`.
+  `amd/src/local/scoremapping.js` keeps it up to date and repeats the same calculation, so
+  change both together. It reports a percentage of the maximum grade, because the grade
+  range is only set at grading time and isn't known on the editing page. A method with a
+  different calculator should replace or hide this summary.
 
 ### Kept up to date with core rubric
 
@@ -181,7 +188,8 @@ lib.php                    Controller and instance (adapters over core)
 renderer.php               HTML for all display modes
 edit.php, edit_form.php, matrixeditor.php  Editor
 import.php, export.php     JSON import and export
-amd/src/                   matrix.js (grading), matrixeditor.js (editor)
+amd/src/                   matrix.js (grading), matrixeditor.js (editor),
+                           local/scoremapping.js (editor's score-to-grade summary)
 backup/moodle2/            Backup and restore
 tests/                     PHPUnit (incl. tests/local/framework/), Behat, generators
 ```

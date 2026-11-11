@@ -50,6 +50,32 @@ class level_sum_calculator implements grade_calculator {
     }
 
     /**
+     * Returns the share of the maximum grade that the lowest possible total gives.
+     *
+     * The highest possible total always gives the maximum grade. Without 'lockzeropoints'
+     * the lowest total always gives the minimum grade, so a form whose lowest levels are
+     * worth points still gives 0.
+     *
+     * The editor's live summary (amd/src/local/scoremapping.js) repeats this calculation.
+     *
+     * @param array $bounds from {@see self::score_bounds()}
+     * @param bool $lockzeropoints the 'lockzeropoints' option
+     * @return float|null fraction from 0 to 1, or null if no grade can be calculated
+     */
+    public static function lowest_grade_fraction(array $bounds, bool $lockzeropoints): ?float {
+        if ($bounds['maxscore'] <= $bounds['minscore']) {
+            return null;
+        }
+        if (!$lockzeropoints) {
+            return 0.0;
+        }
+        if ($bounds['maxscore'] <= 0) {
+            return null;
+        }
+        return max(0.0, $bounds['minscore'] / $bounds['maxscore']);
+    }
+
+    /**
      * Returns the total score of the selected levels.
      *
      * A filling whose level no longer exists counts as zero.
