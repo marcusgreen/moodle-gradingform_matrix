@@ -38,7 +38,7 @@ Feature: Download per-criterion grading results
     And I save the advanced grading form
     When I go to "Test assignment 1" advanced grading definition page
     And I click on "Download results" "link"
-    Then I should see "Grading results" in the "h2" "css_element"
+    Then "Grading results" "heading" should exist
     And I should see "Download the current grade of everyone graded with this form"
     And "Download" "button" should exist
     And I should not see "can't be matched to users"
