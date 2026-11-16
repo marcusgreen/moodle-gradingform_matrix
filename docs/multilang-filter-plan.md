@@ -3,7 +3,8 @@
 Status: changes 1–4 built on branch `feature/multilang-filter` (tests pass, not yet committed).
 Change 5 and the API checks come from the MDL-77404 research below and are not built yet.
 Change 6 (third-party `filter_multilang2`) is planned and not built.
-Change 7 (multilang text from the AI assistant) is an assessment with a proposed design, not built.
+Change 7 (multilang text from the AI assistant) is an assessment with a proposed design. Item 4
+(filter course material) is built, not yet committed; the other items are not built.
 
 ## Context
 
@@ -306,10 +307,13 @@ Reasons for caution:
 3. Preview: add a "Show all languages" switch in `aiassistant.js` that asks `ai_turn` for a preview
    rendered with `'filter' => false`, so the teacher can see every language before applying. If
    that's too much, at least say in the message that the preview shows only the teacher's language.
-4. Course material: `content_source::extract()` calls `html_to_text()` on the raw HTML, so a page
-   written with spans reaches the model as "SpellingRechtschreibung", every language run together.
-   Run `format_text()` with the module's context first, so filters pick the teacher's language. That
-   also saves budget in `SOURCE_BUDGET`. Separate from translation, but found while checking this.
+4. **Built.** Course material: `content_source::extract()` called `html_to_text()` on the raw
+   HTML, so a page written with spans reached the model as "SpellingRechtschreibung", every
+   language run together. It now runs `format_text()` (FORMAT_HTML, the module's context) first,
+   so filters pick the teacher's language. That also saves budget in `SOURCE_BUDGET`. Separate from
+   translation, but found while checking this. Test: `content_source_test::test_extract_applies_filters()`.
+   The stored format of each field (`introformat`, `contentformat`) is still ignored, as before: the
+   text is read as HTML.
 5. No new UI for picking languages. A chip or checkbox list would hold the same information as the
    instruction "add French, German and Spanish", and the teacher would still need to know which
    languages to ask for.
@@ -320,7 +324,7 @@ Reasons for caution:
 7. Docs: `docs/userdocs.md` "Text in several languages" gets a paragraph on asking the assistant to
    translate, with the quality warning and "translate last". `docs/ai-assistant-plan.md` links here.
 
-Order: 4 is small and worth doing on its own. 1 and the message wording give most of the value. 2
+Order: 4 is done. 1 and the message wording give most of the value. 2
 and 3 can wait until someone uses it.
 
 ### API and mobile checks
