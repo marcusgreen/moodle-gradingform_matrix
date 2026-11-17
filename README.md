@@ -78,7 +78,14 @@ and points column for each level, with an optional header row. Addresses complai
 - `classes/local/framework/spreadsheet_reader.php` — reads CSV, or the first sheet with core's PhpSpreadsheet (values only)
 - `classes/local/framework/definition_importer.php` — `from_rows()`
 
-### 7. Naming / packaging
+### 7. Multi-language text
+Criteria, levels, remarks, accessible names and downloads go through Moodle's text filters,
+so multi-language content shows in the reader's language. Rubric escapes them with `s()`, so
+its readers see every language at once.
+- `renderer.php` — `plain_text()`, `remark_html()`
+- `classes/controller.php` — `get_download_name()`
+
+### 8. Naming / packaging
 All identifiers, language strings, tests and backup classes are renamed
 `rubric` → `matrix` (e.g. `gradingform_matrix_controller`,
 `backup_gradingform_matrix_plugin`, `edit_matrix.feature`).

@@ -127,7 +127,7 @@ class content_source {
     }
 
     /**
-     * The content of a module as plain text.
+     * The content of a module as plain text, with the filters of the module's context applied.
      *
      * @param cm_info $cm a module for which {@see is_readable()} is true
      * @return string
@@ -151,7 +151,10 @@ class content_source {
                 default => '',
             };
         }
-        return trim(html_to_text((string)$html, 0, false));
+        // Run the filters first, so multi-language content reaches the model in the reader's language only,
+        // rather than every language run together.
+        $html = format_text((string)$html, FORMAT_HTML, ['context' => $cm->context, 'para' => false]);
+        return trim(html_to_text($html, 0, false));
     }
 
     /**

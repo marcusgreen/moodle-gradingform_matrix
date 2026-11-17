@@ -34,7 +34,7 @@
     * levels: {class, tableid, rowid, role, arialabelledby, arialabel, html}
     * addlevel: optional {name, id, value}
     * remark: optional {textarea: {name, id, arialabel, text} } or {hidden: {name, value} }
-      or {cell: {id, arialabel, text} }
+      or {cell: {id, arialabel, html} }, html being the remark formatted for reading
 
     Example context (json):
     {
@@ -46,7 +46,7 @@
         "levels": {"class": "levels", "tableid": "advancedgrading-criteria-1-levels-table",
             "rowid": "advancedgrading-criteria-1-levels", "role": "radiogroup",
             "arialabelledby": "advancedgrading-criteria-1-description-cell", "html": ""},
-        "remark": {"cell": {"id": "advancedgrading-criteria-1-remark", "arialabel": "Remark", "text": "Good"} }
+        "remark": {"cell": {"id": "advancedgrading-criteria-1-remark", "arialabel": "Remark", "html": "Good"} }
     }
 }}
 <tr class="{{class}}" id="{{id}}"{{#datacriterion}} data-criterion="{{.}}"{{/datacriterion}}>
@@ -99,7 +99,7 @@
             <input type="hidden" name="{{name}}" value="{{value}}">
         {{/hidden}}
         {{#cell}}
-            <td class="remark" tabindex="0" id="{{id}}" aria-label="{{arialabel}}">{{text}}</td>
+            <td class="remark" tabindex="0" id="{{id}}" aria-label="{{arialabel}}">{{{html}}}</td>
         {{/cell}}
     {{/remark}}
 </tr>

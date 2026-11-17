@@ -41,5 +41,5 @@ if (!$controller->is_form_defined()) {
 }
 
 $content = $controller->export_definition();
-$filename = clean_filename(core_text::substr($controller->get_definition()->name, 0, 100) ?: 'gradingform') . '.json';
+$filename = clean_filename($controller->get_download_name()) . '.json';
 send_file($content, $filename, 0, 0, true, true, 'application/json');

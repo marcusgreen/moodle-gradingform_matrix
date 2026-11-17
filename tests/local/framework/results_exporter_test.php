@@ -244,4 +244,24 @@ final class results_exporter_test extends \advanced_testcase {
         $this->assertCount(2, $fillings[$first->get_id()]);
         $this->assertSame([], $controller->filling_repository()->load_for_instances([]));
     }
+
+    public function test_columns_show_the_current_language(): void {
+        global $PAGE;
+        filter_set_global_state('multilang', TEXTFILTER_ON);
+        \filter_manager::reset_caches();
+        $PAGE->set_context($this->context);
+        $controller = $this->getDataGenerator()->get_plugin_generator('core_grading')
+            ->create_instance($this->context, 'mod_assign', 'submissions', 'matrix');
+        $matrix = new matrix('Test', 'Description');
+        $matrix->add_criteria(new criterion(
+            '<span lang="en" class="multilang">Spelling</span><span lang="de" class="multilang">Rechtschreibung</span>',
+            ['Poor' => 0, 'Good' => 2]
+        ));
+        $controller->update_definition($matrix->get_definition());
+
+        $columns = $controller->results_exporter()->columns([], false);
+
+        $this->assertContains('Spelling: level', $columns);
+        $this->assertStringNotContainsString('Rechtschreibung', implode(' ', $columns));
+    }
 }

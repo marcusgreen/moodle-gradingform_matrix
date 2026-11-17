@@ -187,6 +187,25 @@ Teachers can export a definition as JSON and import it on the same site or anoth
   JSON through `from_json()`. Both give the same structure to `definition_transfer::import()`,
   which keeps the current name, description and options when the import has none.
 
+### Text filters and multiple languages
+
+The rule: text that is read goes through `format_text()` (filters on, the page's context),
+and text that is edited or stored stays raw, with every language in it. Display modes format
+criteria and levels as Markdown in `renderer.php` (`criterion_context()`, `level_context()`);
+the purifier keeps multilang spans (`purify_html()` in `lib/weblib.php`).
+
+- `renderer::plain_text()` formats and then strips the HTML, for accessible names,
+  `data-criterion` and the results download, so these follow the reader's language too.
+- `renderer::remark_html()` escapes a remark and keeps its line breaks, then runs filters
+  (FORMAT_HTML). Markers type remarks in a plain textarea, so this keeps the rubric's
+  "shows as typed" behaviour while letting `{mlang}` and similar filters work.
+- `controller::get_download_name()` runs the form name through `format_string()` for
+  `export.php` and `results.php` filenames. The exported JSON stays raw.
+- The grading panel (`fetch.php` `get_formatted_text()`) and the editor's live preview
+  (`classes/external/render_text.php`) already format with filters.
+- Tests: `tests/renderer_test.php`, `results_exporter_test::test_columns_show_the_current_language()`,
+  `tests/behat/multilang.feature`. Plan: `docs/multilang-filter-plan.md`.
+
 ## Building a new grading method on this code
 
 > The shared code still lives inside `gradingform_matrix`. Until it moves into its own

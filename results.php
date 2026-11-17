@@ -46,8 +46,7 @@ $resolver = $controller->item_resolver();
 $identityfields = \core_user\fields::get_identity_fields($context, false);
 
 if ($dataformat !== '') {
-    $name = core_text::substr($controller->get_definition()->name, 0, 100) ?: 'gradingform';
-    $filename = clean_filename($name . ' ' . get_string('results', 'gradingform_matrix'));
+    $filename = clean_filename($controller->get_download_name() . ' ' . get_string('results', 'gradingform_matrix'));
     \core\dataformat::download_data(
         $filename,
         $dataformat,

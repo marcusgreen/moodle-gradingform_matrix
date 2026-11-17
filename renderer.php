@@ -180,15 +180,17 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         if ($mode->shows_remarks($options)) {
             $currentremark = $value['remark'] ?? '';
             $remarkinfo = (object)['description' => $this->plain_text($criterion['description']), 'remark' => $currentremark];
-            $remarklabel = get_string('criterionremark', 'gradingform_matrix', $remarkinfo);
             if ($mode === display_mode::EVAL) {
                 $context['remark'] = ['textarea' => ['name' => "{$field}[remark]", 'id' => "{$prefix}-remark",
-                    'arialabel' => $remarklabel, 'text' => $currentremark]];
+                    'arialabel' => get_string('criterionremark', 'gradingform_matrix', $remarkinfo), 'text' => $currentremark]];
             } else if ($mode === display_mode::EVAL_FROZEN) {
                 $context['remark'] = ['hidden' => ['name' => "{$field}[remark]", 'value' => $currentremark]];
             } else if ($mode === display_mode::REVIEW || $mode === display_mode::VIEW) {
-                $context['remark'] = ['cell' => ['id' => "{$prefix}-remark", 'arialabel' => $remarklabel,
-                    'text' => $currentremark]];
+                // Shown to the reader, so filters such as multi-language content apply.
+                $remarkhtml = $this->remark_html($currentremark);
+                $remarkinfo->remark = $this->html_to_plain($remarkhtml);
+                $context['remark'] = ['cell' => ['id' => "{$prefix}-remark",
+                    'arialabel' => get_string('criterionremark', 'gradingform_matrix', $remarkinfo), 'html' => $remarkhtml]];
             }
         }
         return $context;
@@ -667,7 +669,30 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
      * @return string
      */
     public function plain_text(string $text, int $format = FORMAT_MARKDOWN): string {
-        $html = format_text($text, $format, ['context' => $this->page->context]);
+        return $this->html_to_plain(format_text($text, $format, ['context' => $this->page->context]));
+    }
+
+    /**
+     * Formats a remark for reading, as in review and view modes.
+     *
+     * Markers type remarks in a plain textarea, so the text is escaped and keeps its line breaks,
+     * as in the rubric. Text filters still run, so syntax such as {mlang} or a glossary link works.
+     * Multi-language spans typed into a remark are escaped and show as typed.
+     *
+     * @param string $remark
+     * @return string HTML
+     */
+    public function remark_html(string $remark): string {
+        return format_text(nl2br(s($remark)), FORMAT_HTML, ['context' => $this->page->context, 'para' => false]);
+    }
+
+    /**
+     * Converts formatted HTML to plain text, see {@see plain_text()}.
+     *
+     * @param string $html
+     * @return string
+     */
+    protected function html_to_plain(string $html): string {
         $html = preg_replace('~</(p|li|h[1-6]|div|tr|td|th)>|<br\s*/?>~i', "\n", $html);
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $lines = array_filter(array_map(fn($line) => trim(preg_replace('/\s+/u', ' ', $line)), explode("\n", $text)));

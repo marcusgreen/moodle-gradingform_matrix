@@ -103,6 +103,18 @@ final class content_source_test extends \advanced_testcase {
         $this->assertSame('Test resource notes.txt file', $texts['Notes']);
     }
 
+    public function test_extract_applies_filters(): void {
+        [$course] = $this->create_course();
+        filter_set_global_state('multilang', TEXTFILTER_ON);
+        \filter_manager::reset_caches();
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'name' => 'Spelling',
+            'content' => '<p><span lang="en" class="multilang">Spelling</span>'
+                . '<span lang="de" class="multilang">Rechtschreibung</span></p>']);
+        $source = new content_source(get_fast_modinfo($course));
+
+        $this->assertSame(['Spelling' => 'Spelling'], $source->extract_many([$page->cmid]));
+    }
+
     public function test_modules_of_another_course_are_skipped(): void {
         [$course] = $this->create_course();
         $other = $this->getDataGenerator()->create_course();

@@ -214,6 +214,31 @@ way to do this: Moodle's grade export gives only the final grade.
 You need permission to view all grades (`moodle/grade:viewall`). This works for assignments
 and forums. In other activities, people are listed by item ID instead of by name.
 
+### 9. Text in several languages
+
+If your site has the **Multi-language content** filter turned on, you can write a criterion or
+level in several languages, and each person sees their own:
+
+```
+<span lang="en" class="multilang">Spelling</span><span lang="de" class="multilang">Rechtschreibung</span>
+```
+
+The `{mlang en}Spelling{mlang}{mlang de}Rechtschreibung{mlang}` syntax of the separate
+Multi-Language Content (v2) filter works too. This applies wherever the form is read:
+criteria, levels and the form's description when grading, previewing and viewing feedback,
+the names screen readers announce, the column headings and cells of a results download, and
+the name of a downloaded file.
+
+- The editor shows every language, so you can edit them all. The formatted preview below each
+  box shows yours.
+- Remarks keep the line breaks you type. They are shown as typed, so HTML in them shows as text. Filters still run on them: the
+  `{mlang}` syntax works in a remark, but the `<span>` syntax does not.
+- An exported form keeps every language, so importing it elsewhere loses none.
+- Markdown can show an image from a web address (`![description](https://…)`), but you can't
+  upload images into a criterion or level.
+
+Rubric shows criteria, levels and remarks as plain text, so it shows every language at once.
+
 ## Choosing Matrix for an activity
 
 1. Open the activity (for example an assignment), then go to **Advanced grading**.

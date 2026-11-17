@@ -254,6 +254,19 @@ class gradingform_matrix_controller extends gradingform_controller {
     }
 
     /**
+     * Returns the form name for a download filename.
+     *
+     * Filters run, so a multi-language name gives the viewer's language and no markup.
+     *
+     * @return string at most 100 characters, 'gradingform' when the name is empty
+     */
+    public function get_download_name(): string {
+        $name = format_string($this->get_definition()->name, true, ['context' => $this->get_context()]);
+        $name = trim(html_entity_decode(strip_tags($name), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        return core_text::substr($name, 0, 100) ?: 'gradingform';
+    }
+
+    /**
      * Returns the exporter for the per-criterion grading results.
      *
      * The form must be defined.
