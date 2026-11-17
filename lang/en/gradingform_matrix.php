@@ -198,5 +198,7 @@ $string['showscoreteacher'] = 'Display points for each level during evaluation';
 $string['sortlevelsasc'] = 'Sort order for levels:';
 $string['sortlevelsasc0'] = 'Descending by number of points';
 $string['sortlevelsasc1'] = 'Ascending by number of points';
+$string['stacknarrow'] = 'Stack the grading form to fit narrow spaces';
+$string['stacknarrow_desc'] = 'When on, the grading form rearranges to fit the space it has, for example the assignment grader\'s side panel: each criterion\'s name, levels and remark are stacked, and levels are listed one above another when they don\'t fit side by side. When off, the form keeps its grid and scrolls sideways; it still rearranges when popped out. The editor always keeps its grid.';
 $string['zerolevelsabsent'] = 'Warning: The minimum possible score for this grading form is not 0; this can result in unexpected grades for the activity. To avoid this, each criterion should have a level with 0 points.<br>
 This warning may be ignored if a scale is used for grading, and the minimum levels in the grading form correspond to the minimum value of the scale.';

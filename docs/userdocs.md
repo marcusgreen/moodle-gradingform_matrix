@@ -56,11 +56,27 @@ The formatting is shown wherever the form is displayed: the preview, while gradi
 students view their feedback. On the editing page, too, criteria and levels you aren't
 editing show the formatting. Click one to edit it, and you see the text you typed.
 
-### 2. Wide forms scroll instead of breaking the page
+### 2. The form fits the space it has
 
-A rubric with many levels can be wider than the screen, and then it pushes the rest of the
-page out of shape. In Matrix the grid scrolls left and right inside its own box, and the rest
-of the page stays in place.
+Rubric's grid is a wide table. In the assignment grader it's squeezed into the narrow panel
+beside the student's work, and with many levels it can push the rest of the page out of shape.
+
+Matrix rearranges itself to fit, when grading, reviewing, viewing and previewing:
+
+- **Wide:** the criteria form a grid as in Rubric, with the remark box at the end of each row.
+- **Narrow,** for example the grader's side panel: each criterion's name, levels and remark
+  are stacked, and the levels are listed one above another, so nothing needs scrolling
+  sideways.
+- **Many levels:** a criterion's levels are listed one above another once each would be
+  narrower than about 120 pixels, so a criterion with 8 levels switches sooner than one with 3.
+
+The editor keeps its grid; it's meant for a full-width page.
+
+A site administrator can turn the stacking off (see *For site administrators*). The form then
+keeps its grid and scrolls sideways in narrow spaces, as Rubric does, but still rearranges when
+you pop it out.
+
+Colours follow the theme, so the form also reads well with a dark colour scheme.
 
 ### 3. A resizable pop-out grading panel
 
@@ -88,6 +104,9 @@ Each criterion's levels work as a group of radio buttons:
 
 Screen readers announce each criterion's name with its levels, and say which level is
 selected.
+
+The editor, the grading form and the graded form are checked with the axe accessibility rules
+for WCAG 2.2 level AA, and text stays readable when its spacing is increased (WCAG 1.4.12).
 
 ### 5. Import and export grading forms
 
@@ -215,3 +234,6 @@ settings** link there.
 - Who may use the assistant is controlled by the capability **Use the AI assistant to write
   grading forms** (`gradingform/matrix:useaiassistant`). By default, editing teachers and
   managers have it.
+- **Stack the grading form to fit narrow spaces** is on by default. Turn it off to keep the grid
+  everywhere, for example the assignment grader's side panel, scrolling sideways when it doesn't
+  fit. The form still rearranges when a teacher pops it out.

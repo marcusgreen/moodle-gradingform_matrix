@@ -111,6 +111,37 @@ the UI for the word "rubric".
   `.popout` / `.felement` container).
 - Wide definitions scroll horizontally inside `.criteria-wrapper` instead of overflowing the
   page.
+- **Reflow.** Every mode except the editor gets a `reflow` class (`display_mode::css_class()`),
+  which switches each criterion from table cells to a flex row. Two CSS size containers decide
+  how it folds, in the grader's side panel, the popout or a narrow screen alike:
+  - `matrix` (`.criteria-wrapper`): at 43.75rem (700px) or less the description, levels and
+    remark each take a full row.
+  - `matrixlevels` (each criterion's `.levels` cell): the levels stack once each would be
+    narrower than 7.5rem (120px). `tr:has(> .level:nth-child(n))` sets the width for each number
+    of levels: below n × 7.5rem, so 15rem for two levels, 22.5rem for three, up to 75rem for ten.
+    A flat 420px floor used to stack three-level criteria in the full-width grader, where core
+    caps the grade panel at 800px and leaves each levels cell about 380px.
+  - Breakpoints and the description, levels and remark widths are in `rem`, not `px`, so a user
+    who sets a larger default font size gets a form that folds sooner, in step with the text
+    (WCAG 1.4.4). Browser zoom already works with either unit. Percentages can't be used: a
+    container query compares the container with itself.
+
+  A size container has no width of its own, and the form's parent in the grader is a flex row
+  that sizes it by its content, so the reflowing form sets `width: 100%`. Without it the form
+  collapses to nothing.
+
+  The site setting `gradingform_matrix/stacknarrow` (`layout_settings::stack_narrow()`, on by
+  default; unset counts as on) chooses the class: the renderer passes it to
+  `display_mode::css_class()`, which writes `reflow` when on and `reflow-popout` when off. Every
+  reflow rule's selector starts `.gradingform_matrix:is(.reflow, .popout .reflow-popout)`, so
+  with the setting off the form keeps its table and only folds inside the popout, as before
+  the reflow existed.
+- **Colours** come from the theme's Bootstrap variables (`--bs-body-bg`, `--bs-border-color`,
+  `--bs-danger-bg-subtle`, …), so the form works in dark mode. There are no fixed colours in
+  `styles.css`.
+- **Accessibility checks:** `tests/behat/accessibility.feature` runs axe (core's default WCAG
+  2.x A/AA tags) on the editor, the preview, the grading form and the student's graded view,
+  scoped to the form so problems in core's page don't fail it.
 - The editor shows a live score-to-grade summary (`#matrix-<name>-scoremapping`). The
   renderer's `score_mapping_summary()` prints it for the first page load and for browsers
   without JavaScript, using `level_sum_calculator::lowest_grade_fraction()`.

@@ -44,11 +44,15 @@ The student-facing grading interaction was migrated from the legacy YUI module
 - The **editor** UI (add/delete/reorder criteria and levels) still uses the legacy YUI
   module `js/matrixeditor.js`.
 
-### 3. Horizontal scrolling for wide matrices
-The criteria table is wrapped in a `.criteria-wrapper` `<div>` (`renderer.php`,
-`matrix_template()`) with accompanying CSS so a matrix with many levels scrolls
-horizontally instead of overflowing the page. `styles.css` carries the extra rules
-(~380 lines vs ~270 in core).
+### 3. Fits narrow panels; follows the theme's colours
+When grading, reviewing, viewing and previewing, the criteria reflow to fit the space: a grid
+when wide, stacked in the grader's side panel, and levels listed one above another when there
+are too many to fit side by side. Addresses complaint 8 in `docs/complaints.md` (MDL-70250,
+MDL-30780).
+- `classes/local/framework/display_mode.php` — `css_class()` adds `reflow` to the modes that fold, or `reflow-popout` when
+  the site setting `stacknarrow` (`classes/local/layout_settings.php`) is off, so only the popout folds
+- `styles.css` — the `matrix` and `matrixlevels` size containers; colours from Bootstrap variables, so dark mode works
+- `tests/behat/accessibility.feature` — axe checks on the editor, grading form and student view
 
 ### 4. Live score-to-grade summary in the editor
 Above the criteria, the editor shows what share of the maximum grade the lowest and highest

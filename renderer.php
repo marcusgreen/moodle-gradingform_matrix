@@ -24,6 +24,7 @@
 
 use gradingform_matrix\local\framework\display_mode;
 use gradingform_matrix\local\framework\level_sum_calculator;
+use gradingform_matrix\local\layout_settings;
 
 /**
  * Grading method plugin renderer
@@ -356,7 +357,7 @@ class gradingform_matrix_renderer extends plugin_renderer_base {
         $mode = display_mode::of($mode);
         $context = [
             'id' => "matrix-{$elementname}",
-            'class' => 'clearfix gradingform_matrix ' . $mode->css_class(),
+            'class' => 'clearfix gradingform_matrix ' . $mode->css_class(layout_settings::stack_narrow()),
             'tableid' => "{$elementname}-criteria",
             'criteria' => $criteriastr,
             'options' => $this->options_context($mode, $options, $elementname),

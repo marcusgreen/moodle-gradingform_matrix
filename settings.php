@@ -35,4 +35,10 @@ if ($ADMIN->fulltree) {
         new lang_string('enableai_desc', 'gradingform_matrix'),
         0
     ));
+    $settings->add(new admin_setting_configcheckbox(
+        'gradingform_matrix/stacknarrow',
+        new lang_string('stacknarrow', 'gradingform_matrix'),
+        new lang_string('stacknarrow_desc', 'gradingform_matrix'),
+        1
+    ));
 }

@@ -35,12 +35,12 @@ final class display_mode_test extends \basic_testcase {
         return [
             'edit full' => [display_mode::EDIT_FULL, true, false, false, true, 'editor editable'],
             'edit frozen' => [display_mode::EDIT_FROZEN, true, false, false, true, 'editor frozen'],
-            'preview' => [display_mode::PREVIEW, false, false, false, true, 'editor preview'],
-            'preview graded' => [display_mode::PREVIEW_GRADED, false, false, false, false, 'editor preview'],
-            'eval' => [display_mode::EVAL, false, true, false, false, 'evaluate editable'],
-            'eval frozen' => [display_mode::EVAL_FROZEN, false, true, true, false, 'evaluate frozen'],
-            'review' => [display_mode::REVIEW, false, true, true, false, 'review'],
-            'view' => [display_mode::VIEW, false, true, true, false, 'view'],
+            'preview' => [display_mode::PREVIEW, false, false, false, true, 'editor preview reflow'],
+            'preview graded' => [display_mode::PREVIEW_GRADED, false, false, false, false, 'editor preview reflow'],
+            'eval' => [display_mode::EVAL, false, true, false, false, 'evaluate editable reflow'],
+            'eval frozen' => [display_mode::EVAL_FROZEN, false, true, true, false, 'evaluate frozen reflow'],
+            'review' => [display_mode::REVIEW, false, true, true, false, 'review reflow'],
+            'view' => [display_mode::VIEW, false, true, true, false, 'view reflow'],
         ];
     }
 
@@ -68,6 +68,8 @@ final class display_mode_test extends \basic_testcase {
         $this->assertSame($markschosen, $mode->marks_chosen_level());
         $this->assertSame($showsoptions, $mode->shows_options());
         $this->assertSame($cssclass, $mode->css_class());
+        // Without stacking in narrow spaces, only the popout folds.
+        $this->assertSame(str_replace('reflow', 'reflow-popout', $cssclass), $mode->css_class(false));
     }
 
     public function test_scores_follow_the_audience(): void {

@@ -26,11 +26,15 @@ namespace gradingform_matrix\local;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(plugin_settings::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(ai_settings::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(layout_settings::class)]
 final class plugin_settings_test extends \advanced_testcase {
     public function test_page_holds_the_settings_from_settings_php(): void {
         $page = plugin_settings::page();
         $this->assertSame(plugin_settings::SECTION, $page->name);
-        $this->assertSame(['gradingform_matrixenableai'], array_keys((array)$page->settings));
+        $this->assertSame(
+            ['gradingform_matrixenableai', 'gradingform_matrixstacknarrow'],
+            array_keys((array)$page->settings)
+        );
         $this->assertSame('s_gradingform_matrix_enableai', $page->settings->gradingform_matrixenableai->get_full_name());
     }
 
@@ -45,6 +49,14 @@ final class plugin_settings_test extends \advanced_testcase {
         set_config('enableai', 1, 'gradingform_matrix');
         plugin_settings::apply_defaults();
         $this->assertTrue(ai_settings::enabled());
+    }
+
+    public function test_defaults_stack_the_form_in_narrow_spaces(): void {
+        $this->resetAfterTest();
+        unset_config('stacknarrow', 'gradingform_matrix');
+        plugin_settings::apply_defaults();
+        $this->assertSame('1', get_config('gradingform_matrix', 'stacknarrow'));
+        $this->assertTrue(layout_settings::stack_narrow());
     }
 
     public function test_save(): void {

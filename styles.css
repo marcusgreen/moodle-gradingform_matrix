@@ -50,17 +50,17 @@
     text-transform: uppercase;
     font-size: 60%;
     padding: 0.25em;
-    border: 1px solid #eee;
+    border: 1px solid var(--bs-border-color);
 }
 
 .gradingform_matrix_editform .status.ready {
-    background-color: #e7f1c3;
-    border-color: #aea;
+    background-color: var(--bs-success-bg-subtle);
+    border-color: var(--bs-success-border-subtle);
 }
 
 .gradingform_matrix_editform .status.draft {
-    background-color: #f3f2aa;
-    border-color: #ee2;
+    background-color: var(--bs-warning-bg-subtle);
+    border-color: var(--bs-warning-border-subtle);
 }
 
 .gradingform_matrix {
@@ -107,7 +107,7 @@
 }
 
 .gradingform_matrix .criterion {
-    border: 1px solid #ddd;
+    border: 1px solid var(--bs-border-color);
     overflow: hidden;
 }
 
@@ -116,7 +116,7 @@
 }
 
 .gradingform_matrix .criterion.odd td {
-    background: white;
+    background: var(--bs-body-bg);
 }
 
 .gradingform_matrix .criterion .description {
@@ -180,7 +180,7 @@
 
 .gradingform_matrix .plainvalue.empty {
     font-style: italic;
-    color: #555;
+    color: var(--bs-secondary-color);
 }
 
 /* Make invisible the buttons 'Move up' for the first criterion and
@@ -237,12 +237,12 @@
 
 .gradingform_matrix.editor .addcriterion input,
 .gradingform_matrix.editor .addlevel input {
-    background: #fff url([[pix:t/add]]) 4px 6px / 16px 16px no-repeat;
+    background: var(--bs-body-bg) url([[pix:t/add]]) 4px 6px / 16px 16px no-repeat;
     height: 30px;
     line-height: 1rem;
     padding-left: 24px;
     display: block;
-    color: #555;
+    color: var(--bs-secondary-color);
     font-weight: bold;
     text-decoration: none;
 }
@@ -273,20 +273,20 @@
 .gradingform_matrix .criterion .description.error,
 .gradingform_matrix .criterion .levels .level .definition.error,
 .gradingform_matrix .criterion .levels .level .score.error {
-    background: #fdd;
+    background: var(--bs-danger-bg-subtle);
 }
 
 .gradingform_matrix-regrade {
     padding: 10px;
-    background: #fdd;
-    border: 1px solid #f00;
+    background: var(--bs-danger-bg-subtle);
+    border: 1px solid var(--bs-danger);
     margin-bottom: 10px;
 }
 
 .gradingform_matrix-restored {
     padding: 10px;
-    background: #ffd;
-    border: 1px solid #ff0;
+    background: var(--bs-warning-bg-subtle);
+    border: 1px solid var(--bs-warning);
     margin-bottom: 10px;
 }
 
@@ -313,7 +313,7 @@
 }
 
 .gradingpanel-gradingform_matrix [aria-checked="true"] {
-    border: 1px solid black;
+    border: 1px solid var(--bs-emphasis-color);
 }
 
 /* Highlight selected / hovered level in evaluate mode (mirrors gradingform_rubric). */
@@ -340,7 +340,7 @@
 }
 
 .gradingform_matrix .criterion .levels .level.currentchecked {
-    background: #fff0f0;
+    background: var(--bs-danger-bg-subtle);
 }
 
 /* ---------------------------------------------------------------------------
@@ -427,12 +427,6 @@
     overflow-wrap: anywhere;
 }
 
-/* For a matrix the content is a size container, so the grid reflows by the width of the box,
- * not the width of the screen. */
-.path-mod-assign [data-region="grade-panel"] .fitem.popout:has(.gradingform_matrix) > .felement {
-    container: matrixpopout / inline-size; /* stylelint-disable-line csstree/validator */
-}
-
 .path-mod-assign [data-region="grade-panel"] .fitem.popout.gradingform_matrix-popout > :not(.felement) {
     flex: none;
 }
@@ -453,69 +447,81 @@
     }
 }
 
-.fitem.popout .gradingform_matrix {
+/* A size container has no width of its own, and the form's parent is a flex row that sizes it by
+ * its content, so give the form the full width or it collapses to nothing.
+ * 'reflow' folds the form everywhere; 'reflow-popout' only when popped out, when the site setting
+ * gradingform_matrix/stacknarrow is off (see display_mode::css_class()). */
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) {
+    /* The line between stacked levels. Darker than the table's borders, which are too pale to
+     * show where one level ends and the next begins (WCAG 1.4.11 asks for 3:1). */
+    --gradingform-matrix-stacked-separator: var(--bs-secondary-color);
     width: 100%;
+    min-width: 0;
 }
 
 .fitem.popout .gradingform_matrix .criteria-wrapper {
     overflow: visible;
 }
 
-/* Flex reflow inside popout only. */
-.fitem.popout .gradingform_matrix .criteria,
-.fitem.popout .gradingform_matrix .criteria > tbody {
+/* ---------------------------------------------------------------------------
+ * Reflow when grading, reviewing, viewing and previewing: in the grader's side panel, in the
+ * popout and on narrow screens. The editor keeps its table layout.
+ * Each criterion is a flex row (description, levels, remark) instead of table cells, and two
+ * size containers decide how it folds: the criteria wrapper, by the width the form has, and
+ * each criterion's levels cell, by the width its levels share.
+ * ------------------------------------------------------------------------- */
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criteria-wrapper {
+    container: matrix / inline-size; /* stylelint-disable-line csstree/validator */
+}
+
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criteria,
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criteria > tbody {
     display: block;
     width: 100%;
     min-width: 0;
 }
 
-.fitem.popout .gradingform_matrix .criterion {
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     align-items: stretch;
 }
 
-.fitem.popout .gradingform_matrix .criterion > .description {
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .description {
     display: block;
-    flex: 0 0 150px;
-    min-width: 150px;
+    flex: 0 0 9.375rem;
+    min-width: 9.375rem;
 }
 
-.fitem.popout .gradingform_matrix .criterion > .levels {
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .levels {
+    container: matrixlevels / inline-size; /* stylelint-disable-line csstree/validator */
     display: block;
-    flex: 1 1 300px;
+    flex: 1 1 18.75rem;
     min-width: 0;
 }
 
-.fitem.popout .gradingform_matrix .criterion > .levels > table,
-.fitem.popout .gradingform_matrix .criterion > .levels > table > tbody {
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .levels > table,
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .levels > table > tbody {
     display: block;
     width: 100%;
     height: 100%;
 }
 
-.fitem.popout .gradingform_matrix .criterion > .levels > table > tbody > tr {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    height: 100%;
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion .levels .level {
+    flex: 1 1 0;
+    min-width: 0;
 }
 
-.fitem.popout .gradingform_matrix .criterion .levels .level {
-    flex: 1 1 100px;
-}
-
-.fitem.popout .gradingform_matrix .criterion > .remark {
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .remark {
     display: flex;
     flex-direction: column;
-    flex: 0 0 200px;
-    min-width: 150px;
+    flex: 0 0 12.5rem;
+    min-width: 9.375rem;
     height: auto;
 }
 
 /* The remark fills the height of its row, which the levels decide. */
-.fitem.popout .gradingform_matrix .criterion > .remark textarea {
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .remark textarea {
     flex: 1 1 auto;
     width: 100%;
     height: auto;
@@ -524,30 +530,175 @@
     resize: none;
 }
 
+/* A size container has no width of its own, and the form's parent is a flex row that sizes it by
+ * its content, so give the form the full width or it collapses to nothing.
+ * 'reflow' folds the form everywhere; 'reflow-popout' only when popped out, when the site setting
+ * gradingform_matrix/stacknarrow is off (see display_mode::css_class()). */
+.gradingform_matrix:is(.reflow, .popout .reflow-popout) {
+    width: 100%;
+    min-width: 0;
+}
+
 /* The validator used by Moodle's stylelint does not know container queries yet. */
 /* stylelint-disable csstree/validator */
 
-/* Narrow popout: description, levels and remark each take a full row. */
-@container matrixpopout (max-width: 700px) {
-    .fitem.popout .gradingform_matrix .criterion > .description,
-    .fitem.popout .gradingform_matrix .criterion > .levels,
-    .fitem.popout .gradingform_matrix .criterion > .remark {
+/* Narrow: description, levels and remark each take a full row. */
+@container matrix (width <= 43.75rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .description,
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .levels,
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .criterion > .remark {
         flex: 1 1 100%;
         min-width: 0;
     }
 }
 
-/* Very narrow popout: levels are listed one above the other. */
-@container matrixpopout (max-width: 420px) {
-    .fitem.popout .gradingform_matrix .criterion > .levels > table > tbody > tr {
+/* Levels are listed one above the other once each would be narrower than 7.5rem (120px at the
+ * default font size): below 15rem for any criterion, and :has() counts the levels so that a
+ * criterion with n levels stacks below n x 7.5rem. Breakpoints and widths are in rem so the
+ * form stacks sooner when the user picks a larger default font size. */
+@container matrixlevels (width < 15rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr {
         flex-direction: column;
     }
 
-    .fitem.popout .gradingform_matrix .criterion .levels .level {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr > .level {
         flex: 0 0 auto;
-        min-width: 0;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .criteria .criterion .levels .levels-table tr > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
     }
 }
+
+@container matrixlevels (width < 22.5rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(3)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(3)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(3)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
+@container matrixlevels (width < 30rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(4)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(4)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(4)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
+@container matrixlevels (width < 37.5rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(5)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(5)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(5)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
+@container matrixlevels (width < 45rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(6)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(6)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(6)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
+@container matrixlevels (width < 52.5rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(7)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(7)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(7)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
+@container matrixlevels (width < 60rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(8)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(8)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(8)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
+@container matrixlevels (width < 67.5rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(9)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(9)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(9)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
+@container matrixlevels (width < 75rem) {
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(10)) {
+        flex-direction: column;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout) .levels-table tr:has(> .level:nth-child(10)) > .level {
+        flex: 0 0 auto;
+    }
+
+    .gradingform_matrix:is(.reflow, .popout .reflow-popout)
+    .criteria .criterion .levels .levels-table tr:has(> .level:nth-child(10)) > .level + .level {
+        border-left: 0;
+        border-top: 1px solid var(--gradingform-matrix-stacked-separator);
+    }
+}
+
 /* stylelint-enable csstree/validator */
 
 /* AI assistant dialogue, see amd/src/local/aiassistant.js. */

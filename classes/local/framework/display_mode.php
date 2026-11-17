@@ -116,17 +116,23 @@ enum display_mode: int {
     /**
      * The CSS classes of the form's wrapper, after gradingform_matrix.
      *
+     * The modes other than editing get a class that lets their layout fold to fit a narrow space (see
+     * styles.css): 'reflow' everywhere, or 'reflow-popout' only when the form is popped out. The editor
+     * keeps its table.
+     *
+     * @param bool $stacknarrow fold to fit narrow spaces everywhere, not only when popped out
      * @return string
      */
-    public function css_class(): string {
+    public function css_class(bool $stacknarrow = true): string {
+        $reflow = $stacknarrow ? 'reflow' : 'reflow-popout';
         return match ($this) {
             self::EDIT_FULL => 'editor editable',
             self::EDIT_FROZEN => 'editor frozen',
-            self::PREVIEW, self::PREVIEW_GRADED => 'editor preview',
-            self::EVAL => 'evaluate editable',
-            self::EVAL_FROZEN => 'evaluate frozen',
-            self::REVIEW => 'review',
-            self::VIEW => 'view',
+            self::PREVIEW, self::PREVIEW_GRADED => "editor preview $reflow",
+            self::EVAL => "evaluate editable $reflow",
+            self::EVAL_FROZEN => "evaluate frozen $reflow",
+            self::REVIEW => "review $reflow",
+            self::VIEW => "view $reflow",
         };
     }
 }
